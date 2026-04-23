@@ -1,0 +1,145 @@
+<div class="epi-page">
+  <section class="hero-card">
+    <div>
+      <span class="eyebrow">Controle mensal</span>
+      <h1>Assinaturas de EPI por solicitante</h1>
+      <p>
+        O painel consolida retiradas vindas da saida de estoque, separa por competencia
+        mensal e controla o que ainda precisa ser impresso ou assinado.
+      </p>
+    </div>
+  </section>
+
+  <section class="filter-card">
+    <div class="filter-grid">
+      <label>
+        <span>Solicitante</span>
+        <input [(ngModel)]="filtros.solicitante" type="text" placeholder="Buscar por nome" />
+      </label>
+
+      <label>
+        <span>Mes</span>
+        <input [(ngModel)]="filtros.mes" type="number" min="1" max="12" placeholder="04" />
+      </label>
+
+      <label>
+        <span>Ano</span>
+        <input [(ngModel)]="filtros.ano" type="number" min="2020" placeholder="2026" />
+      </label>
+
+      <label>
+        <span>Status</span>
+        <select [(ngModel)]="filtros.status">
+          <option value="">Todos</option>
+          <option value="aberta">Aberta</option>
+          <option value="fechada">Fechada</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-secondary" type="button" (click)="limparFiltros()">Limpar</button>
+      <button class="btn-primary" type="button" (click)="carregarCompetencias()">Aplicar filtros</button>
+    </div>
+  </section>
+
+  <div *ngIf="carregando" class="feedback-card">Carregando competencias...</div>
+  <div *ngIf="erro" class="feedback-card feedback-error">{{ erro }}</div>
+
+  <section *ngIf="!carregando && !erro" class="table-card">
+    <div class="table-header">
+      <div>
+        <span class="eyebrow">Competencias</span>
+        <h2>{{ competencias.length }} registro(s) encontrado(s)</h2>
+      </div>
+    </div>
+
+    <div *ngIf="competencias.length === 0" class="feedback-card">
+      Nenhuma competencia encontrada para os filtros informados.
+    </div>
+
+    <div *ngIf="competencias.length > 0" class="table-shell">
+      <table>
+        <thead>
+          <tr>
+            <th>Solicitante</th>
+            <th>Competencia</th>
+            <th>Status</th>
+            <th>Pendentes de impressao</th>
+            <th>Relatorios gerados</th>
+            <th>Status assinatura</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let competencia of competencias">
+            <td>{{ competencia.solicitante_nome }}</td>
+            <td>{{ competencia.competencia_label }}</td>
+            <td>
+              <span class="badge" [class.badge-closed]="competencia.status === 'fechada'">
+                {{ getStatusCompetenciaLabel(competencia.status) }}
+              </span>
+            </td>
+            <td>{{ competencia.pendentes_impressao }}</td>
+            <td>{{ competencia.relatorios_gerados }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-warning]="competencia.status_assinatura === 'pendente_assinatura'"
+                [class.badge-success]="competencia.status_assinatura === 'assinado'"
+              >
+                {{ getStatusAssinaturaLabel(competencia.status_assinatura) }}
+              </span>
+            </td>
+            <td>
+              <div class="actions-menu" (click)="$event.stopPropagation()">
+                <button
+                  type="button"
+                  class="menu-trigger"
+                  [attr.aria-expanded]="menuAbertoId === competencia.id"
+                  (click)="toggleMenuAcoes($event, competencia.id)"
+                >
+                  <i class="fas fa-bars"></i>
+                </button>
+
+                <div
+                  *ngIf="menuAbertoId === competencia.id"
+                  class="menu-dropdown"
+                  [style.top.px]="menuPosicao.top"
+                  [style.left.px]="menuPosicao.left"
+                >
+                  <button type="button" class="menu-item" (click)="abrirDetalhes(competencia)">
+                    <i class="fas fa-eye menu-item-icon"></i>
+                    Ver detalhes
+                  </button>
+                  <button
+                    type="button"
+                    class="menu-item"
+                    [disabled]="competencia.pendentes_impressao === 0 || carregandoAcaoId === competencia.id"
+                    (click)="gerarRelatorio(competencia)"
+                  >
+                    <i class="fas fa-file-export menu-item-icon"></i>
+                    Gerar relatorio
+                  </button>
+                  <button type="button" class="menu-item" (click)="abrirHistorico(competencia)">
+                    <i class="fas fa-clock-rotate-left menu-item-icon"></i>
+                    Ver historico
+                  </button>
+                  <button
+                    type="button"
+                    class="menu-item"
+                    [disabled]="carregandoAcaoId === competencia.id"
+                    (click)="marcarUltimoPendente(competencia)"
+                  >
+                    <i class="fas fa-signature menu-item-icon"></i>
+                    Marcar assinado
+                  </button>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

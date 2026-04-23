@@ -1,0 +1,127 @@
+/* ===== Modal Backdrop ===== */
+.modal-wrapper {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* fundo semi-transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+/* ===== Modal Container ===== */
+.modal-container {
+  width: 90%;                     /* responsivo */
+  max-width: 600px;               /* largura máxima */
+  background-color: #ffffff;      /* fundo cinza claro */
+  padding: 1.5rem;                /* espaçamento interno */
+  border-radius: 0.75rem;         /* cantos arredondados */
+  border: 1px solid #d1d5db;      /* borda discreta */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0 auto;                 /* centraliza horizontalmente */
+}
+
+/* ===== Título do Modal ===== */
+.modal-container h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+/* ===== Inputs / Select / Textarea ===== */
+.custom-input {
+  border: 1px solid #cbd5e1;
+  background-color: #ebebeb;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.9rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  color: #000000;
+}
+
+.custom-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+/* ===== Labels ===== */
+label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #000000;
+  margin-bottom: 0.2rem;
+  display: inline-block;
+}
+
+/* ===== Buttons ===== */
+button {
+  border-radius: 0.4rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  padding: 0.55rem 1.2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* Botão salvar */
+button[type="submit"] {
+  background-color: #2563eb;
+  color: #fff;
+}
+button[type="submit"]:hover {
+  background-color: #1d4ed8;
+}
+
+/* Botão limpar */
+button[type="reset"] {
+  background-color: #ef4444;
+  color: #fff;
+}
+button[type="reset"]:hover {
+  background-color: #dc2626;
+}
+
+/* Botão secundário (ex: + tipo item, gerar código) */
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.85rem;
+}
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+/* ===== Layout ===== */
+.form-grid {
+  display: grid;
+  gap: 0.7rem;  /* espaço entre campos */
+}
+.flex {
+  display: flex;
+  gap: 0.7rem;
+}
+
+/* ===== Botão fechar ===== */
+button.close-btn {
+  color: #6b7280;
+  font-size: 1.1rem;
+  padding: 0.3rem 0.5rem;
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+button.close-btn:hover {
+  color: #111827;
+}

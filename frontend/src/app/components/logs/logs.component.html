@@ -1,0 +1,31 @@
+<div class="p-6">
+  <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+    <i class="fas fa-clipboard-list text-blue-500"></i> Logs do Sistema
+  </h2>
+
+  <div class="overflow-x-auto bg-white rounded-lg shadow">
+    <table class="min-w-full text-sm text-left border-collapse">
+      <thead class="bg-gray-100 text-gray-700">
+        <tr>
+          <th class="px-4 py-2"><i class="fas fa-user text-gray-500"></i> Usuário</th>
+          <th class="px-4 py-2"><i class="fas fa-tasks text-gray-500"></i> Ação</th>
+          <th class="px-4 py-2"><i class="fas fa-calendar-alt text-gray-500"></i> Data</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs" class="border-b hover:bg-gray-50">
+          <td class="px-4 py-2 font-medium text-gray-800">
+            <i class="fas fa-user-circle text-blue-400 mr-2"></i> {{ log.usuario_username }}
+          </td>
+          <td class="px-4 py-2 text-gray-700">
+            <i class="fas fa-check-circle text-green-500 mr-2"></i> {{ log.acao }}
+          </td>
+          <td class="px-4 py-2 text-gray-600">
+            <i class="fas fa-clock text-gray-400 mr-2"></i>
+            {{ log.criado_em | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

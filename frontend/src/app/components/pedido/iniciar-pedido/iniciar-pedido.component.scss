@@ -1,0 +1,130 @@
+.filters-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+}
+
+.filters-grid {
+  align-items: end;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 150px 170px minmax(260px, 1fr);
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.filter-field label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.filter-field-search {
+  min-width: 0;
+}
+
+.filter-input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  min-height: 36px;
+  padding: 0.45rem 0.7rem;
+  width: 100%;
+}
+
+.search-inline {
+  display: flex;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.search-inline .filter-input {
+  flex: 1 1 auto;
+}
+
+.filter-reset {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+  font-weight: 700;
+  min-height: 36px;
+  padding: 0.45rem 0.85rem;
+}
+
+.filters-helper {
+  color: #475569;
+  font-size: 0.78rem;
+  margin: 0.45rem 0 0;
+}
+
+.status-badge {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0.22rem 0.55rem;
+  text-transform: uppercase;
+}
+
+.status-pendente {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-enviado {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-finalizado {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.pedido-table thead th {
+  font-size: 0.78rem;
+  padding: 0.6rem 0.75rem;
+  white-space: nowrap;
+}
+
+.pedido-table tbody td {
+  padding: 0.5rem 0.75rem;
+  vertical-align: middle;
+}
+
+.pedido-list-page :where(.text-2xl) {
+  line-height: 1.1;
+}
+
+@media (max-width: 960px) {
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-field-search {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-field-search {
+    grid-column: auto;
+  }
+
+  .search-inline {
+    flex-direction: column;
+  }
+}

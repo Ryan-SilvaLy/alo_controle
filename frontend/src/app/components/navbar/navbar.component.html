@@ -1,0 +1,115 @@
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="brand-block">
+      <a routerLink="/item/iniciar" class="navbar-logo">
+        SYSTEM CONTROL
+        <i class="fas fa-cogs"></i>
+      </a>
+      <span class="navbar-subtitle">Gestao de estoque e movimentacoes</span>
+    </div>
+
+    <div class="user-column">
+      <div class="user-profile">
+        <div class="user-photo" aria-label="Foto do usuario">
+          {{ infoUsuario?.nome?.charAt(0) }}
+        </div>
+        <div class="user-info">
+          <div><strong>Nome:</strong> {{ infoUsuario?.nome || 'Nao informado' }}</div>
+          <div><strong>Setor:</strong> {{ infoUsuario?.setor || 'Nao informado' }}</div>
+          <div><strong>Cargo:</strong> {{ infoUsuario?.cargo || 'Nao informado' }}</div>
+        </div>
+      </div>
+
+      <div class="user-actions">
+        <span class="nivel-permissao">
+          Nivel: {{ infoUsuario?.nivel_permissao || 'Nao definido' }}
+        </span>
+
+        <div class="settings-wrapper">
+          <button
+            class="settings-btn"
+            (click)="toggleSettings()"
+            aria-haspopup="true"
+            [attr.aria-expanded]="isSettingsOpen ? 'true' : 'false'"
+          >
+            <i class="fas fa-cog"></i>
+          </button>
+
+          <ul *ngIf="isSettingsOpen" class="settings-menu">
+            <li><a routerLink="/configuracoes" (click)="onLinkClick()"><i class="fas fa-sliders-h"></i> Configuracoes do sistema</a></li>
+            <li><a routerLink="/perfil" (click)="onLinkClick()"><i class="fas fa-user"></i> Perfil do usuario</a></li>
+            <li><a routerLink="/permissoes" (click)="onLinkClick()"><i class="fas fa-key"></i> Gerenciamento de permissoes</a></li>
+            <li><a routerLink="/backup" (click)="onLinkClick()"><i class="fas fa-database"></i> Backup e restauracao</a></li>
+            <li><a routerLink="/logs" (click)="onLinkClick()"><i class="fas fa-file-alt"></i> Logs e auditoria</a></li>
+            <li><a routerLink="/ajuda" (click)="onLinkClick()"><i class="fas fa-question-circle"></i> Ajuda e documentacao</a></li>
+            <li><button (click)="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-links-row">
+    <div class="nav-links">
+      <a routerLink="/item/iniciar" routerLinkActive="is-active" class="nav-link">
+        <i class="fas fa-dolly-flatbed"></i>
+        <span>Estoque</span>
+      </a>
+
+      <a routerLink="/pedido/listar" routerLinkActive="is-active" class="nav-link">
+        <i class="fas fa-receipt"></i>
+        <span>Pedidos</span>
+      </a>
+
+      <a
+        *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+        routerLink="/controle/iniciar"
+        routerLinkActive="is-active"
+        class="nav-link"
+      >
+        <i class="fas fa-sliders-h"></i>
+        <span>Controle</span>
+      </a>
+
+      <a
+        *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+        routerLink="/produto/iniciar"
+        routerLinkActive="is-active"
+        class="nav-link"
+      >
+        <i class="fas fa-boxes"></i>
+        <span>Produtos</span>
+      </a>
+
+      <a
+        *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+        routerLink="/assinatura-epi/iniciar"
+        routerLinkActive="is-active"
+        class="nav-link"
+      >
+        <i class="fas fa-file-signature"></i>
+        <span>Assinaturas EPI</span>
+      </a>
+
+      <a
+        *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+        routerLink="/produto/dashboard"
+        routerLinkActive="is-active"
+        class="nav-link"
+      >
+        <i class="fas fa-chart-pie"></i>
+        <span>Relatorios</span>
+      </a>
+
+      <a
+        *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+        routerLink="/admin/iniciar"
+        routerLinkActive="is-active"
+        class="nav-link"
+      >
+        <i class="fas fa-shield-alt"></i>
+        <span>Admin</span>
+      </a>
+    </div>
+  </div>
+</nav>

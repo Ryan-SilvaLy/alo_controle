@@ -1,0 +1,73 @@
+<div class="p-4 flex justify-center" *ngIf="!carregando; else loading">
+  <div class="w-full max-w-6xl">
+    <!-- Título principal -->
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+      <i class="fas fa-exclamation-circle text-red-600"></i>
+      Itens em baixa no Estoque por Tipo de Item
+    </h1>
+
+    <!-- Filtro de tipo -->
+    <div class="mb-6">
+      <label for="filtroTipo" class="mr-2 font-medium text-gray-700">Filtrar por tipo:</label>
+      <select id="filtroTipo" [(ngModel)]="tipoSelecionado"
+              class="border border-gray-300 rounded px-2 py-1">
+        <option value="">Todos</option>
+        <option *ngFor="let tipo of tiposDisponiveis" [value]="tipo">{{ tipo }}</option>
+      </select>
+    </div>
+
+    <div *ngFor="let grupo of itensAgrupados | filtroTipo: tipoSelecionado" class="mb-6">
+      <!-- Cabeçalho do Tipo -->
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <i class="fas fa-layer-group text-blue-600"></i>
+          {{ grupo.tipo }}
+        </h2>
+        <button
+          class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition text-sm flex items-center gap-2"
+          (click)="gerarPedido(grupo.tipo)">
+          <i class="fas fa-plus-circle"></i>
+          Gerar Pedido
+        </button>
+      </div>
+
+      <!-- Tabela -->
+      <div class="overflow-x-auto shadow rounded-md">
+        <table class="min-w-full bg-white border border-gray-200 rounded-md text-sm">
+          <thead class="bg-gray-100 text-gray-700">
+            <tr>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-barcode"></i> Código</th>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-box"></i> Nome</th>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-warehouse"></i> Prateleira</th>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-arrow-down"></i> Qtd Atual</th>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-arrow-up"></i> Qtd Mínima</th>
+              <th class="px-2 py-2 text-left font-medium"><i class="fas fa-balance-scale"></i> Unidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of grupo.itens" class="border-t hover:bg-gray-50">
+              <td class="px-2 py-2 text-gray-700">{{ item.codigo }}</td>
+              <td class="px-2 py-2 text-gray-700">{{ item.nome }}</td>
+              <td class="px-2 py-2 text-gray-700">{{ item.prateleira_estoque }}</td>
+              <td class="px-2 py-2 font-semibold flex items-center gap-2 text-red-600">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ item.quantidade_atual | quantidadeFormat:item.unidade_medida }}
+              </td>
+              <td class="px-2 py-2 text-gray-700">
+                {{ item.quantidade_minima | quantidadeFormat:item.unidade_medida }}
+              </td>
+              <td class="px-2 py-2 text-gray-700">{{ item.unidade_medida | unidadeNome:itemService.UNIDADE_MEDIDA_CHOICES }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loading>
+  <div class="p-4 text-gray-600 flex items-center gap-2">
+    <i class="fas fa-spinner fa-spin"></i>
+    Carregando itens em baixa...
+  </div>
+</ng-template>

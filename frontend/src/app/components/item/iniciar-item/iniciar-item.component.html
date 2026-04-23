@@ -1,0 +1,303 @@
+
+<div class="container">
+  <!-- TOPO -->
+  <div *appHasPermission="['administrador', 'moderador', 'almoxarifado']" class="mb-2">
+    <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+
+      <!-- BOTÕES -->
+      <div class="flex flex-wrap gap-2">
+        <button
+          class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 text-sm font-medium flex items-center gap-2"
+          (click)="abrirModalCriarItem()"
+        >
+          <i class="fa fa-plus"></i>
+          Novo Item
+        </button>
+
+        <a
+          routerLink="/item/iniciar-tipo-item"
+          class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 text-sm font-medium flex items-center gap-2 no-underline"
+        >
+          <i class="fa fa-list"></i>
+          Tipos de Itens
+        </a>
+
+        <button
+          (click)="gerarRelatorioItensEmBaixa()"
+          class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 text-sm font-medium flex items-center gap-2"
+        >
+          <i class="fa fa-print"></i>
+          PDF Itens em Baixa
+        </button>
+
+       
+      </div>
+
+      <!-- PAGINAÇÃO -->
+      <div class="flex items-center">
+        <app-pagination
+          [totalItens]="itensFiltrados.length"
+          [(paginaAtual)]="paginaAtual"
+          [(itensPorPagina)]="itensPorPagina"
+          (paginaAtualChange)="atualizarItensPaginados()"
+          (itensPorPaginaChange)="atualizarItensPaginados()"
+        ></app-pagination>
+      </div>
+    </div>
+  </div>
+
+ <!-- FILTROS -->
+<div class="mb-3 rounded-lg border border-slate-300 bg-white shadow-sm px-2 py-1.5">
+
+  <!-- HEADER DO FILTRO -->
+  <div class="mb-2 flex items-center justify-between">
+    <div>
+      <h3 class="text-sm font-semibold text-slate-800 leading-none mb-0">Filtros</h3>
+      <p class="text-[11px] text-slate-500 mb-0">Refine a busca dos itens</p>
+    </div>
+
+   <button
+      type="button"
+      class="px-3 py-1 text-xs rounded bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium"
+      (click)="resetarFiltros()"
+    >
+      Limpar
+    </button>
+  </div>
+
+  <!-- GRID DE FILTROS -->
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2">
+
+    <!-- Nome -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Nome</label>
+      <div class="relative">
+        <i class="fas fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input
+          type="text"
+          placeholder="Filtrar por nome"
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.nome"
+          (input)="filtrarItens()"
+        />
+      </div>
+    </div>
+
+    <!-- Código -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Código</label>
+      <div class="relative">
+        <i class="fas fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input
+          type="text"
+          placeholder="Filtrar por código"
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.codigo"
+          (input)="filtrarItens()"
+        />
+      </div>
+    </div>
+
+    <!-- Código de Barras -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Código de Barras</label>
+      <div class="relative">
+        <i class="fas fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input
+          type="text"
+          placeholder="Filtrar por código de barras"
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.codigo_barras"
+          (input)="filtrarItens()"
+        />
+      </div>
+    </div>
+
+    <!-- Tipo -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Tipo de Item</label>
+      <div class="relative">
+        <i class="fas fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <select
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.tipo_item"
+          (change)="filtrarItens()"
+        >
+          <option selected [ngValue]="null">Todos</option>
+          <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{ tipo.nome }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Prateleira -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Prateleira</label>
+      <div class="relative">
+        <i class="fas fa-warehouse absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input
+          type="text"
+          placeholder="Filtrar por prateleira"
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.prateleira"
+          (input)="filtrarItens()"
+        />
+      </div>
+    </div>
+
+    <!-- Situação -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Situação</label>
+      <div class="relative">
+        <i class="fas fa-traffic-light absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <select
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.situacao"
+          (change)="filtrarItens()"
+        >
+          <option value="">Todas</option>
+          <option value="ok">OK</option>
+          <option value="baixo">Baixo</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div>
+      <label class="block text-[11px] font-semibold text-slate-700 mb-1">Status</label>
+      <div class="relative">
+        <i class="fas fa-circle absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <select
+          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
+          [(ngModel)]="filtros.status"
+          (change)="filtrarItens()"
+        >
+          <option value="">Todos</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+  <!-- resto da tabela continua igual -->
+
+  <!-- =========================
+       MENSAGENS DE ESTADO
+  ========================== -->
+  <div *ngIf="carregando" class="text-muted">Carregando itens...</div>
+  <div *ngIf="erro" class="erro">{{ erro }}</div>
+
+  <!-- =========================
+       TABELA DE ITENS
+  ========================== -->
+  <table *ngIf="!carregando && itensPaginados.length" class="table table-sm">
+    <thead>
+      <tr>
+        <th class="col-id">ID</th>
+        <th class="col-nome"><i class="fas fa-tag me-1 icon-nome"></i> Nome</th>
+        <th class="col-codigo"><i class="fas fa-barcode me-1 icon-codigo"></i> Código</th>
+        <th class="col-codigo-barras"><i class="fas fa-barcode me-1 icon-codigo-barras"></i> Código de Barras</th>
+        <th class="col-tipo"><i class="fas fa-tags me-1 icon-tipo"></i> Tipo</th>
+        <th class="col-prateleira"><i class="fas fa-warehouse me-1 icon-prateleira"></i> Prateleira</th>
+        <th class="col-qtd"><i class="fas fa-boxes me-1 icon-qtd"></i> Qtd Atual</th>
+        <th class="col-qtd"><i class="fas fa-cubes me-1 icon-qtd-minima"></i> Qtd Mínima</th>
+        <th class="col-qtd"><i class="fas fa-balance-scale me-1 icon-unidade"></i> Unidade</th>
+        <th class="col-situacao"><i class="fas fa-traffic-light me-1 icon-situacao"></i> Situação</th>
+        <th class="col-status"><i class="fas fa-traffic-light me-1 icon-status"></i> Status</th>
+        <th class="col-acoes"><i class="fas fa-tools me-1 icon-acoes"></i> Ações</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let item of itensPaginados">
+        <td>{{ item.id }}</td>
+        <td>{{ item.nome }}</td>
+        <td>{{ item.codigo }}</td>
+        <td>{{ item.codigo_barras || '-' }}</td>
+        <td>{{ item.tipo_item.nome }}</td>
+        <td>{{ item.prateleira_estoque }}</td>
+        <td>{{ item.quantidade_atual | quantidadeFormat:item.unidade_medida }}</td>
+        <td>{{ item.quantidade_minima | quantidadeFormat:item.unidade_medida }}</td>
+        <td>{{ item.unidade_medida | unidadeNome:itemService.UNIDADE_MEDIDA_CHOICES }}</td>
+        <td>
+<span
+  class="badge"
+  [ngClass]="{
+    'bg-success': item.quantidade_atual >= item.quantidade_minima,
+    'bg-danger': item.quantidade_atual < item.quantidade_minima
+  }"
+>
+  {{ item.quantidade_atual >= item.quantidade_minima ? 'OK' : 'Baixo' }}
+</span>
+
+        </td>
+        <td>
+          <span
+            *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
+            class="px-2 py-1 rounded text-white text-sm cursor-pointer"
+            [ngClass]="{
+              'bg-green-500': item.status === 'ativo',
+              'bg-red-500': item.status === 'inativo'
+            }"
+            (click)="abrirModal(item)"
+          >
+            {{ item.status === 'ativo' ? 'Ativo' : 'Inativo' }}
+          </span>
+        </td>
+<td>
+<a class="btn btn-outline-primary btn-sm" (click)="atualizarItemComponent.abrirModal(item.id)">
+  <i class="fa fa-pen me-1"></i> Atualizar
+</a>
+
+</td>
+
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!carregando && !itensPaginados.length" class="nenhum-resultado">
+    Nenhum item encontrado.
+  </div>
+
+
+</div>
+
+<!-- =========================
+     MODAL DE CONFIRMAÇÃO
+========================== -->
+<div
+  *ngIf="modalAberto && itemSelecionado"
+  class="fixed inset-0 z-50 flex items-center bg-black bg-opacity-50 !justify-center"
+>
+  <div class="bg-white p-6 rounded-lg shadow-xl w-96">
+    <h2 class="text-lg font-bold mb-4">Confirmar alteração</h2>
+    <p>
+      Tem certeza que deseja mudar o status do item
+      <strong>{{ itemSelecionado.nome }}</strong>
+      <span class="font-semibold">
+        "{{ itemSelecionado.status === 'ativo' ? 'Inativo' : 'Ativo' }}"
+      </span>
+    </p>
+
+    <div class="mt-6 flex justify-end space-x-3">
+      <button
+        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+        (click)="fecharModal()"
+      >
+        Cancelar
+      </button>
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        (click)="confirmarMudanca()"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-criar-item (itemCriado)="carregarItens()"></app-criar-item>
+<app-atualizar-item (itemAtualizado)="carregarItens()"></app-atualizar-item>
+

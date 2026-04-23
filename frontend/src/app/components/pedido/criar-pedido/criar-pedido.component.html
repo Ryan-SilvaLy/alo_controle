@@ -1,0 +1,328 @@
+<div class="pedido-page">
+  <div class="pedido-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <span class="eyebrow">Central de pedidos</span>
+        <h1>Criar pedido com mais contexto</h1>
+        <p>
+          Preencha os dados do solicitante, selecione os itens e acompanhe o
+          resumo do pedido em tempo real para reduzir erros antes do envio.
+        </p>
+      </div>
+
+      <div class="hero-metrics">
+        <article class="metric-card">
+          <span class="metric-label">Itens no pedido</span>
+          <strong class="metric-value">{{ itens.length }}</strong>
+          <small class="metric-note">Linhas ativas no formulario</small>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Qtd. total pedida</span>
+          <strong class="metric-value">{{ getQuantidadeTotalPedida() }}</strong>
+          <small class="metric-note">Soma de todas as quantidades</small>
+        </article>
+
+        <article class="metric-card warning">
+          <span class="metric-label">Itens em baixa</span>
+          <strong class="metric-value">{{ getItensEmBaixaSelecionados() }}</strong>
+          <small class="metric-note">Selecionados com status baixo</small>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Grupos envolvidos</span>
+          <strong class="metric-value">{{ getQuantidadeTiposSelecionados() }}</strong>
+          <small class="metric-note">Todos os itens devem ficar no mesmo grupo</small>
+        </article>
+      </div>
+    </section>
+
+    <form [formGroup]="pedidoForm" (ngSubmit)="enviarPedido()" class="pedido-layout">
+      <main class="pedido-main">
+        <section class="panel-card">
+          <div class="section-heading">
+            <div>
+              <span class="section-tag">Etapa 1</span>
+              <h2>Dados do pedido</h2>
+            </div>
+            <p>Identifique quem esta solicitando e para qual setor o pedido sera enviado.</p>
+          </div>
+
+          <div class="info-grid">
+            <div class="field-block">
+              <label for="solicitante">Solicitante</label>
+              <input
+                id="solicitante"
+                class="custom-input"
+                type="text"
+                placeholder="Nome do solicitante"
+                formControlName="solicitante"
+                maxlength="40"
+              />
+              <small>Nome da pessoa que abriu o pedido.</small>
+              <div *ngIf="pedidoForm.get('solicitante')?.invalid && pedidoForm.get('solicitante')?.touched" class="field-error">
+                Campo obrigatorio.
+              </div>
+            </div>
+
+            <div class="field-block">
+              <label for="setor_destino">Setor de destino</label>
+              <input
+                id="setor_destino"
+                class="custom-input"
+                type="text"
+                placeholder="Setor destino"
+                formControlName="setor_destino"
+                maxlength="40"
+              />
+              <small>Area que vai receber os itens.</small>
+              <div *ngIf="pedidoForm.get('setor_destino')?.invalid && pedidoForm.get('setor_destino')?.touched" class="field-error">
+                Campo obrigatorio.
+              </div>
+            </div>
+
+            <div class="field-block field-block-wide">
+              <label for="responsavel_setor">Responsavel do setor</label>
+              <input
+                id="responsavel_setor"
+                class="custom-input"
+                type="text"
+                placeholder="Responsavel"
+                formControlName="responsavel_setor"
+                maxlength="40"
+              />
+              <small>Pessoa responsavel por receber ou acompanhar o pedido.</small>
+              <div *ngIf="pedidoForm.get('responsavel_setor')?.invalid && pedidoForm.get('responsavel_setor')?.touched" class="field-error">
+                Campo obrigatorio.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <div class="section-heading section-heading-inline">
+            <div>
+              <span class="section-tag">Etapa 2</span>
+              <h2>Itens do pedido</h2>
+            </div>
+            <button
+              type="button"
+              class="action-button secondary"
+              (click)="adicionarItem()"
+              [disabled]="!podeAdicionarMaisItens()"
+            >
+              + Adicionar item
+            </button>
+          </div>
+
+          <p class="section-copy">
+            O primeiro item selecionado define o grupo do pedido. Depois disso, os
+            proximos campos mostram somente itens do mesmo grupo.
+          </p>
+
+          <div class="group-lock-banner" [class.group-lock-banner-active]="temGrupoDefinido()">
+            <span class="group-lock-label">Grupo do pedido</span>
+            <strong>{{ getGrupoSelecionadoNome() }}</strong>
+            <small *ngIf="temGrupoDefinido(); else grupoLivre">
+              Somente itens deste grupo podem ser adicionados agora.
+            </small>
+            <ng-template #grupoLivre>
+              <small>Selecione o primeiro item para travar o grupo automaticamente.</small>
+            </ng-template>
+          </div>
+
+          <div formArrayName="itens" class="item-list">
+            <article
+              *ngFor="let itemGroup of itens.controls; let i = index"
+              [formGroupName]="i"
+              class="item-card"
+            >
+              <div class="item-card-header">
+                <div>
+                  <span class="item-index">Item {{ i + 1 }}</span>
+                  <h3>{{ getNomeItemSelecionado(i) }}</h3>
+                </div>
+                <button type="button" class="remove-link" (click)="removerItem(i)">
+                  Remover
+                </button>
+              </div>
+
+              <div class="field-block">
+                <label [for]="'item-' + i">Selecionar item</label>
+                <select
+                  class="custom-input"
+                  [id]="'item-' + i"
+                  formControlName="item"
+                  (change)="onItemSelecionado(i)"
+                >
+                  <option value="">Selecione um item</option>
+                  <option *ngFor="let item of getItensDisponiveisParaSelect(i)" [value]="item.id">
+                    {{ item.nome }} - {{ item.codigo }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="item-meta" *ngIf="getItemSelecionado(i) as itemSelecionado">
+                <span class="meta-chip">{{ itemSelecionado.codigo }}</span>
+                <span class="meta-chip">{{ itemSelecionado.tipo_item.nome || 'Sem grupo' }}</span>
+                <span
+                  class="meta-chip"
+                  [class.meta-chip-alert]="itemSelecionado.situacao === 'baixo'"
+                >
+                  {{ itemSelecionado.situacao || 'Sem situacao' }}
+                </span>
+                <span class="meta-chip">
+                  {{ getUnidadeMedidaLabel(itemSelecionado.unidade_medida) }}
+                </span>
+                <span class="meta-chip">
+                  Minimo: {{ itemSelecionado.quantidade_minima }}
+                </span>
+              </div>
+
+              <div class="item-grid">
+                <div class="field-block">
+                  <label [for]="'quantidade-' + i">Qtd. pedida</label>
+                  <input
+                    class="custom-input"
+                    type="number"
+                    [id]="'quantidade-' + i"
+                    formControlName="quantidade_pedida"
+                    placeholder="Ex: 10"
+                    min="1"
+                  />
+                  <small>Informe a quantidade desejada para este item.</small>
+                </div>
+
+                <div class="field-block">
+                  <label [for]="'ultima-entrada-' + i">Ultima entrada</label>
+                  <input
+                    class="custom-input"
+                    type="text"
+                    [id]="'ultima-entrada-' + i"
+                    [value]="itemGroup.get('ultima_entrada_estoque')?.value ? (itemGroup.get('ultima_entrada_estoque')?.value | date:'dd/MM/yyyy') : 'Sem registro'"
+                    readonly
+                  />
+                  <small>Data da ultima movimentacao de entrada.</small>
+                </div>
+
+                <div class="field-block">
+                  <label [for]="'estoque-' + i">Qtd. em estoque</label>
+                  <input
+                    class="custom-input"
+                    type="number"
+                    [id]="'estoque-' + i"
+                    formControlName="quantidade_atual_estoque"
+                    readonly
+                  />
+                  <small>Estoque atual disponivel para consulta rapida.</small>
+                </div>
+              </div>
+            </article>
+
+            <div *ngIf="itens.length === 0" class="empty-state">
+              <h3>Nenhum item adicionado</h3>
+              <p>Comece adicionando a primeira linha do pedido para liberar o resumo e a validacao.</p>
+              <button type="button" class="action-button secondary" (click)="adicionarItem()">
+                Adicionar primeiro item
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="pedido-sidebar">
+        <section class="panel-card summary-card">
+          <div class="section-heading">
+            <div>
+              <span class="section-tag">Resumo</span>
+              <h2>Visao geral do pedido</h2>
+            </div>
+            <p>Confira rapidamente os principais indicadores antes de enviar.</p>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-box">
+              <span>Solicitante</span>
+              <strong>{{ pedidoForm.get('solicitante')?.value || 'Nao informado' }}</strong>
+            </div>
+
+            <div class="summary-box">
+              <span>Setor</span>
+              <strong>{{ pedidoForm.get('setor_destino')?.value || 'Nao informado' }}</strong>
+            </div>
+
+            <div class="summary-box">
+              <span>Responsavel</span>
+              <strong>{{ pedidoForm.get('responsavel_setor')?.value || 'Nao informado' }}</strong>
+            </div>
+
+            <div class="summary-box">
+              <span>Itens selecionados</span>
+              <strong>{{ itens.length }}</strong>
+            </div>
+          </div>
+
+          <div class="insight-strip">
+            <span class="insight-label">Atenção</span>
+            <p>
+              {{ getItensEmBaixaSelecionados() }} item(ns) selecionado(s) estao com situacao de baixa.
+            </p>
+          </div>
+
+          <div class="insight-strip neutral">
+            <span class="insight-label">Grupo ativo</span>
+            <p>{{ getGrupoSelecionadoNome() }}</p>
+          </div>
+
+          <div class="selected-items">
+            <div class="selected-items-header">
+              <h3>Itens no pedido</h3>
+              <span>{{ getResumoItensSelecionados().length }}</span>
+            </div>
+
+            <div class="selected-list" *ngIf="getResumoItensSelecionados().length; else semItensResumo">
+              <div *ngFor="let resumoItem of getResumoItensSelecionados()" class="selected-row">
+                <div>
+                  <strong>{{ resumoItem.nome }}</strong>
+                  <small>{{ resumoItem.codigo }} • {{ resumoItem.tipo }}</small>
+                </div>
+                <span>{{ resumoItem.quantidade }}</span>
+              </div>
+            </div>
+
+            <ng-template #semItensResumo>
+              <p class="selected-empty">Selecione itens para visualizar o resumo detalhado.</p>
+            </ng-template>
+          </div>
+
+          <div class="cta-stack">
+            <button
+              type="button"
+              class="action-button secondary full-width"
+              (click)="adicionarItem()"
+              [disabled]="!podeAdicionarMaisItens()"
+            >
+              + Novo item
+            </button>
+
+            <button
+              type="button"
+              (click)="abrirModalConfirmacao()"
+              [disabled]="!pedidoForm.valid || itens.length === 0 || getQuantidadeTiposSelecionados() > 1"
+              class="action-button primary full-width"
+            >
+              Revisar e enviar pedido
+            </button>
+          </div>
+        </section>
+      </aside>
+    </form>
+  </div>
+</div>
+
+<app-modal-confirmar-pedido
+  [aberto]="modalConfirmacaoAberto"
+  [pedido]="pedidoResumo"
+  (confirmar)="enviarPedido()"
+  (cancelar)="modalConfirmacaoAberto = false">
+</app-modal-confirmar-pedido>

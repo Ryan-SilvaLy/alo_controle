@@ -1,0 +1,77 @@
+<div class="detail-page">
+  <div class="header-row">
+    <div>
+      <span class="eyebrow">Competencia</span>
+      <h1 *ngIf="competencia">{{ competencia.solicitante_nome }} - {{ competencia.competencia_label }}</h1>
+    </div>
+
+    <a routerLink="/assinatura-epi/iniciar" class="btn-back">Voltar</a>
+  </div>
+
+  <div *ngIf="carregando" class="state-card">Carregando detalhes...</div>
+
+  <ng-container *ngIf="!carregando && competencia">
+    <section class="summary-grid">
+      <article class="summary-card">
+        <span>Status da competencia</span>
+        <strong>{{ competencia.status }}</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Pendentes de impressao</span>
+        <strong>{{ competencia.pendentes_impressao }}</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Relatorios gerados</span>
+        <strong>{{ competencia.relatorios_gerados }}</strong>
+      </article>
+
+      <article class="summary-card">
+        <span>Status assinatura</span>
+        <strong>{{ competencia.status_assinatura }}</strong>
+      </article>
+    </section>
+
+    <section class="table-card">
+      <div class="table-header">
+        <h2>Lancamentos vinculados a saida</h2>
+        <a [routerLink]="['/assinatura-epi/historico', competencia.id]" class="btn-back">Ver historico</a>
+      </div>
+
+      <div class="table-shell">
+        <table>
+          <thead>
+            <tr>
+              <th>Data saida</th>
+              <th>Item</th>
+              <th>Quantidade</th>
+              <th>Bloco/Requisicao</th>
+              <th>Setor</th>
+              <th>Responsavel</th>
+              <th>Status impressao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let lancamento of competencia.lancamentos">
+              <td>{{ lancamento.data_saida | date:'dd/MM/yyyy' }}</td>
+              <td>{{ lancamento.nome_item_snapshot }}</td>
+              <td>{{ lancamento.quantidade }}</td>
+              <td>{{ lancamento.numero_bloco_requisicao }}</td>
+              <td>{{ lancamento.setor_nome_snapshot }}</td>
+              <td>{{ lancamento.responsavel_nome_snapshot }}</td>
+              <td>
+                <span class="status-pill" [class.status-cancelado]="lancamento.status_lancamento === 'cancelado'">
+                  {{ lancamento.status_lancamento }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="competencia.lancamentos.length === 0">
+              <td colspan="7">Nenhum lancamento encontrado.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</div>

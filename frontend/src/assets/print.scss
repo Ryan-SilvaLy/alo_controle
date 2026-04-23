@@ -1,0 +1,62 @@
+@media print {
+  /* ... seus outros estilos continuam iguais ... */
+
+  /* Remova essa regra que força o h2 para nova página */
+  h2 {
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #a0aec0;
+    padding-bottom: 0.25rem;
+    color: black !important;
+
+    /* Remova page-break-before para não separar do conteúdo abaixo */
+    page-break-before: auto;
+    page-break-inside: avoid;
+  }
+
+  /* Envolva o h2 e a tabela num container para evitar quebra entre eles */
+  .itens-container {
+    page-break-inside: avoid;
+  }
+
+  /* Evitar quebras dentro das linhas da tabela */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.625rem;
+
+    thead tr {
+      background-color: #e2e8f0;
+    }
+
+    th,
+    td {
+      border: 1px solid #a0aec0;
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      font-weight: 500;
+      color: #1a202c;
+      vertical-align: middle;
+    }
+
+    td {
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+
+    td.text-center,
+    th.text-center {
+      text-align: center;
+    }
+
+    tbody tr:hover {
+      background-color: transparent !important;
+    }
+
+    /* Permitir que a tabela quebre entre linhas, para não travar páginas */
+    tr, td, th {
+      page-break-inside: avoid;
+    }
+  }
+}

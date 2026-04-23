@@ -1,0 +1,15 @@
+O Porque do uso do PROTECT nas relações com Itens.
+
+    📌 Benefícios de usar PROTECT com foco em histórico e estatísticas
+
+    Preserva todo o histórico de movimentações de estoque (entradas, saídas, pedidos), que é essencial para análise de dados.
+
+    Permite acompanhar tendências de consumo, previsões de reposição e até análise de desempenho de fornecedores e setores.
+
+    Evita "buracos" nos dados: se um Item fosse deletado com CASCADE, os registros ligados a ele sumiriam, prejudicando qualquer análise futura.
+
+    É compatível com auditoria de dados, algo muito valorizado em ambientes corporativos e órgãos públicos.
+
+
+Sobre o uso do `AbstractUser` no modelo de Usuario.
+    Se os usuários vão autenticar no sistema com login e senha, o ideal é você não usar um models.Model puro, e sim estender o modelo de usuário padrão do Django (AbstractUser ou AbstractBaseUser), que já traz tudo pronto para autenticação: login, senha (com hash seguro), e outras features úteis como is_active, last_login

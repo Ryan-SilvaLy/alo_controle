@@ -1,0 +1,129 @@
+<div class="produto-page">
+  <div class="produto-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <span class="eyebrow">Resumo de estoque</span>
+        <h1>Movimentacoes por item</h1>
+        <p>
+          Visualize todos os itens cadastrados no estoque e acompanhe quanto entrou,
+          quanto saiu e quantas movimentacoes cada item recebeu.
+        </p>
+      </div>
+
+      <div class="hero-actions">
+        <button
+          type="button"
+          class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
+          (click)="abrirFornecedores()"
+        >
+          Fornecedores
+        </button>
+      </div>
+    </section>
+
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span class="metric-label">Itens cadastrados</span>
+        <strong class="metric-value">{{ totalItens }}</strong>
+        <small class="metric-note">Itens atualmente cadastrados no estoque</small>
+      </article>
+
+      <article class="metric-card metric-card-info">
+        <span class="metric-label">Total de entradas</span>
+        <strong class="metric-value">{{ totalEntradas }}</strong>
+        <small class="metric-note">Quantidade somada de tudo que entrou</small>
+      </article>
+
+      <article class="metric-card metric-card-warning">
+        <span class="metric-label">Total de saidas</span>
+        <strong class="metric-value">{{ totalSaidas }}</strong>
+        <small class="metric-note">Quantidade somada de tudo que saiu</small>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-label">Com movimentacao</span>
+        <strong class="metric-value">{{ itensComMovimentacao }}</strong>
+        <small class="metric-note">Itens que ja tiveram entrada ou saida</small>
+      </article>
+    </section>
+
+    <div *ngIf="carregando" class="feedback-state">Carregando resumo dos itens...</div>
+    <div *ngIf="erro" class="feedback-state feedback-error">{{ erro }}</div>
+
+    <section *ngIf="!carregando && !erro" class="panel-card">
+      <div class="panel-header">
+        <div>
+          <span class="panel-tag">Itens</span>
+          <h2>Painel de movimentacoes</h2>
+        </div>
+        <p>{{ itensFiltrados.length }} item(ns) visiveis</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-field toolbar-search">
+          <label for="termo-busca">Buscar</label>
+          <input
+            id="termo-busca"
+            type="text"
+            [(ngModel)]="termoBusca"
+            class="toolbar-input"
+            placeholder="Codigo, nome, grupo, prateleira..."
+          />
+        </div>
+
+        <button
+          type="button"
+          class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200"
+          (click)="limparBusca()"
+        >
+          Limpar
+        </button>
+      </div>
+
+      <div *ngIf="itensFiltrados.length === 0" class="empty-state">
+        Nenhum item encontrado com os filtros atuais.
+      </div>
+
+      <div class="table-shell" *ngIf="itensFiltrados.length > 0">
+        <table class="movement-table">
+          <thead>
+            <tr>
+              <th>Codigo</th>
+              <th>Item</th>
+              <th>Grupo</th>
+              <th>Estoque</th>
+              <th>Entrou</th>
+              <th>Saiu</th>
+              <th>Movs.</th>
+              <th>Ultima entrada</th>
+              <th>Ultima saida</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of itensFiltrados">
+              <td>{{ item.codigo }}</td>
+              <td>
+                <div class="item-main">
+                  <strong>{{ item.nome }}</strong>
+                  <span>Prateleira: {{ item.prateleira }}</span>
+                </div>
+              </td>
+              <td>{{ item.grupo }}</td>
+              <td>
+                <div class="qty-stack">
+                  <strong>{{ item.estoqueAtual }}</strong>
+                  <span>Min: {{ item.quantidadeMinima }} {{ item.unidadeMedida }}</span>
+                </div>
+              </td>
+              <td>{{ item.quantidadeEntrada }}</td>
+              <td>{{ item.quantidadeSaida }}</td>
+              <td>{{ item.totalMovimentacoes }}</td>
+              <td>{{ item.ultimaEntrada ? (item.ultimaEntrada | date:'dd/MM/yyyy') : '-' }}</td>
+              <td>{{ item.ultimaSaida ? (item.ultimaSaida | date:'dd/MM/yyyy') : '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>

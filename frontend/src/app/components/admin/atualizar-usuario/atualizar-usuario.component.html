@@ -1,0 +1,149 @@
+<div class="pedido-list-page p-3">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-900 mb-1">Atualizar Usuário</h2>
+      <p class="text-sm text-slate-500 mb-0">
+        Edite os dados do usuário selecionado.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="voltarParaLogins()"
+      class="bg-gray-200 hover:bg-gray-300 text-slate-700 px-3 py-2 rounded text-sm flex items-center gap-2"
+    >
+      <i class="fas fa-arrow-left"></i>
+      Voltar
+    </button>
+  </div>
+
+  <!-- FORM -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <form (ngSubmit)="atualizarUsuario()" #form="ngForm" novalidate>
+
+      <div class="grid gap-3 md:grid-cols-3">
+
+        <!-- Username -->
+        <div>
+          <label class="text-sm font-medium text-slate-700 mb-1 block">Username *</label>
+          <input
+            maxlength="20"
+            [(ngModel)]="usuario.username"
+            name="username"
+            required
+            #username="ngModel"
+            class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="username.invalid && username.touched">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- Nome -->
+        <div>
+          <label class="text-sm font-medium text-slate-700 mb-1 block">Nome *</label>
+          <input
+            maxlength="50"
+            [(ngModel)]="usuario.nome"
+            name="nome"
+            required
+            #nome="ngModel"
+            class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="nome.invalid && nome.touched">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- Permissão -->
+        <div>
+          <label class="text-sm font-medium text-slate-700 mb-1 block">Permissão *</label>
+          <select
+            [(ngModel)]="usuario.nivel_permissao"
+            name="nivel_permissao"
+            required
+            #nivel="ngModel"
+            class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+          >
+            <option value="">Selecione</option>
+            <option *ngFor="let n of niveisPermissao" [value]="n.valor">
+              {{ n.label }}
+            </option>
+          </select>
+          <p class="text-red-500 text-xs mt-1" *ngIf="nivel.invalid && nivel.touched">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- Cargo -->
+        <div>
+          <label class="text-sm font-medium text-slate-700 mb-1 block">Cargo *</label>
+          <input
+            maxlength="50"
+            [(ngModel)]="usuario.cargo"
+            name="cargo"
+            required
+            #cargo="ngModel"
+            class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="cargo.invalid && cargo.touched">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- Setor -->
+        <div>
+          <label class="text-sm font-medium text-slate-700 mb-1 block">Setor *</label>
+          <input
+            maxlength="50"
+            [(ngModel)]="usuario.setor"
+            name="setor"
+            required
+            #setor="ngModel"
+            class="w-full border border-slate-300 rounded px-3 py-2 text-sm"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="setor.invalid && setor.touched">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- INFO -->
+        <div class="flex items-end">
+          <div class="w-full bg-slate-50 border border-slate-200 rounded px-3 py-2 text-xs text-slate-600">
+            Alterar a permissão impacta o acesso do usuário no sistema.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-200">
+
+        <span class="text-xs text-slate-500">
+          Campos com * são obrigatórios
+        </span>
+
+        <div class="flex gap-2">
+          <button
+            type="button"
+            (click)="voltarParaLogins()"
+            class="bg-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-400"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="form.invalid"
+            class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>

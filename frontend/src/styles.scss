@@ -1,0 +1,49 @@
+/* You can add global styles to this file, and also import other style files */
+// styles.scss
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+// Paleta base
+$primary-color: #2c3e50;
+$accent-color: #2980b9;
+$bg-color: #f4f6f8;
+$error-color: #e74c3c;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background-color: $bg-color;
+  color: $primary-color;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+.font-bold,
+.font-semibold,
+.fw-bold,
+.fw-semibold,
+b,
+strong,
+th,
+label,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400 !important;
+}

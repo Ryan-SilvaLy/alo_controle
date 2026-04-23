@@ -1,0 +1,110 @@
+<div class="fornecedor-page">
+  <section class="hero-card">
+    <div>
+      <p class="hero-eyebrow">Fornecedores</p>
+      <h1 class="hero-title">Entregas por fornecedor</h1>
+      <p class="hero-copy">
+        Painel com base nas entradas com nota fiscal, exibindo fornecedor, documento,
+        quantidade de entregas e numero de notas registradas.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
+      (click)="voltarParaProdutos()"
+    >
+      Voltar para produtos
+    </button>
+  </section>
+
+  <section class="metrics-grid" *ngIf="!carregando">
+    <article class="metric-card">
+      <span class="metric-label">Fornecedores</span>
+      <strong class="metric-value">{{ totalFornecedores }}</strong>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Entregas</span>
+      <strong class="metric-value">{{ totalEntregas }}</strong>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Notas fiscais</span>
+      <strong class="metric-value">{{ totalNotas }}</strong>
+    </article>
+
+    <article class="metric-card">
+      <span class="metric-label">Volumes recebidos</span>
+      <strong class="metric-value">{{ totalVolumesRecebidos }}</strong>
+    </article>
+  </section>
+
+  <div *ngIf="carregando" class="feedback-state">
+    Carregando fornecedores...
+  </div>
+
+  <div *ngIf="erro" class="feedback-state feedback-error">
+    {{ erro }}
+  </div>
+
+  <section class="panel-card" *ngIf="!carregando && !erro">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">Resumo de fornecedores</h2>
+        <p class="panel-copy">Dados consolidados a partir das entradas com nota fiscal.</p>
+      </div>
+
+      <div class="toolbar">
+        <input
+          type="text"
+          [(ngModel)]="termoBusca"
+          placeholder="Buscar fornecedor ou documento"
+          class="toolbar-input"
+        />
+        <button
+          type="button"
+          class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200"
+          (click)="limparBusca()"
+        >
+          Limpar
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="fornecedoresFiltrados.length === 0" class="empty-state">
+      Nenhum fornecedor com nota fiscal encontrado.
+    </div>
+
+    <div *ngIf="fornecedoresFiltrados.length > 0" class="table-shell">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fornecedor</th>
+            <th>CNPJ/CPF</th>
+            <th>Entregas</th>
+            <th>Notas</th>
+            <th>Volumes</th>
+            <th>Ultima nota</th>
+            <th>Ultima entrega</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let fornecedor of fornecedoresFiltrados">
+            <td>
+              <div class="primary-cell">
+                <strong>{{ fornecedor.nomeFornecedor }}</strong>
+              </div>
+            </td>
+            <td>{{ fornecedor.cnpjCpf || '-' }}</td>
+            <td>{{ fornecedor.totalEntregas }}</td>
+            <td>{{ fornecedor.totalNotas }}</td>
+            <td>{{ fornecedor.totalItensRecebidos }}</td>
+            <td>{{ fornecedor.ultimaNota || '-' }}</td>
+            <td>{{ fornecedor.ultimaEntrega ? (fornecedor.ultimaEntrega | date:'dd/MM/yyyy') : '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

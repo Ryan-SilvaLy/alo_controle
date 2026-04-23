@@ -1,0 +1,318 @@
+<div class="pedido-list-page p-3">
+  <h2 class="text-2xl font-semibold text-slate-900 mb-3">Pedidos Cadastrados</h2>
+
+  <div class="mb-3">
+    <a
+      *appHasPermission="['administrador', 'moderador', 'almoxarifado', 'compra']"
+      routerLink="/pedido/criar"
+      class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
+    >
+      <i class="fas fa-plus mr-2"></i>
+      Novo Pedido
+    </a>
+  </div>
+
+  <div class="filters-panel mb-3">
+    <div class="filters-grid">
+      <div class="filter-field">
+        <label for="filtro-status">Status</label>
+        <select id="filtro-status" [(ngModel)]="filtroStatus" class="filter-input">
+          <option value="pendente">Pendentes</option>
+          <option value="enviado">Enviados</option>
+          <option value="finalizado">Finalizados</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label for="filtro-grupo">Grupo</label>
+        <select id="filtro-grupo" [(ngModel)]="filtroGrupo" class="filter-input">
+          <option value="todos">Todos os grupos</option>
+          <option *ngFor="let grupo of gruposDisponiveis" [value]="grupo">{{ grupo }}</option>
+        </select>
+      </div>
+
+      <div class="filter-field filter-field-search">
+        <label for="filtro-busca">Busca</label>
+        <div class="search-inline">
+          <input
+            id="filtro-busca"
+            type="text"
+            [(ngModel)]="termoBusca"
+            class="filter-input"
+            placeholder="Codigo, grupo, setor..."
+          />
+          <button type="button" class="filter-reset" (click)="limparFiltros()">
+            Limpar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <p class="filters-helper">
+      Exibindo <strong>{{ pedidosFiltrados.length }}</strong> pedido(s) com filtro padrao em <strong>pendente</strong>.
+    </p>
+  </div>
+
+  <div class="overflow-x-auto rounded shadow-sm bg-white" *ngIf="pedidosFiltrados.length > 0">
+    <table class="pedido-table min-w-full divide-y divide-gray-300 text-sm text-gray-800">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3 font-medium">Codigo</th>
+          <th class="px-4 py-3 font-medium">Grupo</th>
+          <th class="px-4 py-3 font-medium">Setor Destino</th>
+          <th class="px-4 py-3 font-medium">Responsavel</th>
+          <th class="px-4 py-3 font-medium">Qtd. Itens</th>
+          <th class="px-4 py-3 font-medium">Criado em</th>
+          <th class="px-4 py-3 font-medium">Status alterado em</th>
+          <th class="px-4 py-3 font-medium">Criado por</th>
+          <th class="px-4 py-3 font-medium">Status</th>
+          <th class="px-4 py-3 font-medium text-center">Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let pedido of pedidosFiltrados" class="border-t">
+          <td class="px-4 py-2">{{ pedido.codigo_pedido }}</td>
+          <td class="px-4 py-2">{{ pedido.tipo_item_nome || 'Sem grupo' }}</td>
+          <td class="px-4 py-2">{{ pedido.setor_destino }}</td>
+          <td class="px-4 py-2">{{ pedido.responsavel_setor }}</td>
+          <td class="px-4 py-2 text-center">{{ pedido.itens?.length || 0 }}</td>
+          <td class="px-4 py-2 whitespace-nowrap">{{ pedido.criado_em | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td class="px-4 py-2 whitespace-nowrap">
+            {{ pedido.status_atualizado_em ? (pedido.status_atualizado_em | date:'dd/MM/yyyy HH:mm') : 'Ainda nao alterado' }}
+          </td>
+          <td class="px-4 py-2">{{ pedido.criado_por }}</td>
+          <td class="px-4 py-2 capitalize">
+            <span class="status-badge" [ngClass]="'status-' + pedido.status">
+              {{ pedido.status }}
+            </span>
+          </td>
+          <td class="px-4 py-2 text-center space-x-2">
+            <button
+              *ngIf="pedido.status !== 'finalizado'"
+              class="text-yellow-500 hover:text-yellow-700"
+              (click)="alterarStatusPedido(pedido)"
+              title="Alterar status do pedido"
+            >
+              <i class="fas fa-exchange-alt"></i>
+            </button>
+
+            <button
+              *ngIf="pedido.status === 'pendente'"
+              class="text-yellow-600 hover:text-yellow-800"
+              (click)="atualizarPedido(pedido)"
+              title="Atualizar pedido"
+            >
+              <i class="fas fa-pen"></i>
+            </button>
+
+            <button
+              class="text-gray-600 hover:text-gray-800"
+              (click)="imprimirPedido(pedido)"
+              title="Imprimir pedido"
+            >
+              <i class="fas fa-print"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="pedidos.length && !pedidosFiltrados.length" class="text-center text-gray-500 italic py-6">
+    Nenhum pedido encontrado com os filtros atuais.
+  </div>
+
+  <div *ngIf="!pedidos?.length" class="text-center text-gray-500 italic py-6">
+    Nenhum pedido cadastrado no momento.
+  </div>
+</div>
+
+<div *ngIf="pedidoSelecionado" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+    <h2 class="text-xl font-bold mb-4 text-slate-900">Alterar Status do Pedido</h2>
+
+    <p class="mb-2"><strong>Codigo:</strong> {{ pedidoSelecionado.codigo_pedido }}</p>
+    <p class="mb-2"><strong>Status Atual:</strong> {{ pedidoSelecionado.status | titlecase }}</p>
+
+    <label class="block mb-2 font-medium text-sm">Novo Status:</label>
+    <select [(ngModel)]="novoStatus" class="w-full border px-3 py-2 rounded-md">
+      <option *ngIf="pedidoSelecionado.status === 'pendente'" value="enviado">Enviado</option>
+      <option value="finalizado">Finalizado</option>
+    </select>
+
+    <div *ngIf="novoStatus === 'finalizado'" class="mt-4">
+      <label class="block mb-2 font-medium text-sm">Resultado Final:</label>
+      <select [(ngModel)]="motivoRecusado" class="w-full border px-3 py-2 rounded-md">
+        <option value="">Selecione</option>
+        <option value="recusado">Recusado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+      <p *ngIf="erroMotivo" class="text-red-600 text-sm mt-1">
+        O resultado final e obrigatorio.
+      </p>
+    </div>
+
+    <div class="flex justify-end space-x-2 mt-6">
+      <button class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400" (click)="fecharModal()">
+        Cancelar
+      </button>
+      <button
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        (click)="confirmarAlteracaoStatus()"
+        [disabled]="novoStatus === 'finalizado' && (!motivoRecusado || motivoRecusado.trim() === '')"
+      >
+        Atualizar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="pedidoParaEditar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+  <div class="bg-white rounded-xl p-6 w-full max-w-4xl shadow-lg">
+    <div class="flex items-start justify-between gap-4 mb-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">Editar Pedido</h2>
+        <p class="text-sm text-slate-600 mt-1">
+          Pedido {{ pedidoParaEditar.codigo_pedido }}. Ajuste quantidades, remova itens ou adicione outros do mesmo grupo.
+        </p>
+        <p class="text-sm text-slate-500 mt-1">
+          Grupo: <strong>{{ pedidoParaEditar.tipo_item_nome || 'Sem grupo' }}</strong>. Itens de outro grupo devem ser criados em outro pedido.
+        </p>
+      </div>
+      <button type="button" class="text-slate-500 hover:text-slate-700" (click)="fecharModalEdicaoPedido()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <div class="grid gap-3 md:grid-cols-[minmax(0,1fr)_120px_auto] md:items-end">
+        <div>
+          <label class="mb-1 block text-sm font-medium text-slate-700">Adicionar item do mesmo grupo</label>
+          <select [(ngModel)]="pedidoParaEditar.novoItemId" class="w-full rounded border border-slate-300 px-3 py-2 text-sm">
+            <option [ngValue]="null">Selecione um item</option>
+            <option *ngFor="let item of getItensDisponiveisParaEdicao()" [ngValue]="item.id">
+              {{ item.codigo }} - {{ item.nome }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-sm font-medium text-slate-700">Quantidade</label>
+          <input
+            [(ngModel)]="pedidoParaEditar.novaQuantidade"
+            type="number"
+            min="1"
+            step="1"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+        <button
+          type="button"
+          class="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-900"
+          (click)="adicionarItemNaEdicao()"
+        >
+          Adicionar
+        </button>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded border border-slate-200">
+      <table class="min-w-full divide-y divide-slate-200 text-sm text-slate-800">
+        <thead class="bg-slate-100 text-left">
+          <tr>
+            <th class="px-4 py-3 font-medium">Codigo</th>
+            <th class="px-4 py-3 font-medium">Nome</th>
+            <th class="px-4 py-3 font-medium text-center">Quantidade</th>
+            <th class="px-4 py-3 font-medium text-center">Ultima Entrada</th>
+            <th class="px-4 py-3 font-medium text-center">Acao</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of pedidoParaEditar.itens; let i = index" class="border-t">
+            <td class="px-4 py-3">{{ item.item_codigo }}</td>
+            <td class="px-4 py-3">{{ item.item_nome }}</td>
+            <td class="px-4 py-3 text-center">
+              <input
+                [(ngModel)]="item.quantidade_pedida"
+                type="number"
+                min="1"
+                step="1"
+                class="w-24 rounded border border-slate-300 px-2 py-1 text-center"
+              />
+            </td>
+            <td class="px-4 py-3 text-center">
+              {{ item.ultima_entrada_estoque ? (item.ultima_entrada_estoque | date:'dd/MM/yyyy') : 'Sem registro' }}
+            </td>
+            <td class="px-4 py-3 text-center">
+              <button
+                type="button"
+                class="text-red-600 hover:text-red-800"
+                (click)="removerItemDaEdicao(i)"
+                title="Remover item"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-5">
+      <button type="button" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400" (click)="fecharModalEdicaoPedido()">
+        Cancelar
+      </button>
+      <button type="button" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" (click)="salvarEdicaoPedido()">
+        Salvar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="pedidoSelecionadoParaImpressao" id="conteudo-impressao" style="display: none;" class="print-visible">
+  <h1>Pedido Nº {{ pedidoSelecionadoParaImpressao.codigo_pedido }}</h1>
+
+  <div class="pedido-info">
+    <p><span class="label">Grupo:</span> {{ pedidoSelecionadoParaImpressao.tipo_item_nome || 'Sem grupo' }}</p>
+    <p><span class="label">Setor de Destino:</span> {{ pedidoSelecionadoParaImpressao.setor_destino }}</p>
+    <p><span class="label">Responsavel pelo Setor:</span> {{ pedidoSelecionadoParaImpressao.responsavel_setor }}</p>
+    <p><span class="label">Criado por:</span> {{ pedidoSelecionadoParaImpressao.criado_por }}</p>
+    <p><span class="label">Criado em:</span> {{ pedidoSelecionadoParaImpressao.criado_em | date:'dd/MM/yyyy HH:mm' }}</p>
+    <p>
+      <span class="label">Status alterado em:</span>
+      {{ pedidoSelecionadoParaImpressao.status_atualizado_em ? (pedidoSelecionadoParaImpressao.status_atualizado_em | date:'dd/MM/yyyy HH:mm') : 'Ainda nao alterado' }}
+    </p>
+    <p><span class="label">Status:</span> {{ pedidoSelecionadoParaImpressao.status | titlecase }}</p>
+    <ng-container *ngIf="pedidoSelecionadoParaImpressao.status === 'finalizado'">
+      <p><span class="label">Resultado Final:</span> {{ pedidoSelecionadoParaImpressao.motivo_recusado | titlecase }}</p>
+    </ng-container>
+  </div>
+
+  <h2>Itens do Pedido:</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Codigo</th>
+        <th>Nome</th>
+        <th>Quantidade Pedida</th>
+        <th>Ultima Entrada</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of pedidoSelecionadoParaImpressao.itens">
+        <td>{{ item.id }}</td>
+        <td>{{ item.item_codigo }}</td>
+        <td>{{ item.item_nome }}</td>
+        <td class="text-center">{{ item.quantidade_pedida }}</td>
+        <td class="text-center">{{ item.ultima_entrada_estoque | date:'dd/MM/yyyy' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="footer-print">
+    Documento gerado automaticamente - {{ currentDate | date:'dd/MM/yyyy HH:mm' }}
+  </p>
+</div>

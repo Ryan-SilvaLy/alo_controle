@@ -1,0 +1,36 @@
+<div class="flex justify-between items-center mb-3">
+  <!-- Mostra itens por página -->
+  <div class="flex items-center gap-2">
+    <span class="pagination-label">Itens</span>
+    <select
+      [(ngModel)]="itensPorPagina"
+      (change)="alterarItensPorPagina(itensPorPagina)"
+      class="pagination-select mr-3"
+    >
+      <option *ngFor="let op of opcoesItensPorPagina" [value]="op">{{ op }}</option>
+    </select>
+  </div>
+
+  <!-- Navegação da página -->
+  <div class="flex items-center gap-2">
+    <button
+      (click)="irParaPagina(paginaAtual - 1)"
+      [disabled]="paginaAtual === 1"
+      class="pagination-btn"
+    >
+      &laquo; Anterior
+    </button>
+
+    <span class="pagination-info">
+      Página {{ paginaAtual }} de {{ totalPaginas }}
+    </span>
+
+    <button
+      (click)="irParaPagina(paginaAtual + 1)"
+      [disabled]="paginaAtual === totalPaginas"
+      class="pagination-btn"
+    >
+      Próximo &raquo;
+    </button>
+  </div>
+</div>

@@ -1,0 +1,12 @@
+<div
+  class="fixed top-10 left-1/2 transform -translate-x-1/2 z-[9999] px-4 py-2 rounded shadow-lg text-white transition-all duration-300"
+  [ngClass]="{
+    'bg-green-600': type === 'success',
+    'bg-red-600': type === 'error',
+    'bg-yellow-600': type === 'warning',
+    'bg-blue-600': type === 'info'
+  }"
+  *ngIf="visible"
+>
+  {{ message }}
+</div>

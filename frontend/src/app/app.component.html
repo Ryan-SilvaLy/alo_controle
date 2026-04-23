@@ -1,0 +1,8 @@
+<app-navbar *ngIf="shouldShowLayout()"></app-navbar>
+
+<main class="content">
+  <router-outlet></router-outlet>
+  <app-snackbar></app-snackbar>
+</main>
+
+<app-footer *ngIf="shouldShowLayout()"></app-footer>

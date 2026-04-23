@@ -1,0 +1,154 @@
+<div class="pedido-list-page p-3">
+
+  <!-- HEADER -->
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h2 class="text-2xl font-semibold text-slate-900 mb-1">Criar Usuário</h2>
+      <p class="text-sm text-slate-500 mb-0">
+        Preencha os dados de acesso e identificação do novo usuário.
+      </p>
+    </div>
+
+<button
+  type="button"
+  routerLink="/admin/iniciar"
+  class="bg-gray-200 hover:bg-gray-300 text-slate-700 px-3 py-2 rounded text-sm flex items-center gap-2"
+>
+  <i class="fas fa-arrow-left"></i>
+  Voltar
+</button>
+  </div>
+
+  <!-- FORM -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+    <form [formGroup]="form" (ngSubmit)="criarUsuario()" novalidate>
+
+      <div class="grid gap-3 md:grid-cols-3">
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Username *</label>
+          <input
+            maxlength="20"
+            formControlName="username"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Ex: joao.silva"
+          />
+          <p class="text-xs text-slate-500 mt-1 mb-0">Login sem espaços.</p>
+          <p class="text-red-500 text-xs mt-1" *ngIf="form.get('username')?.touched && form.get('username')?.errors">
+            <span *ngIf="form.get('username')?.errors?.['required']">Campo obrigatório.</span>
+            <span *ngIf="form.get('username')?.errors?.['pattern']">
+              Use letras, números, _ . -
+            </span>
+          </p>
+        </div>
+
+        <!-- Nome -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nome *</label>
+          <input
+            maxlength="50"
+            formControlName="nome"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Nome completo"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="form.get('nome')?.touched && form.get('nome')?.errors">
+            Campo obrigatório.
+          </p>
+        </div>
+
+        <!-- Permissão -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Permissão *</label>
+          <select
+            formControlName="nivel_permissao"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Selecione</option>
+            <option *ngFor="let nivel of niveisPermissao" [value]="nivel">{{ nivel }}</option>
+          </select>
+        </div>
+
+        <!-- Cargo -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Cargo *</label>
+          <input
+            maxlength="50"
+            formControlName="cargo"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Ex: Porteiro"
+          />
+        </div>
+
+        <!-- Setor -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Setor *</label>
+          <input
+            maxlength="50"
+            formControlName="setor"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Ex: Portaria"
+          />
+        </div>
+
+        <!-- Senha -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Senha *</label>
+          <input
+            maxlength="20"
+            type="password"
+            formControlName="password"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Mínimo 6 caracteres"
+          />
+        </div>
+
+        <!-- Confirmar Senha -->
+        <div class="md:col-span-3">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar Senha *</label>
+          <input
+            maxlength="20"
+            type="password"
+            formControlName="confirmarSenha"
+            class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Digite novamente a senha"
+          />
+          <p class="text-red-500 text-xs mt-1" *ngIf="form.errors?.['senhasDiferentes'] && form.get('confirmarSenha')?.touched">
+            As senhas não coincidem.
+          </p>
+        </div>
+      </div>
+
+      <!-- ERRO -->
+      <div class="mt-3" *ngIf="erro">
+        <p class="text-red-500 text-sm mb-0">{{ erro }}</p>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="flex justify-between items-center flex-wrap gap-2 mt-4 pt-3 border-t border-slate-200">
+        <p class="text-xs text-slate-500 mb-0">
+          Campos com * são obrigatórios.
+        </p>
+
+        <div class="flex gap-2">
+        <button
+  type="button"
+  routerLink="/admin/iniciar"
+  class="bg-gray-300 px-3 py-2 rounded text-sm hover:bg-gray-400"
+>
+  Cancelar
+</button>
+
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
+            [disabled]="form.invalid"
+          >
+            Criar
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>

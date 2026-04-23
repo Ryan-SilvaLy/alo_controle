@@ -1,0 +1,96 @@
+.detail-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.header-row,
+.summary-card,
+.table-card,
+.state-card {
+  background: #fff;
+  border: 1px solid #d8e0e7;
+  border-radius: 18px;
+  padding: 1rem 1.25rem;
+}
+
+.header-row,
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.eyebrow {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #2f6c59;
+  font-weight: 700;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+}
+
+.summary-card span {
+  display: block;
+  color: #64748b;
+  margin-bottom: 0.35rem;
+}
+
+.summary-card strong {
+  font-size: 1.05rem;
+  color: #0f172a;
+  text-transform: capitalize;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #0f172a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.table-shell {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.9rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+th {
+  color: #64748b;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.status-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-cancelado {
+  background: #fee2e2;
+  color: #b91c1c;
+}

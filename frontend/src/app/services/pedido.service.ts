@@ -1,0 +1,75 @@
+import { Injectable } from '@angular/core';
+import { AuthenticationService } from './authentication.service';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PedidoService {
+  private baseUrl = 'http://127.0.0.1:8000/api/pedido/';
+  private pedido: any = null;
+  private pedidoSelecionado = null;
+  
+  constructor(
+    private authService: AuthenticationService,
+    private http: HttpClient
+  ) {}
+
+
+  setPedido(pedido: any) {
+    this.pedidoSelecionado = pedido;
+    localStorage.setItem('pedidoSelecionado', JSON.stringify(pedido));
+  }
+
+  getPedido() {
+    if (!this.pedidoSelecionado) {
+      const salvo = localStorage.getItem('pedidoSelecionado');
+      if (salvo) {
+        this.pedidoSelecionado = JSON.parse(salvo);
+      }
+    }
+    return this.pedidoSelecionado;
+  }
+
+  limparPedido() {
+    this.pedidoSelecionado = null;
+    localStorage.removeItem('pedidoSelecionado');
+  }
+
+  
+  atualizarStatusPedido(id: number, status: string, motivoRecusado?: string): Observable<any> {
+    const body: any = { status };
+    if (motivoRecusado) {
+      body.motivo_recusado = motivoRecusado;
+    }
+
+    return this.http.patch(`${this.baseUrl}atualizar-status/${id}/`, body, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  atualizarPedido(id: number, body: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}atualizar/${id}/`, body, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  buscarPedidoPorId(id: number): Observable<any> {
+    return this.http.get(`${this.baseUrl}buscar/${id}/`, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  listarPedidos(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}listar/`, { headers: this.authService.getAuthHeaders() });
+  }
+
+
+  criarPedido(body: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}criar/`, body, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+}

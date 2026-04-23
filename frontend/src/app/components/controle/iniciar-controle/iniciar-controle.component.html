@@ -1,0 +1,334 @@
+<div class="controle-page">
+  <div class="controle-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <span class="eyebrow">Painel de movimentacoes</span>
+        <h1>Controle de entradas e saidas do estoque</h1>
+        <p>
+          Acompanhe as ultimas movimentacoes e prepare a base visual para um dashboard futuro,
+          mas com uma leitura mais operacional e compacta desde agora.
+        </p>
+      </div>
+    </section>
+
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span class="metric-label">Total de movimentacoes</span>
+        <strong class="metric-value">{{ getTotalMovimentacoes() }}</strong>
+        <small class="metric-note">Entradas e saidas carregadas neste painel</small>
+      </article>
+
+      <article class="metric-card metric-card-entry">
+        <span class="metric-label">Itens movimentados</span>
+        <strong class="metric-value">{{ getTotalItensMovimentados() }}</strong>
+        <small class="metric-note">Itens consolidados a partir dos registros recentes</small>
+      </article>
+
+      <article class="metric-card metric-card-exit">
+        <span class="metric-label">Itens em blocos</span>
+        <strong class="metric-value">{{ getItensComBloco() }}</strong>
+        <small class="metric-note">Itens que ja apareceram em algum bloco de saida</small>
+      </article>
+
+      <article class="metric-card">
+        <span class="metric-label">Ultima movimentacao</span>
+        <strong class="metric-value metric-value-sm">{{ getUltimaMovimentacaoLabel() }}</strong>
+        <small class="metric-note">Data mais recente entre entradas e saidas</small>
+      </article>
+    </section>
+
+    <div *ngIf="carregando" class="feedback-state">Carregando movimentacoes...</div>
+    <div *ngIf="erro" class="feedback-state feedback-error">{{ erro }}</div>
+
+    <section *ngIf="!carregando && !erro" class="panel-card">
+      <div class="panel-header panel-header-tight">
+        <div>
+          <span class="panel-tag">Itens</span>
+          <h2>Itens por movimentacao</h2>
+        </div>
+        <p>{{ itensConsolidados.length }} linha(s) visiveis</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="toolbar-filters">
+          <div class="toolbar-field">
+            <label for="filtro-tipo">Tipo</label>
+            <select id="filtro-tipo" [(ngModel)]="filtroTipo" class="toolbar-input">
+              <option value="todos">Todos</option>
+              <option value="entrada">Entradas</option>
+              <option value="saida">Saidas</option>
+            </select>
+          </div>
+
+          <div class="toolbar-field toolbar-search">
+            <label for="termo-busca">Buscar</label>
+            <input
+              id="termo-busca"
+              type="text"
+              [(ngModel)]="termoBusca"
+              class="toolbar-input"
+              placeholder="Item, codigo, bloco, solicitante..."
+            />
+          </div>
+
+          <button
+            type="button"
+            class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200"
+            (click)="limparFiltros()"
+          >
+            Limpar
+          </button>
+        </div>
+
+        <div class="toolbar-actions">
+          <button
+            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
+            (click)="registrarEntrada()"
+          >
+            Nova Entrada
+          </button>
+
+          <button
+            class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
+            (click)="registrarSaida()"
+          >
+            Nova Saida
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="itensConsolidados.length === 0" class="empty-state">
+        Nenhum item encontrado com os filtros atuais.
+      </div>
+
+      <div class="table-shell" *ngIf="itensConsolidados.length > 0">
+        <table class="movement-table movement-table-unified">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Item</th>
+              <th>Qtd.</th>
+              <th>Referencia</th>
+              <th>Bloco / Documento</th>
+              <th>Data</th>
+              <th class="actions-col">Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let itemResumo of itensConsolidadosPaginados">
+              <td>
+                <span
+                  class="movement-badge"
+                  [ngClass]="itemResumo.tipo === 'entrada' ? 'movement-badge-entry' : 'movement-badge-exit'"
+                >
+                  {{ itemResumo.statusLabel }}
+                </span>
+              </td>
+
+              <td class="item-main-col">
+                <div class="item-main">
+                  <strong>{{ itemResumo.nome }}</strong>
+                  <span>Cod. {{ itemResumo.codigo }}</span>
+                </div>
+              </td>
+
+              <td class="center-col">
+                <span class="items-count">{{ itemResumo.quantidade }}</span>
+              </td>
+
+              <td>#{{ itemResumo.referencia }}</td>
+              <td>{{ itemResumo.principal }}</td>
+              <td>{{ itemResumo.data | date:'dd/MM/yyyy' }}</td>
+
+              <td class="actions-col">
+                <div class="table-actions">
+                  <button (click)="visualizarUltimoRegistro(itemResumo)" class="icon-button" title="Ver movimentacao">
+                    <i class="fas fa-box-open"></i>
+                  </button>
+
+                  <button (click)="editarUltimoRegistro(itemResumo)" class="icon-button" title="Editar movimentacao">
+                    <i class="fas fa-edit"></i>
+                  </button>
+
+                  <button (click)="imprimirUltimoRegistro(itemResumo)" class="icon-button icon-button-print" title="Imprimir movimentacao">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar" *ngIf="itensConsolidados.length > itensPorPagina">
+        <span>Pagina {{ paginaAtual > totalPaginas ? totalPaginas : paginaAtual }} de {{ totalPaginas }}</span>
+
+        <div class="pagination-actions">
+          <button
+            type="button"
+            class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="paginaAnterior()"
+            [disabled]="paginaAtual <= 1"
+          >
+            Anterior
+          </button>
+
+          <button
+            type="button"
+            class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            (click)="proximaPagina()"
+            [disabled]="paginaAtual >= totalPaginas"
+          >
+            Proxima
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div
+      *ngIf="!carregando && !erro && movimentacoes.entradas.length === 0 && movimentacoes.saidas.length === 0"
+      class="feedback-state"
+    >
+      Nenhuma movimentacao registrada.
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE VISUALIZACAO -->
+<div *ngIf="modalAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-gray-800">{{ tituloModal }}</h3>
+      <button (click)="fecharModal()" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div *ngIf="itensModal.length === 0" class="text-gray-600">
+      Nenhum item encontrado.
+    </div>
+
+    <ul *ngIf="itensModal.length > 0" class="space-y-2">
+      <li *ngFor="let item of itensModalPaginados" class="border rounded p-3 bg-gray-50">
+        <div class="flex justify-between">
+          <div>
+            <strong>{{ item.item_nome || item.produto_nome }}</strong>
+            <div class="text-sm text-gray-600">Quantidade: {{ item.quantidade }}</div>
+            <div class="text-sm text-gray-600" *ngIf="item.patrimonio">Patrimonio: {{ item.patrimonio }}</div>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <div class="pagination-bar pagination-bar-modal" *ngIf="itensModal.length > itensModalPorPagina">
+      <span>Pagina {{ paginaModalAtual > totalPaginasModal ? totalPaginasModal : paginaModalAtual }} de {{ totalPaginasModal }}</span>
+      <div class="pagination-actions">
+        <button
+          type="button"
+          class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          (click)="paginaAnteriorModal()"
+          [disabled]="paginaModalAtual <= 1"
+        >
+          Anterior
+        </button>
+
+        <button
+          type="button"
+          class="inline-block bg-slate-200 text-slate-800 px-4 py-2 rounded hover:bg-slate-300 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          (click)="proximaPaginaModal()"
+          [disabled]="paginaModalAtual >= totalPaginasModal"
+        >
+          Proxima
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE EXCLUSAO -->
+<div *ngIf="modalExclusaoAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar Exclusao</h3>
+
+    <p class="mb-4">
+      Tem certeza que deseja excluir {{ tipoExclusao === 'entrada' ? 'a entrada' : 'a saida' }}
+      <strong>#{{ registroParaExcluir?.id }}</strong>?
+    </p>
+
+    <p class="text-sm text-gray-600 mb-6">Esta acao nao pode ser desfeita.</p>
+
+    <div class="flex justify-end space-x-3">
+      <button
+        (click)="fecharModalExclusao()"
+        class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+      >
+        Cancelar
+      </button>
+
+      <button
+        (click)="confirmarExclusao()"
+        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+      >
+        Excluir
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE NOVA ENTRADA -->
+<div
+  *ngIf="modalEntradaAberto"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-3"
+  (click)="fecharModalEntrada()"
+>
+  <div
+    class="bg-white rounded-lg shadow-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto relative"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white z-10">
+      <h3 class="text-base font-semibold text-gray-800">Registrar entrada</h3>
+
+      <button
+        type="button"
+        (click)="fecharModalEntrada()"
+        class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 hover:text-red-600"
+        aria-label="Fechar modal de entrada"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="p-3">
+      <app-registrar-entrada></app-registrar-entrada>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DE NOVA SAIDA -->
+<div
+  *ngIf="modalSaidaAberto"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-3"
+  (click)="fecharModalSaida()"
+>
+  <div
+    class="bg-white rounded-lg shadow-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto relative"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 sticky top-0 bg-white z-10">
+      <h3 class="text-base font-semibold text-gray-800">Registrar saída</h3>
+
+      <button
+        type="button"
+        (click)="fecharModalSaida()"
+        class="w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 text-gray-500 hover:text-red-600"
+        aria-label="Fechar modal de saída"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="p-3">
+      <app-registrar-saida></app-registrar-saida>
+    </div>
+  </div>
+</div>

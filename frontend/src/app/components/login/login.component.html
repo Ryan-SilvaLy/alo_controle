@@ -1,0 +1,52 @@
+<div class="login-page">
+  <div class="login-card">
+    <h2 class="login-title">Login</h2>
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+      <div class="form-group">
+        <label for="username">Usuário</label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          [(ngModel)]="username"
+          maxlength="20"
+          required
+          #usernameInput="ngModel"
+          [class.invalid]="usernameInput.invalid && usernameInput.touched"
+        />
+      </div>
+
+      <div class="form-group" style="position: relative;">
+        <label for="password">Senha</label>
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          id="password"
+          name="password"
+          [(ngModel)]="password"
+          maxlength="20"
+          required
+          #passwordInput="ngModel"
+          [class.invalid]="passwordInput.invalid && passwordInput.touched"
+        />
+
+        <!-- Ícone de olho -->
+        <i
+          class="fa-solid"
+          [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+          (click)="showPassword = !showPassword"
+          style="position: absolute; right: 10px; top: 36px; cursor: pointer;"
+        ></i>
+      </div>
+
+
+      <button type="submit" [disabled]="loading || loginForm.invalid">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>

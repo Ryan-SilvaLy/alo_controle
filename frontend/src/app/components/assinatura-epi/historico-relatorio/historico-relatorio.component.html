@@ -1,0 +1,67 @@
+<div class="history-page">
+  <div class="header-row">
+    <div>
+      <span class="eyebrow">Historico</span>
+      <h1 *ngIf="competencia">{{ competencia.solicitante_nome }} - {{ competencia.competencia_label }}</h1>
+    </div>
+
+    <div class="header-actions">
+      <a *ngIf="competencia" [routerLink]="['/assinatura-epi/detalhe', competencia.id]" class="btn-secondary">Detalhes</a>
+      <a routerLink="/assinatura-epi/iniciar" class="btn-secondary">Voltar</a>
+    </div>
+  </div>
+
+  <div *ngIf="carregando" class="state-card">Carregando historico de relatorios...</div>
+
+  <section *ngIf="!carregando && competencia" class="table-card">
+    <div class="table-shell">
+      <table>
+        <thead>
+          <tr>
+            <th>Relatorio</th>
+            <th>Data geracao</th>
+            <th>Status</th>
+            <th>Itens</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let relatorio of competencia.relatorios">
+            <td>#{{ relatorio.sequencia_relatorio }}</td>
+            <td>{{ relatorio.gerado_em | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="status-pill" [class.status-ok]="relatorio.status_assinatura === 'assinado'">
+                {{ relatorio.status_assinatura }}
+              </span>
+            </td>
+            <td>{{ relatorio.quantidade_itens }}</td>
+            <td>
+              <div class="actions">
+                <button
+                  type="button"
+                  class="btn-primary"
+                  [disabled]="carregandoRelatorioId === relatorio.id"
+                  (click)="imprimirRelatorio(relatorio)"
+                >
+                  Imprimir
+                </button>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  [disabled]="relatorio.status_assinatura === 'assinado' || carregandoRelatorioId === relatorio.id"
+                  (click)="marcarAssinado(relatorio)"
+                >
+                  Marcar assinado
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <tr *ngIf="competencia.relatorios.length === 0">
+            <td colspan="5">Nenhum relatorio foi gerado para esta competencia.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

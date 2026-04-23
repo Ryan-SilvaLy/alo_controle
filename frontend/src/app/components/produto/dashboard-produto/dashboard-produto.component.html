@@ -1,0 +1,398 @@
+<div class="dashboard-page">
+  <section class="dashboard-hero">
+    <div class="hero-copy">
+      <span class="hero-eyebrow">Dashboard de estoque</span>
+      <h1>Visao executiva do almoxarifado</h1>
+      <p>
+        Painel com dados reais de itens, movimentacoes, pedidos e fornecedores,
+        organizado para leitura rapida e tomada de decisao.
+      </p>
+    </div>
+
+    <div class="hero-actions">
+      <label class="period-field">
+        <span>Periodo</span>
+        <select [(ngModel)]="periodoSelecionado" (ngModelChange)="carregarDashboard()">
+          <option value="geral">Historico completo</option>
+          <option value="7d">Ultimos 7 dias</option>
+          <option value="30d">Ultimos 30 dias</option>
+          <option value="90d">Ultimos 90 dias</option>
+        </select>
+      </label>
+
+      <a
+        routerLink="/produto/iniciar"
+        class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200 no-underline"
+      >
+        Voltar ao painel
+      </a>
+    </div>
+  </section>
+
+  <div *ngIf="carregando" class="state-card">
+    Carregando dados do dashboard...
+  </div>
+
+  <div *ngIf="erro" class="state-card state-error">
+    {{ erro }}
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro">
+    <section class="metric-grid">
+      <article
+        *ngFor="let metrica of metricas"
+        class="metric-card"
+        [ngClass]="{
+          'metric-info': metrica.tone === 'info',
+          'metric-warning': metrica.tone === 'warning',
+          'metric-danger': metrica.tone === 'danger'
+        }"
+      >
+        <span class="metric-label">{{ metrica.label }}</span>
+        <strong class="metric-value">{{ metrica.value }}</strong>
+        <small class="metric-note">{{ metrica.note }}</small>
+      </article>
+    </section>
+
+    <section class="summary-row">
+      <article class="panel-card panel-highlight">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Status atual</span>
+            <h2>Radar operacional</h2>
+          </div>
+          <p>{{ tituloPeriodo }}</p>
+        </div>
+
+        <div class="highlight-grid">
+          <div>
+            <span class="mini-label">Pedidos em aberto</span>
+            <strong>{{ statusPendentes }}</strong>
+          </div>
+          <div>
+            <span class="mini-label">Itens criticos</span>
+            <strong>{{ estoqueCritico.length }}</strong>
+          </div>
+          <div>
+            <span class="mini-label">Ultima atualizacao</span>
+            <strong>{{ ultimaAtualizacao ? (ultimaAtualizacao | date:'dd/MM/yyyy HH:mm') : '-' }}</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Acoes rapidas</span>
+            <h2>Navegacao</h2>
+          </div>
+        </div>
+
+        <div class="quick-links">
+          <a routerLink="/item/estoque-baixo">Estoque baixo</a>
+          <a routerLink="/controle/iniciar">Movimentacoes</a>
+          <a routerLink="/pedido/listar">Pedidos</a>
+          <a routerLink="/produto/criar">Fornecedores</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+   
+    <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Entradas</span>
+            <h2>Radar circular de recebimento</h2>
+          </div>
+          <p>Item, grupo e fornecedor com maior entrada</p>
+        </div>
+
+        <div *ngIf="!entradaChartSlices.length" class="panel-empty">
+          Sem dados suficientes de entrada para gerar o grafico.
+        </div>
+
+        <div class="donut-layout" *ngIf="entradaChartSlices.length">
+          <div class="donut-shell">
+            <div class="donut-chart" [style.background]="entradaChartStyle">
+              <div class="donut-center">
+                <strong>{{ entradaChartTotal }}</strong>
+                <span>un. de entrada</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="donut-legend">
+            <div class="legend-row" *ngFor="let slice of entradaChartSlices">
+              <span class="legend-dot" [style.background]="slice.color"></span>
+              <div class="legend-copy">
+                <strong>{{ slice.label }}</strong>
+                <span>{{ slice.subtitle }}</span>
+              </div>
+              <div class="legend-value">{{ slice.value }}</div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Saidas</span>
+            <h2>Radar circular de lideranca</h2>
+          </div>
+          <p>Item, grupo e setor com maior saida</p>
+        </div>
+
+        <div *ngIf="!saidaChartSlices.length" class="panel-empty">
+          Sem dados suficientes de saida para gerar o grafico.
+        </div>
+
+        <div class="donut-layout" *ngIf="saidaChartSlices.length">
+          <div class="donut-shell">
+            <div class="donut-chart" [style.background]="saidaChartStyle">
+              <div class="donut-center">
+                <strong>{{ saidaChartTotal }}</strong>
+                <span>un. de saida</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="donut-legend">
+            <div class="legend-row" *ngFor="let slice of saidaChartSlices">
+              <span class="legend-dot" [style.background]="slice.color"></span>
+              <div class="legend-copy">
+                <strong>{{ slice.label }}</strong>
+                <span>{{ slice.subtitle }}</span>
+              </div>
+              <div class="legend-value">{{ slice.value }}</div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Desempenho</span>
+            <h2>Movimento por grupo</h2>
+          </div>
+          <p>Mais ativos no periodo</p>
+        </div>
+
+        <div class="table-shell">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Itens</th>
+                <th>Estoque</th>
+                <th>Entradas</th>
+                <th>Saidas</th>
+                <th>Movs.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let grupo of gruposResumo">
+                <td>{{ grupo.nome }}</td>
+                <td>{{ grupo.itens }}</td>
+                <td>{{ grupo.estoque }}</td>
+                <td>{{ grupo.entradas }}</td>
+                <td>{{ grupo.saidas }}</td>
+                <td>{{ grupo.movimentacoes }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Fornecedor</span>
+            <h2>Principais parceiros</h2>
+          </div>
+          <p>Baseado em notas fiscais</p>
+        </div>
+
+        <div class="table-shell">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fornecedor</th>
+                <th>Documento</th>
+                <th>Entregas</th>
+                <th>Notas</th>
+                <th>Volumes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fornecedor of fornecedoresResumo">
+                <td>{{ fornecedor.nome }}</td>
+                <td>{{ fornecedor.documento }}</td>
+                <td>{{ fornecedor.entregas }}</td>
+                <td>{{ fornecedor.notas }}</td>
+                <td>{{ fornecedor.volumes }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Pedidos</span>
+            <h2>Quem mais pede</h2>
+          </div>
+          <p>Setores e solicitantes lideres</p>
+        </div>
+
+        <div class="dual-ranking">
+          <div>
+            <h3 class="subheading">Setores</h3>
+            <div class="list-stack">
+              <div class="list-row" *ngFor="let setor of setoresMaisPedem">
+                <div>
+                  <strong>{{ setor.nome }}</strong>
+                  <span>{{ setor.itens }} item(ns) solicitados</span>
+                </div>
+                <div class="list-meta">
+                  <strong>{{ setor.pedidos }}</strong>
+                  <small>pedido(s)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="subheading">Solicitantes</h3>
+            <div class="list-stack">
+              <div class="list-row" *ngFor="let solicitante of solicitantesMaisPedem">
+                <div>
+                  <strong>{{ solicitante.nome }}</strong>
+                  <span>{{ solicitante.itens }} item(ns) solicitados</span>
+                </div>
+                <div class="list-meta">
+                  <strong>{{ solicitante.pedidos }}</strong>
+                  <small>pedido(s)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Saidas</span>
+            <h2>Itens que mais saem</h2>
+          </div>
+          <p>Maior consumo no periodo</p>
+        </div>
+
+        <div *ngIf="!itensMaisSaem.length" class="panel-empty">
+          Nenhuma saida registrada no periodo selecionado.
+        </div>
+
+        <div class="table-shell" *ngIf="itensMaisSaem.length">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Codigo</th>
+                <th>Item</th>
+                <th>Grupo</th>
+                <th>Qtd. saida</th>
+                <th>Movs.</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of itensMaisSaem">
+                <td>{{ item.codigo }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.grupo }}</td>
+                <td>{{ item.quantidadeSaida }}</td>
+                <td>{{ item.movimentacoes }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+    <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Atencao</span>
+            <h2>Itens em estoque critico</h2>
+          </div>
+          <p>Top {{ estoqueCritico.length }}</p>
+        </div>
+
+        <div *ngIf="!estoqueCritico.length" class="panel-empty">
+          Nenhum item abaixo do minimo neste recorte.
+        </div>
+
+        <div class="table-shell" *ngIf="estoqueCritico.length">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Codigo</th>
+                <th>Item</th>
+                <th>Grupo</th>
+                <th>Atual</th>
+                <th>Minimo</th>
+                <th>Deficit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of estoqueCritico">
+                <td>{{ item.codigo }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.grupo }}</td>
+                <td>{{ item.quantidadeAtual }}</td>
+                <td>{{ item.quantidadeMinima }}</td>
+                <td class="danger-cell">{{ item.deficit }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Pedidos</span>
+            <h2>Fila operacional</h2>
+          </div>
+          <p>Pendentes e enviados</p>
+        </div>
+
+        <div *ngIf="!pedidosPendentes.length" class="panel-empty">
+          Nenhum pedido aberto no momento.
+        </div>
+
+        <div class="list-stack" *ngIf="pedidosPendentes.length">
+          <div class="list-row" *ngFor="let pedido of pedidosPendentes">
+            <div>
+              <strong>{{ pedido.codigo }}</strong>
+              <span>{{ pedido.grupo }} - {{ pedido.setor }}</span>
+            </div>
+            <div class="list-meta">
+              <span class="status-pill" [ngClass]="'status-' + pedido.status">{{ pedido.status }}</span>
+              <small>{{ pedido.itens }} item(ns)</small>
+              <small>{{ pedido.criadoEm ? (pedido.criadoEm | date:'dd/MM/yyyy') : '-' }}</small>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </ng-container>
+</div>

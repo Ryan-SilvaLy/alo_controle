@@ -1,0 +1,299 @@
+<form
+  [formGroup]="form"
+  (ngSubmit)="confirmar()"
+  class="max-w-5xl mx-auto p-2"
+>
+  <div class="bg-white border border-gray-200 rounded-md shadow-sm">
+    <!-- Cabeçalho -->
+    <div class="px-3 py-2 border-b border-gray-200">
+      <h2 class="text-base font-semibold text-gray-800">
+        {{ modoEdicao ? 'Editar saída' : 'Registrar saída' }}
+      </h2>
+    </div>
+
+    <div class="p-3 space-y-4">
+      <!-- loading -->
+      <div *ngIf="carregandoRegistro" class="text-xs text-gray-500">
+        Carregando dados da saída...
+      </div>
+
+      <!-- Bloco principal -->
+      <section class="space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Dados gerais
+        </h3>
+
+        <div class="grid grid-cols-12 gap-3">
+          <div class="col-span-12 md:col-span-3">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Bloco de Requisição <span class="text-red-500">*</span>
+            </label>
+            <input
+              formControlName="bloco_requisicao"
+              maxlength="15"
+              placeholder="Número do bloco"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <div
+              *ngIf="form.get('bloco_requisicao')?.touched && form.get('bloco_requisicao')?.invalid"
+              class="mt-1 text-[11px] text-red-600"
+            >
+              Informe apenas números.
+            </div>
+          </div>
+
+          <div class="col-span-12 md:col-span-4">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Setor Destino <span class="text-red-500">*</span>
+            </label>
+            <input
+              maxlength="50"
+              formControlName="setor"
+              placeholder="Setor solicitante"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <div
+              *ngIf="form.get('setor')?.touched && form.get('setor')?.invalid"
+              class="mt-1 text-[11px] text-red-600"
+            >
+              Campo obrigatório.
+            </div>
+          </div>
+
+          <div class="col-span-12 md:col-span-3">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Responsável <span class="text-red-500">*</span>
+            </label>
+            <input
+              maxlength="40"
+              formControlName="responsavel"
+              placeholder="Responsável"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <div
+              *ngIf="form.get('responsavel')?.touched && form.get('responsavel')?.invalid"
+              class="mt-1 text-[11px] text-red-600"
+            >
+              Campo obrigatório.
+            </div>
+          </div>
+
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Observação
+            </label>
+            <input
+              formControlName="observacao"
+              maxlength="150"
+              placeholder="Observação"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Itens -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Itens de saída
+          </h3>
+
+          <button
+            type="button"
+            (click)="adicionarItem()"
+            class="text-xs text-blue-600 hover:underline"
+          >
+            + Adicionar item
+          </button>
+        </div>
+
+        <div *ngIf="itens.controls.length === 0" class="text-xs text-gray-500">
+          Nenhum item adicionado.
+        </div>
+
+        <div formArrayName="itens" class="space-y-2">
+          <div
+            *ngFor="let itemGroup of itens.controls; let i = index"
+            [formGroupName]="i"
+            class="border border-gray-200 rounded p-2"
+          >
+            <div class="grid grid-cols-12 gap-2 items-end">
+              <div class="col-span-12 md:col-span-1">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  #
+                </label>
+                <div class="h-[34px] flex items-center text-sm text-gray-600 px-2 border border-gray-200 rounded bg-gray-50">
+                  {{ i + 1 }}
+                </div>
+              </div>
+
+              <div class="col-span-12 md:col-span-4">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  Item
+                </label>
+                <select
+                  formControlName="item"
+                  (change)="onItemSelecionado(i)"
+                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
+                >
+                  <option value="">Selecione um item</option>
+                  <option
+                    *ngFor="let item of getItensDisponiveisParaSelect(i)"
+                    [value]="item.id"
+                  >
+                    {{ item.codigo }} - {{ item.nome }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="col-span-12 md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  Quantidade
+                </label>
+                <input
+                  formControlName="quantidade"
+                  type="number"
+                  min="1"
+                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div class="col-span-12 md:col-span-3">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  Solicitante
+                </label>
+                <input
+                  formControlName="solicitante"
+                  maxlength="30"
+                  placeholder="Solicitante"
+                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div class="col-span-12 md:col-span-2">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  Patrimônio
+                </label>
+                <input
+                  formControlName="patrimonio"
+                  maxlength="50"
+                  placeholder="Patrimônio"
+                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
+                />
+              </div>
+
+              <div class="col-span-12">
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    (click)="removerItem(i)"
+                    class="w-full md:w-auto h-[34px] px-3 border border-red-200 text-red-600 rounded text-xs hover:bg-red-50"
+                  >
+                    Remover
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ação -->
+      <div class="flex justify-end pt-1">
+        <button
+          type="submit"
+          [disabled]="!form.valid || !temItemValido() || carregandoRegistro"
+          class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium px-4 py-1.5 rounded text-sm"
+        >
+          {{ modoEdicao ? 'Salvar alterações' : 'Confirmar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- Modal -->
+<div
+  *ngIf="mostrarModalConfirmacao"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-2"
+>
+  <div class="bg-white rounded-md shadow-lg w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+    <div class="px-3 py-2 border-b border-gray-200">
+      <h2 class="text-sm font-semibold text-gray-800">
+        {{ modoEdicao ? 'Confirmação de edição da saída' : 'Confirmação de saída' }}
+      </h2>
+    </div>
+
+    <div class="p-3 space-y-4 text-sm text-gray-700">
+      <div class="grid grid-cols-12 gap-3">
+        <div class="col-span-12 md:col-span-4">
+          <p><strong>Bloco:</strong> {{ form.value.bloco_requisicao }}</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-4">
+          <p><strong>Setor:</strong> {{ form.value.setor }}</p>
+        </div>
+
+        <div class="col-span-12 md:col-span-4">
+          <p><strong>Responsável:</strong> {{ form.value.responsavel }}</p>
+        </div>
+
+        <div class="col-span-12" *ngIf="form.value.observacao">
+          <p><strong>Observação:</strong> {{ form.value.observacao }}</p>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+          Itens
+        </p>
+
+        <div class="space-y-2">
+          <div
+            *ngFor="let item of form.value.itens; let idx = index"
+            class="grid grid-cols-12 gap-2 border border-gray-200 rounded p-2"
+          >
+            <div class="col-span-12 md:col-span-1 text-sm text-gray-500">
+              {{ idx + 1 }}
+            </div>
+
+            <div class="col-span-12 md:col-span-4">
+              {{ getItemNome(item.item) }}
+            </div>
+
+            <div class="col-span-12 md:col-span-2">
+              <strong>Qtd:</strong> {{ item.quantidade }}
+            </div>
+
+            <div class="col-span-12 md:col-span-3" *ngIf="item.solicitante">
+              <strong>Solicitante:</strong> {{ item.solicitante }}
+            </div>
+
+            <div class="col-span-12 md:col-span-2" *ngIf="item.patrimonio">
+              <strong>Patrimônio:</strong> {{ item.patrimonio }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-3 py-2 border-t border-gray-200 flex justify-end gap-2">
+      <button
+        type="button"
+        class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
+        (click)="cancelarConfirmacao()"
+      >
+        Cancelar
+      </button>
+
+      <button
+        type="button"
+        class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+        (click)="confirmarEnvio()"
+      >
+        {{ modoEdicao ? 'Salvar alterações' : 'Confirmar' }}
+      </button>
+    </div>
+  </div>
+</div>

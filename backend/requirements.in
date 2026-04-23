@@ -1,0 +1,11 @@
+Django
+djangorestframework
+djangorestframework-simplejwt
+django-filter
+Faker
+python-dotenv
+PyJWT
+Markdown
+Pillow
+validate-docbr
+weasyprint
