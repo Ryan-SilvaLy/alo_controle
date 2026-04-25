@@ -45,6 +45,7 @@ ngOnInit(): void {
       prateleira_estoque: ['', Validators.maxLength(50)],
       quantidade_atual: [0, Validators.required],
       quantidade_minima: [0, Validators.required],
+      valor_unitario: [0],
       unidade_medida: ['un', Validators.required],
     });
   }
@@ -69,6 +70,7 @@ ngOnInit(): void {
             prateleira_estoque: item.prateleira_estoque,
             quantidade_atual: item.quantidade_atual,
             quantidade_minima: item.quantidade_minima,
+            valor_unitario: item.valor_unitario,
             unidade_medida: item.unidade_medida,
           });
         } else {

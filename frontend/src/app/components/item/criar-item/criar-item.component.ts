@@ -7,11 +7,12 @@ import { Router } from '@angular/router';
 import { ItemService } from '../../../services/item.service';
 import { ModalTipoItemComponent } from '../modal-tipo-item/modal-tipo-item.component';
 import { ItemComponent } from '../item.component';
+import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 
 @Component({
   selector: 'app-criar-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalTipoItemComponent],
+  imports: [CommonModule, FormsModule, ModalTipoItemComponent, AutocompleteSelectComponent],
   templateUrl: './criar-item.component.html',
   styleUrls: ['./criar-item.component.scss']
 })
@@ -30,6 +31,7 @@ export class CriarItemComponent {
     prateleira_estoque: '',
     quantidade_atual: 0,
     quantidade_minima: 0,
+    valor_unitario: 0,
     unidade_medida: 'un',
     codigo_barras: '',
   };
@@ -38,6 +40,7 @@ export class CriarItemComponent {
   item: ItemCreate = { ...this.itemBase };
 
   tiposItem: TipoItem[] = [];
+  tipoItemLabel = (tipo: TipoItem) => tipo?.nome ?? '';
 
   constructor(
     public itemService: ItemService,

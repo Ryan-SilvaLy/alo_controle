@@ -20,6 +20,7 @@ export interface ItemCreate {
   prateleira_estoque: string;
   quantidade_atual: number;
   quantidade_minima: number;
+  valor_unitario: number;
   unidade_medida: string;
   situacao?: string;
   status?: string;

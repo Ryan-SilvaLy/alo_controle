@@ -46,12 +46,16 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Setor Destino <span class="text-red-500">*</span>
             </label>
-            <input
-              maxlength="50"
+            <app-autocomplete-select
               formControlName="setor"
+              [options]="setoresOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="50"
               placeholder="Setor solicitante"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+              emptyText="Nenhum setor encontrado"
+            ></app-autocomplete-select>
             <div
               *ngIf="form.get('setor')?.touched && form.get('setor')?.invalid"
               class="mt-1 text-[11px] text-red-600"
@@ -64,12 +68,16 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Responsável <span class="text-red-500">*</span>
             </label>
-            <input
-              maxlength="40"
+            <app-autocomplete-select
               formControlName="responsavel"
-              placeholder="Responsável"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+              [options]="responsaveisOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="40"
+              placeholder="Responsavel"
+              emptyText="Nenhum responsavel encontrado"
+            ></app-autocomplete-select>
             <div
               *ngIf="form.get('responsavel')?.touched && form.get('responsavel')?.invalid"
               class="mt-1 text-[11px] text-red-600"
@@ -132,19 +140,15 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">
                   Item
                 </label>
-                <select
+                <app-autocomplete-select
                   formControlName="item"
-                  (change)="onItemSelecionado(i)"
-                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-                >
-                  <option value="">Selecione um item</option>
-                  <option
-                    *ngFor="let item of getItensDisponiveisParaSelect(i)"
-                    [value]="item.id"
-                  >
-                    {{ item.codigo }} - {{ item.nome }}
-                  </option>
-                </select>
+                  [options]="itensDisponiveis"
+                  [labelWith]="itemLabel"
+                  [secondaryWith]="itemSecondary"
+                  placeholder="Buscar por codigo, nome, grupo..."
+                  emptyText="Nenhum item disponivel"
+                  (selected)="onItemSelecionado(i)"
+                ></app-autocomplete-select>
               </div>
 
               <div class="col-span-12 md:col-span-2">
@@ -163,24 +167,32 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">
                   Solicitante
                 </label>
-                <input
+                <app-autocomplete-select
                   formControlName="solicitante"
-                  maxlength="30"
+                  [options]="solicitantesOptions"
+                  [labelWith]="textoLabel"
+                  [valueWith]="textoValue"
+                  [freeText]="true"
+                  [maxLength]="30"
                   placeholder="Solicitante"
-                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-                />
+                  emptyText="Nenhum solicitante encontrado"
+                ></app-autocomplete-select>
               </div>
 
               <div class="col-span-12 md:col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">
                   Patrimônio
                 </label>
-                <input
+                <app-autocomplete-select
                   formControlName="patrimonio"
-                  maxlength="50"
-                  placeholder="Patrimônio"
-                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-                />
+                  [options]="patrimoniosOptions"
+                  [labelWith]="textoLabel"
+                  [valueWith]="textoValue"
+                  [freeText]="true"
+                  [maxLength]="50"
+                  placeholder="Patrimonio"
+                  emptyText="Nenhum patrimonio encontrado"
+                ></app-autocomplete-select>
               </div>
 
               <div class="col-span-12">

@@ -1,9 +1,9 @@
-<div *ngIf="mostrarModal" class="fixed inset-0 z-50 bg-black/50 p-2 sm:p-3">
-  <div class="flex h-full items-center justify-center">
-    <div class="w-full max-w-5xl rounded-xl bg-white text-black shadow-lg max-h-[95vh] overflow-hidden">
+<div *ngIf="mostrarModal" class="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 p-2 sm:p-4">
+  <div class="flex min-h-full items-start justify-center">
+    <div class="flex w-full max-w-[64rem] flex-col rounded-lg bg-white text-black shadow-lg max-h-[calc(100dvh-1rem)] sm:max-h-[calc(100dvh-2rem)] overflow-hidden">
 
       <!-- HEADER FIXO -->
-      <div class="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-gray-300 bg-white px-4 py-3">
+      <div class="shrink-0 flex items-start justify-between gap-3 border-b border-gray-300 bg-white px-4 py-3">
         <div>
           <h2 class="text-lg sm:text-xl font-semibold">Novo Item</h2>
           <p class="text-sm">
@@ -22,8 +22,8 @@
       </div>
 
       <!-- CORPO COM ROLAGEM -->
-      <div class="overflow-y-auto px-4 py-3 max-h-[calc(95vh-140px)]">
-        <form (ngSubmit)="criarItem()" #itemForm="ngForm" class="grid gap-3 md:grid-cols-3 text-sm">
+      <div class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+        <form id="form-criar-item" (ngSubmit)="criarItem()" #itemForm="ngForm" class="grid gap-3 md:grid-cols-2 lg:grid-cols-3 text-sm">
 
           <!-- Nome -->
           <div class="md:col-span-2">
@@ -40,20 +40,18 @@
           </div>
 
           <!-- Tipo -->
-          <div>
+          <div class="md:col-span-2 lg:col-span-1">
             <label class="mb-1 block font-medium">Tipo *</label>
             <div class="flex gap-2">
-              <select
+              <app-autocomplete-select
                 name="tipo_item_id"
                 [(ngModel)]="item.tipo_item_id"
                 required
-                class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
-              >
-                <option disabled [ngValue]="null">Selecionar</option>
-                <option *ngFor="let tipo of tiposItem" [ngValue]="tipo.id">
-                  {{ tipo.nome }}
-                </option>
-              </select>
+                [options]="tiposItem"
+                [labelWith]="tipoItemLabel"
+                placeholder="Buscar grupo/tipo"
+                emptyText="Nenhum grupo encontrado"
+              ></app-autocomplete-select>
 
               <button
                 type="button"
@@ -67,7 +65,7 @@
           </div>
 
           <!-- Descrição -->
-          <div class="md:col-span-3">
+          <div class="md:col-span-2 lg:col-span-3">
             <label class="mb-1 block font-medium">Descrição</label>
             <input
               type="text"
@@ -110,6 +108,19 @@
               name="quantidade_minima"
               [(ngModel)]="item.quantidade_minima"
               placeholder="0"
+              class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
+            />
+          </div>
+
+          <div>
+            <label class="mb-1 block font-medium">Valor Unitario</label>
+            <input
+              type="number"
+              name="valor_unitario"
+              [(ngModel)]="item.valor_unitario"
+              min="0"
+              step="0.01"
+              placeholder="0,00"
               class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
             />
           </div>
@@ -173,17 +184,17 @@
           </div>
 
           <!-- INFO -->
-          <div class="md:col-span-3 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm">
+          <div class="md:col-span-2 lg:col-span-3 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm">
             Campos obrigatórios (*). Defina corretamente tipo, localização e unidade para evitar erros no estoque.
           </div>
         </form>
       </div>
 
       <!-- RODAPÉ FIXO -->
-      <div class="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t border-gray-300 bg-white px-4 py-3">
+      <div class="shrink-0 flex flex-col gap-3 border-t border-gray-300 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <span class="text-sm">Dados básicos obrigatórios</span>
 
-        <div class="flex gap-2">
+        <div class="flex flex-col gap-2 sm:flex-row sm:justify-end">
           <button
             type="button"
             (click)="mostrarModal = false"
@@ -196,7 +207,6 @@
             type="submit"
             form="form-criar-item"
             class="rounded bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700"
-            (click)="criarItem()"
           >
             Salvar
           </button>

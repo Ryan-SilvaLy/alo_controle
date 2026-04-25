@@ -204,8 +204,9 @@ export class DashboardProdutoComponent {
     const estoqueBaixo = itens.filter((item) => (item.situacao || '').toLowerCase() === 'baixo').length;
     const entradasQuantidade = entradas.reduce((total, entrada) => total + this.somarQuantidadeItens(entrada.itens), 0);
     const saidasQuantidade = saidas.reduce((total, saida) => total + this.somarQuantidadeItens(saida.itens), 0);
-    const pedidosPendentes = pedidos.filter((pedido) => pedido.status === 'pendente').length;
-    const fornecedoresAtivos = this.montarFornecedores(entradas).length;
+    const valorEstoqueAtual = this.calcularValorEstoqueAtual(itens);
+    const valorSaidas = this.calcularValorSaidas(itens, saidas);
+    const itensComValor = itens.filter((item) => Number(item.valor_unitario || 0) > 0).length;
     const setorMaisAtivo = this.montarRankingPedidos(pedidos, 'setor_destino')[0];
     const solicitanteMaisAtivo = this.montarRankingPedidos(pedidos, 'solicitante')[0];
 
@@ -235,16 +236,16 @@ export class DashboardProdutoComponent {
         tone: 'warning'
       },
       {
-        label: 'Pedidos pendentes',
-        value: pedidosPendentes,
-        note: 'Aguardando envio ou fechamento',
-        tone: pedidosPendentes > 0 ? 'warning' : 'default'
+        label: 'Valor do estoque',
+        value: this.formatarMoeda(valorEstoqueAtual),
+        note: `${itensComValor}/${totalItens} item(ns) com valor unitario`,
+        tone: 'info'
       },
       {
-        label: 'Fornecedores ativos',
-        value: fornecedoresAtivos,
-        note: 'Com nota fiscal registrada',
-        tone: 'default'
+        label: 'Valor de saidas',
+        value: this.formatarMoeda(valorSaidas),
+        note: `${saidasQuantidade} unidade(s) baixadas no periodo`,
+        tone: 'warning'
       },
       {
         label: 'Setor que mais pede',
@@ -556,6 +557,30 @@ export class DashboardProdutoComponent {
 
   private somarQuantidadeItens(itens: any[]): number {
     return (itens || []).reduce((total, item) => total + Number(item?.quantidade || 0), 0);
+  }
+
+  private calcularValorEstoqueAtual(itens: Item[]): number {
+    return (itens || []).reduce((total, item) => {
+      return total + (Number(item.quantidade_atual || 0) * Number(item.valor_unitario || 0));
+    }, 0);
+  }
+
+  private calcularValorSaidas(itens: Item[], saidas: any[]): number {
+    return (saidas || []).reduce((totalSaidas, saida) => {
+      const totalRegistro = (saida.itens || []).reduce((totalItens: number, itemSaida: any) => {
+        const item = itens.find((registro) => registro.id === Number(itemSaida?.item));
+        return totalItens + (Number(itemSaida?.quantidade || 0) * Number(item?.valor_unitario || 0));
+      }, 0);
+
+      return totalSaidas + totalRegistro;
+    }, 0);
+  }
+
+  private formatarMoeda(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor || 0);
   }
 
   private buscarGrupoDoItem(itens: Item[], itemId: number): string {

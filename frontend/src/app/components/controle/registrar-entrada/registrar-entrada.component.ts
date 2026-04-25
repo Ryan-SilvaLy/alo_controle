@@ -5,11 +5,12 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { Item, ItemService } from './../../../services/item.service';
 import { ControleService } from '../../../services/controle.service';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
+import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 
 @Component({
   selector: 'app-registrar-entrada',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutocompleteSelectComponent],
   templateUrl: './registrar-entrada.component.html',
   styleUrl: './registrar-entrada.component.scss'
 })
@@ -22,6 +23,19 @@ export class RegistrarEntradaComponent {
   modoEdicao = false;
   registroId: number | null = null;
   carregandoRegistro = false;
+  recebedoresOptions: string[] = [];
+  notasFiscaisOptions: string[] = [];
+  fornecedoresOptions: string[] = [];
+  cnpjCpfOptions: string[] = [];
+  textoLabel = (value: string) => value || '';
+  textoValue = (value: string) => value || '';
+  itemLabel = (item: Item) => item ? `${item.codigo} - ${item.nome}` : '';
+  itemSecondary = (item: Item) => {
+    const grupo = item?.tipo_item?.nome ? `Grupo: ${item.tipo_item.nome}` : 'Sem grupo';
+    const estoque = `Estoque: ${item?.quantidade_atual ?? 0} ${item?.unidade_medida ?? ''}`.trim();
+    const prateleira = item?.prateleira_estoque ? `Prateleira: ${item.prateleira_estoque}` : '';
+    return [grupo, estoque, prateleira].filter(Boolean).join(' | ');
+  };
 
   constructor(
     private controleService: ControleService,
@@ -48,6 +62,8 @@ export class RegistrarEntradaComponent {
       this.itensDisponiveis = itens;
       this.inicializarModoFormulario();
     });
+
+    this.carregarSugestoesMovimentacao();
 
     this.form.get('possuiNotaFiscal')?.valueChanges.subscribe(checked => {
       this.possuiNotaFiscal = !!checked;
@@ -85,6 +101,10 @@ export class RegistrarEntradaComponent {
   getItensDisponiveisParaSelect(indexAtual: number): Item[] {
     const idsSelecionados = this.itensSelecionados.filter((_, i) => i !== indexAtual);
     return this.itensDisponiveis.filter(item => !idsSelecionados.includes(item.id));
+  }
+
+  getItensSelecionadosForaLinha(indexAtual: number): number[] {
+    return this.itensSelecionados.filter((_, i) => i !== indexAtual);
   }
 
   onItemSelecionado(_index: number) {
@@ -280,6 +300,41 @@ export class RegistrarEntradaComponent {
       nome_fornecedor: this.form.value.notaFiscal.nome_fornecedor,
       cnpj_cpf: this.form.value.notaFiscal.cnpj_cpf
     };
+  }
+
+  private carregarSugestoesMovimentacao() {
+    this.controleService.listarMovimentacoesEstoque().subscribe({
+      next: (movimentacoes) => {
+        const entradas = movimentacoes?.entradas || [];
+
+        this.recebedoresOptions = this.getValoresUnicos(
+          entradas.map((entrada: any) => entrada.recebido_por)
+        );
+        this.notasFiscaisOptions = this.getValoresUnicos(
+          entradas.map((entrada: any) => entrada.nota_fiscal_detalhe?.numero_nota)
+        );
+        this.fornecedoresOptions = this.getValoresUnicos(
+          entradas.map((entrada: any) => entrada.nota_fiscal_detalhe?.nome_fornecedor)
+        );
+        this.cnpjCpfOptions = this.getValoresUnicos(
+          entradas.map((entrada: any) => entrada.nota_fiscal_detalhe?.cnpj_cpf)
+        );
+      },
+      error: () => {
+        this.recebedoresOptions = [];
+        this.notasFiscaisOptions = [];
+        this.fornecedoresOptions = [];
+        this.cnpjCpfOptions = [];
+      }
+    });
+  }
+
+  private getValoresUnicos(valores: any[]): string[] {
+    return Array.from(new Set(
+      valores
+        .map(valor => String(valor || '').trim())
+        .filter(Boolean)
+    )).sort((a, b) => a.localeCompare(b));
   }
 
   private exibirErroEntrada(err: any, mensagemPadrao: string) {

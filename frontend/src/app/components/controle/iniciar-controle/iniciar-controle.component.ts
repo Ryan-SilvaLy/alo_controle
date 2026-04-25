@@ -199,8 +199,8 @@ export class IniciarControleComponent {
             item: itemMov,
             data: entrada.data_entrada,
             referencia: entrada.id,
-            principal: entrada.nota_fiscal || `Entrada #${entrada.id}`,
-            secundario: entrada.recebido_por || '---',
+            principal: entrada.nota_fiscal_detalhe?.numero_nota || `Entrada #${entrada.id}`,
+            secundario: entrada.nota_fiscal_detalhe?.nome_fornecedor || entrada.recebido_por || '---',
             bloco: null,
             registro: entrada,
             index

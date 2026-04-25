@@ -28,12 +28,16 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Recebido Por <span class="text-red-500">*</span>
             </label>
-            <input
-              maxlength="40"
+            <app-autocomplete-select
               formControlName="recebido_por"
+              [options]="recebedoresOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="40"
               placeholder="Quem recebeu"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+              emptyText="Nenhuma sugestao encontrada"
+            ></app-autocomplete-select>
             <div
               *ngIf="form.get('recebido_por')?.touched && form.get('recebido_por')?.invalid"
               class="mt-1 text-[11px] text-red-600"
@@ -85,36 +89,50 @@
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Número da Nota
             </label>
-            <input
-              maxlength="30"
+            <app-autocomplete-select
               formControlName="numero_nota"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-            />
+              [options]="notasFiscaisOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="30"
+              placeholder="Numero da nota"
+              emptyText="Nenhuma nota encontrada"
+            ></app-autocomplete-select>
           </div>
 
           <div class="col-span-12 md:col-span-5">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Nome do Fornecedor
             </label>
-            <input
-              maxlength="100"
+            <app-autocomplete-select
               formControlName="nome_fornecedor"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-            />
+              [options]="fornecedoresOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="100"
+              placeholder="Nome do fornecedor"
+              emptyText="Nenhum fornecedor encontrado"
+            ></app-autocomplete-select>
           </div>
 
           <div class="col-span-12 md:col-span-4">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               CNPJ/CPF
             </label>
-            <input
-              maxlength="14"
+            <app-autocomplete-select
               formControlName="cnpj_cpf"
-              placeholder="Apenas números"
-              inputmode="numeric"
-              (keypress)="onlyNumbers($event)"
-              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-            />
+              [options]="cnpjCpfOptions"
+              [labelWith]="textoLabel"
+              [valueWith]="textoValue"
+              [freeText]="true"
+              [maxLength]="14"
+              inputMode="numeric"
+              [onlyNumbers]="true"
+              placeholder="Apenas numeros"
+              emptyText="Nenhum CNPJ/CPF encontrado"
+            ></app-autocomplete-select>
           </div>
         </div>
       </section>
@@ -159,19 +177,16 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">
                   Item
                 </label>
-                <select
+                <app-autocomplete-select
                   formControlName="item"
-                  (change)="onItemSelecionado(i)"
-                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
-                >
-                  <option value="">Selecione um item</option>
-                  <option
-                    *ngFor="let item of getItensDisponiveisParaSelect(i)"
-                    [value]="item.id"
-                  >
-                    {{ item.codigo }} - {{ item.nome }}
-                  </option>
-                </select>
+                  [options]="itensDisponiveis"
+                  [disabledIds]="getItensSelecionadosForaLinha(i)"
+                  [labelWith]="itemLabel"
+                  [secondaryWith]="itemSecondary"
+                  placeholder="Buscar por codigo, nome, grupo..."
+                  emptyText="Nenhum item disponivel"
+                  (selected)="onItemSelecionado(i)"
+                ></app-autocomplete-select>
               </div>
 
               <div class="col-span-12 md:col-span-2">

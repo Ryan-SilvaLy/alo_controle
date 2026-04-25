@@ -40,6 +40,7 @@ export class IniciarItemComponent {
 
   modalAberto = false;
   itemSelecionado: Item | null = null;
+  itemValorAberto: Item | null = null;
 
   paginaAtual = 1;
   itensPorPagina = 25;
@@ -75,7 +76,8 @@ export class IniciarItemComponent {
       this.itens = res.map(item => ({
         ...item,
         quantidade_atual: Number(String(item.quantidade_atual).replace(',', '.').trim()),
-        quantidade_minima: Number(String(item.quantidade_minima).replace(',', '.').trim())
+        quantidade_minima: Number(String(item.quantidade_minima).replace(',', '.').trim()),
+        valor_unitario: Number(String(item.valor_unitario || 0).replace(',', '.').trim())
       }));
 
       this.carregando = false;
@@ -147,6 +149,25 @@ resetarFiltros() {
   atualizarItensPaginados() {
     const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
     this.itensPaginados = this.itensFiltrados.slice(inicio, inicio + this.itensPorPagina);
+  }
+
+  formatarMoeda(valor: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor || 0);
+  }
+
+  getValorEstoque(item: Item): number {
+    return Number(item.quantidade_atual || 0) * Number(item.valor_unitario || 0);
+  }
+
+  abrirValorEstoque(item: Item): void {
+    this.itemValorAberto = item;
+  }
+
+  fecharValorEstoque(): void {
+    this.itemValorAberto = null;
   }
 
   abrirModal(item: Item) {

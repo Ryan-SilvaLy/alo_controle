@@ -1,0 +1,50 @@
+<div class="autocomplete-select">
+  <div class="autocomplete-input-wrap">
+    <input
+      type="text"
+      [(ngModel)]="searchText"
+      [placeholder]="placeholder"
+      [disabled]="isDisabled"
+      [attr.maxlength]="maxLength"
+      [attr.inputmode]="inputMode"
+      (input)="onInputChange()"
+      (keypress)="onKeypress($event)"
+      (focus)="open()"
+      (blur)="onBlur()"
+      (keydown)="onKeydown($event)"
+      class="autocomplete-input"
+      autocomplete="off"
+    />
+
+    <button
+      *ngIf="searchText"
+      type="button"
+      class="autocomplete-clear"
+      (mousedown)="$event.preventDefault()"
+      (click)="clear()"
+      aria-label="Limpar selecao"
+    >
+      x
+    </button>
+  </div>
+
+  <div *ngIf="isOpen && (filteredOptions.length > 0 || showEmptyText)" class="autocomplete-panel">
+    <button
+      *ngFor="let option of filteredOptions; let i = index"
+      type="button"
+      class="autocomplete-option"
+      [class.autocomplete-option-active]="i === highlightedIndex"
+      (mousedown)="$event.preventDefault()"
+      (click)="selectOption(option)"
+    >
+      <span class="autocomplete-label">{{ labelWith(option) }}</span>
+      <span *ngIf="secondaryWith(option)" class="autocomplete-secondary">
+        {{ secondaryWith(option) }}
+      </span>
+    </button>
+
+    <div *ngIf="showEmptyText && filteredOptions.length === 0" class="autocomplete-empty">
+      {{ emptyText }}
+    </div>
+  </div>
+</div>

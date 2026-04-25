@@ -59,6 +59,12 @@ class Item(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    valor_unitario = models.DecimalField(
+        verbose_name='Valor Unitario',
+        max_digits=12,
+        decimal_places=2,
+        default=0
+    )
     unidade_medida = models.CharField(verbose_name='Unidade de Medida', max_length=10, choices=UNIDADE_MEDIDA_CHOICES, default='un')
     situacao = models.CharField(verbose_name='Situação', max_length=20, choices=SITUACAO_CHOICES, default='ok')
     status = models.CharField(verbose_name='Status', max_length=20, choices=STATUS_CHOICES, default='ativo')

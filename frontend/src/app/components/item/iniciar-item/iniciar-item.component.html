@@ -203,9 +203,10 @@
         <th class="col-prateleira"><i class="fas fa-warehouse me-1 icon-prateleira"></i> Prateleira</th>
         <th class="col-qtd"><i class="fas fa-boxes me-1 icon-qtd"></i> Qtd Atual</th>
         <th class="col-qtd"><i class="fas fa-cubes me-1 icon-qtd-minima"></i> Qtd Mínima</th>
+        <th class="col-valor"><i class="fas fa-dollar-sign me-1 icon-valor"></i> Valor Unit.</th>
         <th class="col-qtd"><i class="fas fa-balance-scale me-1 icon-unidade"></i> Unidade</th>
         <th class="col-situacao"><i class="fas fa-traffic-light me-1 icon-situacao"></i> Situação</th>
-        <th class="col-status"><i class="fas fa-traffic-light me-1 icon-status"></i> Status</th>
+        <!-- <th class="col-status"><i class="fas fa-traffic-light me-1 icon-status"></i> Status</th> -->
         <th class="col-acoes"><i class="fas fa-tools me-1 icon-acoes"></i> Ações</th>
       </tr>
     </thead>
@@ -220,6 +221,19 @@
         <td>{{ item.prateleira_estoque }}</td>
         <td>{{ item.quantidade_atual | quantidadeFormat:item.unidade_medida }}</td>
         <td>{{ item.quantidade_minima | quantidadeFormat:item.unidade_medida }}</td>
+        <td>
+          <div class="valor-unitario-cell">
+            <span>{{ formatarMoeda(item.valor_unitario) }}</span>
+            <button
+              type="button"
+              class="valor-eye-btn"
+              title="Ver valor em estoque"
+              (click)="abrirValorEstoque(item)"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </td>
         <td>{{ item.unidade_medida | unidadeNome:itemService.UNIDADE_MEDIDA_CHOICES }}</td>
         <td>
 <span
@@ -233,7 +247,7 @@
 </span>
 
         </td>
-        <td>
+        <!-- <td>
           <span
             *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
             class="px-2 py-1 rounded text-white text-sm cursor-pointer"
@@ -245,7 +259,7 @@
           >
             {{ item.status === 'ativo' ? 'Ativo' : 'Inativo' }}
           </span>
-        </td>
+        </td> -->
 <td>
 <a class="btn btn-outline-primary btn-sm" (click)="atualizarItemComponent.abrirModal(item.id)">
   <i class="fa fa-pen me-1"></i> Atualizar
@@ -267,6 +281,48 @@
 <!-- =========================
      MODAL DE CONFIRMAÇÃO
 ========================== -->
+<div
+  *ngIf="itemValorAberto"
+  class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-3"
+  (click)="fecharValorEstoque()"
+>
+  <div
+    class="w-full max-w-sm rounded-lg bg-white p-4 text-slate-900 shadow-xl"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="mb-3 flex items-start justify-between gap-3 border-b border-slate-200 pb-2">
+      <div>
+        <h3 class="text-base font-semibold">Valor em estoque</h3>
+        <p class="text-xs text-slate-500">{{ itemValorAberto.codigo }} - {{ itemValorAberto.nome }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+        (click)="fecharValorEstoque()"
+        aria-label="Fechar"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between gap-3">
+        <span>Valor unitario</span>
+        <strong>{{ formatarMoeda(itemValorAberto.valor_unitario) }}</strong>
+      </div>
+      <div class="flex justify-between gap-3">
+        <span>Quantidade atual</span>
+        <strong>{{ itemValorAberto.quantidade_atual | quantidadeFormat:itemValorAberto.unidade_medida }}</strong>
+      </div>
+      <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-center">
+        <span class="block text-xs uppercase tracking-wide text-slate-500">Total em estoque</span>
+        <strong class="text-xl">{{ formatarMoeda(getValorEstoque(itemValorAberto)) }}</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div
   *ngIf="modalAberto && itemSelecionado"
   class="fixed inset-0 z-50 flex items-center bg-black bg-opacity-50 !justify-center"
@@ -300,4 +356,3 @@
 
 <app-criar-item (itemCriado)="carregarItens()"></app-criar-item>
 <app-atualizar-item (itemAtualizado)="carregarItens()"></app-atualizar-item>
-

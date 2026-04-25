@@ -108,7 +108,7 @@
               <th>Status</th>
               <th>Item</th>
               <th>Qtd.</th>
-              <th>Referencia</th>
+              <th>Solicitante / Fornecedor</th>
               <th>Bloco / Documento</th>
               <th>Data</th>
               <th class="actions-col">Acoes</th>
@@ -136,7 +136,7 @@
                 <span class="items-count">{{ itemResumo.quantidade }}</span>
               </td>
 
-              <td>#{{ itemResumo.referencia }}</td>
+              <td>{{ itemResumo.secundario }}</td>
               <td>{{ itemResumo.principal }}</td>
               <td>{{ itemResumo.data | date:'dd/MM/yyyy' }}</td>
 

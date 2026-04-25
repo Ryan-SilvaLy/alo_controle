@@ -6,11 +6,12 @@ import { Item, ItemService } from '../../../services/item.service';
 import { ControleService } from '../../../services/controle.service';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { ProdutoService } from '../../../services/produto.service';
+import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 
 @Component({
   selector: 'app-registrar-saida',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AutocompleteSelectComponent],
   templateUrl: './registrar-saida.component.html',
   styleUrl: './registrar-saida.component.scss'
 })
@@ -23,6 +24,20 @@ export class RegistrarSaidaComponent {
   modoEdicao = false;
   registroId: number | null = null;
   carregandoRegistro = false;
+  setoresOptions: string[] = [];
+  responsaveisOptions: string[] = [];
+  solicitantesOptions: string[] = [];
+  patrimoniosOptions: string[] = [];
+  patrimoniosHistoricosOptions: string[] = [];
+  textoLabel = (value: string) => value || '';
+  textoValue = (value: string) => value || '';
+  itemLabel = (item: Item) => item ? `${item.codigo} - ${item.nome}` : '';
+  itemSecondary = (item: Item) => {
+    const grupo = item?.tipo_item?.nome ? `Grupo: ${item.tipo_item.nome}` : 'Sem grupo';
+    const estoque = `Estoque: ${item?.quantidade_atual ?? 0} ${item?.unidade_medida ?? ''}`.trim();
+    const prateleira = item?.prateleira_estoque ? `Prateleira: ${item.prateleira_estoque}` : '';
+    return [grupo, estoque, prateleira].filter(Boolean).join(' | ');
+  };
 
   constructor(
     private fb: FormBuilder,
@@ -48,7 +63,10 @@ export class RegistrarSaidaComponent {
 
     this.produtoService.listarProdutos().subscribe(patrimonios => {
       this.patrimonios = patrimonios;
+      this.atualizarSugestoesPatrimonio();
     });
+
+    this.carregarSugestoesMovimentacao();
   }
 
   criarItem(): FormGroup {
@@ -71,11 +89,6 @@ export class RegistrarSaidaComponent {
   removerItem(index: number) {
     this.itens.removeAt(index);
     this.atualizarItensSelecionados();
-  }
-
-  getItensDisponiveisParaSelect(indexAtual: number): Item[] {
-    const idsSelecionados = this.itensSelecionados.filter((_, i) => i !== indexAtual);
-    return this.itensDisponiveis.filter(item => !idsSelecionados.includes(item.id));
   }
 
   onItemSelecionado(_index: number) {
@@ -205,6 +218,46 @@ export class RegistrarSaidaComponent {
         this.router.navigate(['/controle/iniciar']);
       }
     });
+  }
+
+  private carregarSugestoesMovimentacao() {
+    this.controleService.listarMovimentacoesEstoque().subscribe({
+      next: (movimentacoes) => {
+        const saidas = movimentacoes?.saidas || [];
+        const itensSaida = saidas.flatMap((saida: any) => saida.itens || []);
+
+        this.setoresOptions = this.getValoresUnicos(saidas.map((saida: any) => saida.setor));
+        this.responsaveisOptions = this.getValoresUnicos(saidas.map((saida: any) => saida.responsavel));
+        this.solicitantesOptions = this.getValoresUnicos(itensSaida.map((item: any) => item.solicitante));
+        this.patrimoniosHistoricosOptions = this.getValoresUnicos(itensSaida.map((item: any) => item.patrimonio));
+        this.atualizarSugestoesPatrimonio();
+      },
+      error: () => {
+        this.setoresOptions = [];
+        this.responsaveisOptions = [];
+        this.solicitantesOptions = [];
+        this.patrimoniosHistoricosOptions = [];
+        this.atualizarSugestoesPatrimonio();
+      }
+    });
+  }
+
+  private atualizarSugestoesPatrimonio() {
+    const patrimoniosProdutos = (this.patrimonios || [])
+      .map((produto: any) => produto?.patrimonio);
+
+    this.patrimoniosOptions = this.getValoresUnicos([
+      ...this.patrimoniosHistoricosOptions,
+      ...patrimoniosProdutos
+    ]);
+  }
+
+  private getValoresUnicos(valores: any[]): string[] {
+    return Array.from(new Set(
+      valores
+        .map(valor => String(valor || '').trim())
+        .filter(Boolean)
+    )).sort((a, b) => a.localeCompare(b));
   }
 
   private exibirErroSaida(err: any) {
