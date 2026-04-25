@@ -19,7 +19,9 @@
         <select id="filtro-status" [(ngModel)]="filtroStatus" class="filter-input">
           <option value="pendente">Pendentes</option>
           <option value="enviado">Enviados</option>
-          <option value="finalizado">Finalizados</option>
+          <option value="visto">Vistos</option>
+          <option value="negado">Negados</option>
+          <option value="cancelado">Cancelados</option>
           <option value="todos">Todos</option>
         </select>
       </div>
@@ -50,7 +52,8 @@
     </div>
 
     <p class="filters-helper">
-      Exibindo <strong>{{ pedidosFiltrados.length }}</strong> pedido(s) com filtro padrao em <strong>pendente</strong>.
+      Exibindo <strong>{{ pedidosFiltrados.length }}</strong> pedido(s) com filtro padrao em
+      <strong>{{ isCompras ? 'todos' : 'pendente' }}</strong>.
     </p>
   </div>
 
@@ -83,18 +86,48 @@
           </td>
           <td class="px-4 py-2">{{ pedido.criado_por }}</td>
           <td class="px-4 py-2 capitalize">
-            <span class="status-badge" [ngClass]="'status-' + pedido.status">
-              {{ pedido.status }}
-            </span>
+            <div class="status-inline">
+              <span class="status-badge" [ngClass]="'status-' + pedido.status">
+                {{ pedido.status }}
+              </span>
+              <i
+                *ngIf="pedido.status === 'visto'"
+                class="fas fa-check-circle status-seen-icon"
+                [title]="'Visto por ' + (pedido.compras_visto_por_nome || 'compras') + ' em ' + (pedido.compras_visto_em | date:'dd/MM/yyyy HH:mm')"
+              ></i>
+              <i
+                *ngIf="pedido.status === 'negado'"
+                class="fas fa-ban status-denied-icon"
+                [title]="'Negado por compras: ' + pedido.compras_motivo_negado"
+              ></i>
+            </div>
           </td>
           <td class="px-4 py-2 text-center space-x-2">
             <button
-              *ngIf="pedido.status !== 'finalizado'"
+              *ngIf="podeGerenciarStatusGeral && pedido.status !== 'cancelado'"
               class="text-yellow-500 hover:text-yellow-700"
               (click)="alterarStatusPedido(pedido)"
               title="Alterar status do pedido"
             >
               <i class="fas fa-exchange-alt"></i>
+            </button>
+
+            <button
+              *ngIf="isCompras && pedido.status === 'enviado'"
+              class="text-green-600 hover:text-green-800"
+              (click)="marcarVistoCompras(pedido)"
+              title="Marcar como visto por compras"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+
+            <button
+              *ngIf="isCompras && (pedido.status === 'enviado' || pedido.status === 'visto')"
+              class="text-red-600 hover:text-red-800"
+              (click)="abrirNegativaCompras(pedido)"
+              title="Negar pedido em compras"
+            >
+              <i class="fas fa-ban"></i>
             </button>
 
             <button
@@ -138,18 +171,19 @@
     <label class="block mb-2 font-medium text-sm">Novo Status:</label>
     <select [(ngModel)]="novoStatus" class="w-full border px-3 py-2 rounded-md">
       <option *ngIf="pedidoSelecionado.status === 'pendente'" value="enviado">Enviado</option>
-      <option value="finalizado">Finalizado</option>
+      <option value="cancelado">Cancelado</option>
     </select>
 
-    <div *ngIf="novoStatus === 'finalizado'" class="mt-4">
-      <label class="block mb-2 font-medium text-sm">Resultado Final:</label>
-      <select [(ngModel)]="motivoRecusado" class="w-full border px-3 py-2 rounded-md">
-        <option value="">Selecione</option>
-        <option value="recusado">Recusado</option>
-        <option value="cancelado">Cancelado</option>
-      </select>
+    <div *ngIf="novoStatus === 'cancelado'" class="mt-4">
+      <label class="block mb-2 font-medium text-sm">Motivo do cancelamento:</label>
+      <textarea
+        [(ngModel)]="motivoRecusado"
+        rows="3"
+        class="w-full border px-3 py-2 rounded-md"
+        placeholder="Descreva o motivo"
+      ></textarea>
       <p *ngIf="erroMotivo" class="text-red-600 text-sm mt-1">
-        O resultado final e obrigatorio.
+        O motivo do cancelamento e obrigatorio.
       </p>
     </div>
 
@@ -160,9 +194,44 @@
       <button
         class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         (click)="confirmarAlteracaoStatus()"
-        [disabled]="novoStatus === 'finalizado' && (!motivoRecusado || motivoRecusado.trim() === '')"
+        [disabled]="novoStatus === 'cancelado' && (!motivoRecusado || motivoRecusado.trim() === '')"
       >
         Atualizar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="pedidoComprasSelecionado" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg">
+    <h2 class="text-xl font-bold mb-4 text-slate-900">Negar Pedido em Compras</h2>
+
+    <p class="mb-2"><strong>Codigo:</strong> {{ pedidoComprasSelecionado.codigo_pedido }}</p>
+    <p class="mb-4 text-sm text-slate-600">
+      Essa negativa fica registrada para o almoxarifado acompanhar que compras teve ciencia e nao aprovou o pedido.
+    </p>
+
+    <label class="block mb-2 font-medium text-sm">Motivo da negativa:</label>
+    <textarea
+      [(ngModel)]="motivoNegadoCompras"
+      rows="4"
+      class="w-full border px-3 py-2 rounded-md"
+      placeholder="Informe o motivo"
+    ></textarea>
+    <p *ngIf="erroMotivoCompras" class="text-red-600 text-sm mt-1">
+      O motivo da negativa e obrigatorio.
+    </p>
+
+    <div class="flex justify-end space-x-2 mt-6">
+      <button class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400" (click)="fecharModalCompras()">
+        Cancelar
+      </button>
+      <button
+        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        (click)="confirmarNegativaCompras()"
+        [disabled]="!motivoNegadoCompras || motivoNegadoCompras.trim() === ''"
+      >
+        Negar
       </button>
     </div>
   </div>
@@ -285,8 +354,16 @@
       {{ pedidoSelecionadoParaImpressao.status_atualizado_em ? (pedidoSelecionadoParaImpressao.status_atualizado_em | date:'dd/MM/yyyy HH:mm') : 'Ainda nao alterado' }}
     </p>
     <p><span class="label">Status:</span> {{ pedidoSelecionadoParaImpressao.status | titlecase }}</p>
-    <ng-container *ngIf="pedidoSelecionadoParaImpressao.status === 'finalizado'">
-      <p><span class="label">Resultado Final:</span> {{ pedidoSelecionadoParaImpressao.motivo_recusado | titlecase }}</p>
+    <p *ngIf="pedidoSelecionadoParaImpressao.compras_visto_em">
+      <span class="label">Visto por compras:</span>
+      {{ pedidoSelecionadoParaImpressao.compras_visto_por_nome || 'compras' }} em {{ pedidoSelecionadoParaImpressao.compras_visto_em | date:'dd/MM/yyyy HH:mm' }}
+    </p>
+    <p *ngIf="pedidoSelecionadoParaImpressao.compras_negado_em">
+      <span class="label">Negado por compras:</span>
+      {{ pedidoSelecionadoParaImpressao.compras_motivo_negado }}
+    </p>
+    <ng-container *ngIf="pedidoSelecionadoParaImpressao.status === 'cancelado'">
+      <p><span class="label">Motivo do cancelamento:</span> {{ pedidoSelecionadoParaImpressao.motivo_recusado }}</p>
     </ng-container>
   </div>
 

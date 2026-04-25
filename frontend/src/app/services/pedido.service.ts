@@ -50,6 +50,17 @@ export class PedidoService {
     });
   }
 
+  atualizarStatusComprasPedido(id: number, statusCompras: 'visto' | 'negado', motivoNegado?: string): Observable<any> {
+    const body: any = { acao: statusCompras };
+    if (motivoNegado) {
+      body.compras_motivo_negado = motivoNegado;
+    }
+
+    return this.http.patch(`${this.baseUrl}atualizar-status-compras/${id}/`, body, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
   atualizarPedido(id: number, body: any): Observable<any> {
     return this.http.patch(`${this.baseUrl}atualizar/${id}/`, body, {
       headers: this.authService.getAuthHeaders()

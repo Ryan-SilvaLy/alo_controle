@@ -10,7 +10,9 @@ class Pedido(models.Model):
     STATUS_CHOICES = [
         ('pendente', 'Pendente'),
         ('enviado', 'Enviado'),
-        ('finalizado', 'Finalizado'),
+        ('visto', 'Visto'),
+        ('negado', 'Negado'),
+        ('cancelado', 'Cancelado'),
     ]
 
     codigo_pedido = models.CharField(verbose_name='Código do Pedido', max_length=10, unique=True)
@@ -19,6 +21,11 @@ class Pedido(models.Model):
     responsavel_setor = models.CharField(verbose_name='Responsável pelo Setor', max_length=50)
     status = models.CharField(verbose_name='Status', max_length=20, choices=STATUS_CHOICES, default='pendente')
     motivo_recusado = models.TextField(verbose_name='Motivo do Cancelamento', blank=True, null=True)
+    compras_visto_por = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='pedidos_vistos_compras', null=True, blank=True)
+    compras_visto_em = models.DateTimeField(null=True, blank=True, verbose_name='Data de Ciencia de Compras')
+    compras_negado_por = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='pedidos_negados_compras', null=True, blank=True)
+    compras_negado_em = models.DateTimeField(null=True, blank=True, verbose_name='Data de Negacao de Compras')
+    compras_motivo_negado = models.TextField(verbose_name='Motivo da Negacao de Compras', blank=True, null=True)
     tipo_item = models.ForeignKey(TipoItem, on_delete=models.PROTECT, related_name='pedidos', null=True, blank=True, verbose_name='Grupo do Pedido')
     gerado_automaticamente = models.BooleanField(default=False, verbose_name='Gerado Automaticamente')
     criado_por = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='pedidos_criados')

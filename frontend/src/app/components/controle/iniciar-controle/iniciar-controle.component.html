@@ -80,7 +80,7 @@
           </button>
         </div>
 
-        <div class="toolbar-actions">
+        <div class="toolbar-actions" *ngIf="podeOperarEstoque">
           <button
             class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
             (click)="registrarEntrada()"
@@ -146,7 +146,12 @@
                     <i class="fas fa-box-open"></i>
                   </button>
 
-                  <button (click)="editarUltimoRegistro(itemResumo)" class="icon-button" title="Editar movimentacao">
+                  <button
+                    *ngIf="podeOperarEstoque"
+                    (click)="editarUltimoRegistro(itemResumo)"
+                    class="icon-button"
+                    title="Editar movimentacao"
+                  >
                     <i class="fas fa-edit"></i>
                   </button>
 

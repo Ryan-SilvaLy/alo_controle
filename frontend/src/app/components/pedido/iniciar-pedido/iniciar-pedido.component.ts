@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { HasPermissionDirective } from '../../../directives/has-permission.directive';
 import { ItemService, Item } from '../../../services/item.service';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
   selector: 'app-iniciar-pedido',
@@ -25,21 +26,40 @@ export class IniciarPedidoComponent implements OnInit {
   termoBusca = '';
   novoStatus = '';
   motivoRecusado = '';
+  motivoNegadoCompras = '';
   erroMotivo = false;
+  erroMotivoCompras = false;
+  pedidoComprasSelecionado: any = null;
   pedidoParaImprimir: any = null;
   currentDate: Date = new Date();
   pedidoSelecionadoParaImpressao: any = null;
+  usuarioLogado: any = null;
 
   constructor(
     private pedidoService: PedidoService,
     private itemService: ItemService,
+    private authService: AuthenticationService,
     private router: Router,
     private snackBar: SnackbarService
   ) {}
 
   ngOnInit(): void {
+    this.usuarioLogado = this.authService.getUsuarioLogadoValue();
+    this.aplicarFiltroPadraoPorPerfil();
+    this.authService.getUsuarioLogadoSubject().subscribe((usuario) => {
+      this.usuarioLogado = usuario;
+      this.aplicarFiltroPadraoPorPerfil();
+    });
     this.carregarPedidos();
     this.carregarItens();
+  }
+
+  get isCompras(): boolean {
+    return this.usuarioLogado?.nivel_permissao === 'compra';
+  }
+
+  get podeGerenciarStatusGeral(): boolean {
+    return ['administrador', 'moderador', 'almoxarifado'].includes(this.usuarioLogado?.nivel_permissao);
   }
 
   carregarItens(): void {
@@ -84,7 +104,8 @@ export class IniciarPedidoComponent implements OnInit {
         pedido.setor_destino,
         pedido.responsavel_setor,
         pedido.criado_por,
-        pedido.status
+        pedido.status,
+        pedido.compras_motivo_negado
       ]
         .some(valor => (valor || '').toString().toLowerCase().includes(termo));
 
@@ -101,9 +122,15 @@ export class IniciarPedidoComponent implements OnInit {
   }
 
   limparFiltros(): void {
-    this.filtroStatus = 'pendente';
+    this.filtroStatus = this.isCompras ? 'todos' : 'pendente';
     this.filtroGrupo = 'todos';
     this.termoBusca = '';
+  }
+
+  private aplicarFiltroPadraoPorPerfil(): void {
+    if (this.isCompras && this.filtroStatus === 'pendente') {
+      this.filtroStatus = 'todos';
+    }
   }
 
   imprimirPedido(pedido: any) {
@@ -150,9 +177,15 @@ export class IniciarPedidoComponent implements OnInit {
 
   alterarStatusPedido(pedido: any) {
     this.pedidoSelecionado = pedido;
-    this.novoStatus = pedido.status === 'pendente' ? 'enviado' : 'finalizado';
+    this.novoStatus = pedido.status === 'pendente' ? 'enviado' : 'cancelado';
     this.motivoRecusado = '';
     this.erroMotivo = false;
+  }
+
+  abrirNegativaCompras(pedido: any): void {
+    this.pedidoComprasSelecionado = pedido;
+    this.motivoNegadoCompras = '';
+    this.erroMotivoCompras = false;
   }
 
   fecharModal() {
@@ -160,6 +193,12 @@ export class IniciarPedidoComponent implements OnInit {
     this.novoStatus = '';
     this.motivoRecusado = '';
     this.erroMotivo = false;
+  }
+
+  fecharModalCompras(): void {
+    this.pedidoComprasSelecionado = null;
+    this.motivoNegadoCompras = '';
+    this.erroMotivoCompras = false;
   }
 
   fecharModalEdicaoPedido() {
@@ -260,7 +299,7 @@ export class IniciarPedidoComponent implements OnInit {
   }
 
   confirmarAlteracaoStatus() {
-    if (this.novoStatus === 'finalizado' && !this.motivoRecusado.trim()) {
+    if (this.novoStatus === 'cancelado' && !this.motivoRecusado.trim()) {
       this.erroMotivo = true;
       return;
     }
@@ -278,5 +317,41 @@ export class IniciarPedidoComponent implements OnInit {
         this.snackBar.show(err?.error?.detail || 'Erro ao atualizar status do pedido.', 'error');
       }
     });
+  }
+
+  marcarVistoCompras(pedido: any): void {
+    this.pedidoService.atualizarStatusComprasPedido(pedido.id, 'visto').subscribe({
+      next: () => {
+        this.snackBar.show('Pedido marcado como visto por compras.', 'success');
+        this.carregarPedidos();
+      },
+      error: (err) => {
+        console.error('Erro ao marcar ciencia de compras:', err);
+        this.snackBar.show(err?.error?.detail || 'Erro ao marcar ciencia de compras.', 'error');
+      }
+    });
+  }
+
+  confirmarNegativaCompras(): void {
+    if (!this.pedidoComprasSelecionado) return;
+
+    if (!this.motivoNegadoCompras.trim()) {
+      this.erroMotivoCompras = true;
+      return;
+    }
+
+    this.pedidoService
+      .atualizarStatusComprasPedido(this.pedidoComprasSelecionado.id, 'negado', this.motivoNegadoCompras)
+      .subscribe({
+        next: () => {
+          this.snackBar.show('Pedido negado por compras.', 'success');
+          this.fecharModalCompras();
+          this.carregarPedidos();
+        },
+        error: (err) => {
+          console.error('Erro ao negar pedido por compras:', err);
+          this.snackBar.show(err?.error?.detail || 'Erro ao negar pedido por compras.', 'error');
+        }
+      });
   }
 }

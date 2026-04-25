@@ -7,6 +7,7 @@ import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { FormsModule } from '@angular/forms';
 import { RegistrarEntradaComponent } from '../registrar-entrada/registrar-entrada.component';
 import { RegistrarSaidaComponent } from '../registrar-saida/registrar-saida.component';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 @Component({
   selector: 'app-iniciar-controle',
@@ -43,15 +44,25 @@ export class IniciarControleComponent {
 
   modalEntradaAberto = false;
   modalSaidaAberto = false;
+  usuarioLogado: any = null;
 
   constructor(
     private controleService: ControleService,
     private router: Router,
     private snackbar: SnackbarService,
+    private authService: AuthenticationService,
   ) {}
 
   ngOnInit() {
+    this.usuarioLogado = this.authService.getUsuarioLogadoValue();
+    this.authService.getUsuarioLogadoSubject().subscribe((usuario) => {
+      this.usuarioLogado = usuario;
+    });
     this.carregarMovimentacoes();
+  }
+
+  get podeOperarEstoque(): boolean {
+    return ['administrador', 'moderador', 'almoxarifado'].includes(this.usuarioLogado?.nivel_permissao);
   }
 
   carregarMovimentacoes() {
@@ -76,6 +87,7 @@ export class IniciarControleComponent {
   }
 
   registrarEntrada() {
+    if (!this.podeOperarEstoque) return;
     this.modalEntradaAberto = true;
     document.body.style.overflow = 'hidden';
   }
@@ -86,6 +98,7 @@ export class IniciarControleComponent {
   }
 
   registrarSaida() {
+    if (!this.podeOperarEstoque) return;
     this.modalSaidaAberto = true;
     document.body.style.overflow = 'hidden';
   }
@@ -105,10 +118,12 @@ export class IniciarControleComponent {
   }
 
   editarEntrada(registro: any) {
+    if (!this.podeOperarEstoque) return;
     this.router.navigate(['/controle/editar-entrada', registro.id]);
   }
 
   excluirEntrada(registro: any) {
+    if (!this.podeOperarEstoque) return;
     this.registroParaExcluir = registro;
     this.tipoExclusao = 'entrada';
     this.modalExclusaoAberto = true;
@@ -131,10 +146,12 @@ export class IniciarControleComponent {
   }
 
   editarSaida(registro: any) {
+    if (!this.podeOperarEstoque) return;
     this.router.navigate(['/controle/editar-saida', registro.id]);
   }
 
   excluirSaida(registro: any) {
+    if (!this.podeOperarEstoque) return;
     this.registroParaExcluir = registro;
     this.tipoExclusao = 'saida';
     this.modalExclusaoAberto = true;
@@ -155,6 +172,7 @@ export class IniciarControleComponent {
   }
 
   confirmarExclusao() {
+    if (!this.podeOperarEstoque) return;
     if (!this.registroParaExcluir) return;
 
     const serviceMethod = this.tipoExclusao === 'entrada'
@@ -310,6 +328,7 @@ export class IniciarControleComponent {
   }
 
   editarUltimoRegistro(itemResumo: any) {
+    if (!this.podeOperarEstoque) return;
     if (itemResumo.tipo === 'entrada') {
       this.editarEntrada(itemResumo.registro);
       return;

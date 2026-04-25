@@ -46,6 +46,8 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
     itens = PedidoItemSerializer(many=True)
     tipo_item_nome = serializers.CharField(source='tipo_item.nome', read_only=True)
     criado_por = serializers.SlugRelatedField(read_only=True, slug_field='username')
+    compras_visto_por_nome = serializers.CharField(source='compras_visto_por.username', read_only=True)
+    compras_negado_por_nome = serializers.CharField(source='compras_negado_por.username', read_only=True)
 
     class Meta:
         model = Pedido
@@ -61,6 +63,11 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
             'criado_por',
             'status',
             'motivo_recusado',
+            'compras_visto_por_nome',
+            'compras_visto_em',
+            'compras_negado_por_nome',
+            'compras_negado_em',
+            'compras_motivo_negado',
             'criado_em',
             'atualizado_em',
             'status_atualizado_em',
@@ -75,6 +82,11 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
             'criado_em',
             'atualizado_em',
             'status_atualizado_em',
+            'compras_visto_por_nome',
+            'compras_visto_em',
+            'compras_negado_por_nome',
+            'compras_negado_em',
+            'compras_motivo_negado',
         ]
 
     def validate(self, data):

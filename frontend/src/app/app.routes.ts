@@ -110,33 +110,42 @@ export const routes: Routes = [
     {
         path: 'controle',
         component: ControleComponent,
-        canActivate: [authGuard, permissionGuard],
-        data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] },
+        canActivate: [authGuard],
         children: [
             {
                 path: 'iniciar',
                 loadComponent: () =>
-                    import('./components/controle/iniciar-controle/iniciar-controle.component').then(m => m.IniciarControleComponent)
+                    import('./components/controle/iniciar-controle/iniciar-controle.component').then(m => m.IniciarControleComponent),
+                canActivate: [permissionGuard],
+                data: { permissoes: ['administrador', 'moderador', 'almoxarifado', 'compra'] }
             },
             {
                 path: 'registrar-entrada',
                 loadComponent: () =>
-                    import('./components/controle/registrar-entrada/registrar-entrada.component').then(m => m.RegistrarEntradaComponent)
+                    import('./components/controle/registrar-entrada/registrar-entrada.component').then(m => m.RegistrarEntradaComponent),
+                canActivate: [permissionGuard],
+                data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
             },
             {
                 path: 'editar-entrada/:id',
                 loadComponent: () =>
-                    import('./components/controle/registrar-entrada/registrar-entrada.component').then(m => m.RegistrarEntradaComponent)
+                    import('./components/controle/registrar-entrada/registrar-entrada.component').then(m => m.RegistrarEntradaComponent),
+                canActivate: [permissionGuard],
+                data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
             },
             {
                 path: 'registrar-saida',
                 loadComponent: () =>
-                    import('./components/controle/registrar-saida/registrar-saida.component').then(m => m.RegistrarSaidaComponent)
+                    import('./components/controle/registrar-saida/registrar-saida.component').then(m => m.RegistrarSaidaComponent),
+                canActivate: [permissionGuard],
+                data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
             },
             {
                 path: 'editar-saida/:id',
                 loadComponent: () =>
-                    import('./components/controle/registrar-saida/registrar-saida.component').then(m => m.RegistrarSaidaComponent)
+                    import('./components/controle/registrar-saida/registrar-saida.component').then(m => m.RegistrarSaidaComponent),
+                canActivate: [permissionGuard],
+                data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
             }
         ]
     },
@@ -172,13 +181,14 @@ export const routes: Routes = [
     {
         path: 'produto',
         component: ProdutoComponent,
-        canActivate: [authGuard, permissionGuard],
-        data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] },
+        canActivate: [authGuard],
         children: [
             {
                 path: 'iniciar',
                 loadComponent: () =>
-                    import('./components/produto/iniciar-produto/iniciar-produto.component').then(m => m.IniciarProdutoComponent)
+                    import('./components/produto/iniciar-produto/iniciar-produto.component').then(m => m.IniciarProdutoComponent),
+                    canActivate: [permissionGuard],
+                    data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
             },
             {
                 path: 'criar',
@@ -192,7 +202,7 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./components/produto/dashboard-produto/dashboard-produto.component').then(m => m.DashboardProdutoComponent),
                     canActivate: [permissionGuard],
-                    data: { permissoes: ['administrador', 'moderador', 'almoxarifado'] }
+                    data: { permissoes: ['administrador', 'moderador', 'almoxarifado', 'compra'] }
             },
             {
                 path: 'atualizar/:id',
