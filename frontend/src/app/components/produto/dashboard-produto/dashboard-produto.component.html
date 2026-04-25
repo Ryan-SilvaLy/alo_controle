@@ -54,6 +54,223 @@
       </article>
     </section>
 
+    <section class="finance-overview">
+      <article class="panel-card finance-card finance-card-main">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Custos</span>
+            <h2>Controle financeiro do almoxarifado</h2>
+          </div>
+          <p>{{ tituloPeriodo }}</p>
+        </div>
+
+        <div class="finance-kpis">
+          <div>
+            <span class="mini-label">Estoque atual</span>
+            <strong>{{ formatarMoeda(custosResumo.valorEstoque) }}</strong>
+          </div>
+          <div>
+            <span class="mini-label">Entradas valorizadas</span>
+            <strong>{{ formatarMoeda(custosResumo.valorEntradas) }}</strong>
+          </div>
+          <div>
+            <span class="mini-label">Saidas valorizadas</span>
+            <strong>{{ formatarMoeda(custosResumo.valorSaidas) }}</strong>
+          </div>
+          <div>
+            <span class="mini-label">Saldo do periodo</span>
+            <strong [ngClass]="custosResumo.saldoPeriodo >= 0 ? 'positive-value' : 'negative-value'">
+              {{ formatarMoeda(custosResumo.saldoPeriodo) }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="finance-note">
+          <span>Ticket medio de entrada: {{ formatarMoeda(custosResumo.ticketMedioEntrada) }}</span>
+          <span>Ticket medio de saida: {{ formatarMoeda(custosResumo.ticketMedioSaida) }}</span>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Trajetoria</span>
+            <h2>Evolucao de custos</h2>
+          </div>
+          <p>Entradas x saidas</p>
+        </div>
+
+        <div *ngIf="!evolucaoCustos.length" class="panel-empty">
+          Sem dados financeiros suficientes para montar a trajetoria.
+        </div>
+
+        <div class="cost-chart" *ngIf="evolucaoCustos.length">
+          <div class="cost-bar-group" *ngFor="let ponto of evolucaoCustos">
+            <div class="cost-bars">
+              <span
+                class="cost-bar cost-bar-entry"
+                [style.height.%]="ponto.entradasAltura"
+                [title]="'Entradas: ' + formatarMoeda(ponto.entradas)"
+              ></span>
+              <span
+                class="cost-bar cost-bar-exit"
+                [style.height.%]="ponto.saidasAltura"
+                [title]="'Saidas: ' + formatarMoeda(ponto.saidas)"
+              ></span>
+            </div>
+            <strong>{{ ponto.periodo }}</strong>
+            <small [ngClass]="ponto.saldo >= 0 ? 'positive-value' : 'negative-value'">
+              {{ formatarMoeda(ponto.saldo) }}
+            </small>
+          </div>
+        </div>
+
+        <div class="chart-legend" *ngIf="evolucaoCustos.length">
+          <span><i class="legend-swatch entry-swatch"></i> Entradas</span>
+          <span><i class="legend-swatch exit-swatch"></i> Saidas</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Estoque caro</span>
+            <h2>Custo por grupo</h2>
+          </div>
+          <p>Onde o dinheiro esta alocado</p>
+        </div>
+
+        <div *ngIf="!gruposCustoResumo.length" class="panel-empty">
+          Nenhum grupo com valor unitario informado.
+        </div>
+
+        <div class="table-shell" *ngIf="gruposCustoResumo.length">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Valor estoque</th>
+                <th>Saidas</th>
+                <th>% estoque</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let grupo of gruposCustoResumo">
+                <td>{{ grupo.nome }}</td>
+                <td>{{ formatarMoeda(grupo.valorEstoque) }}</td>
+                <td>{{ formatarMoeda(grupo.valorSaidas) }}</td>
+                <td>{{ formatarPercentual(grupo.percentualEstoque) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Gasto</span>
+            <h2>Fornecedores por valor</h2>
+          </div>
+          <p>Entradas estimadas pelo valor unitario</p>
+        </div>
+
+        <div *ngIf="!fornecedoresCustoResumo.length" class="panel-empty">
+          Nenhum fornecedor com valor movimentado no periodo.
+        </div>
+
+        <div class="table-shell" *ngIf="fornecedoresCustoResumo.length">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fornecedor</th>
+                <th>Documento</th>
+                <th>Valor</th>
+                <th>Entradas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let fornecedor of fornecedoresCustoResumo">
+                <td>{{ fornecedor.nome }}</td>
+                <td>{{ fornecedor.documento }}</td>
+                <td>{{ formatarMoeda(fornecedor.valor) }}</td>
+                <td>{{ fornecedor.entradas }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <article class="panel-card">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Consumo</span>
+            <h2>Itens com maior custo de saida</h2>
+          </div>
+          <p>O que mais pesa no almoxarifado</p>
+        </div>
+
+        <div *ngIf="!itensMaiorCustoSaida.length" class="panel-empty">
+          Nenhuma saida com valor calculado no periodo.
+        </div>
+
+        <div class="table-shell" *ngIf="itensMaiorCustoSaida.length">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Codigo</th>
+                <th>Item</th>
+                <th>Grupo</th>
+                <th>Qtd.</th>
+                <th>Custo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of itensMaiorCustoSaida">
+                <td>{{ item.codigo }}</td>
+                <td>{{ item.nome }}</td>
+                <td>{{ item.grupo }}</td>
+                <td>{{ item.quantidadeSaida }}</td>
+                <td>{{ formatarMoeda(item.valorSaida) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel-card cost-reading">
+        <div class="panel-header">
+          <div>
+            <span class="panel-tag">Leitura executiva</span>
+            <h2>Resumo para decisao</h2>
+          </div>
+        </div>
+
+        <div class="insight-list">
+          <div>
+            <strong>{{ formatarMoeda(custosResumo.valorEstoque) }}</strong>
+            <span>capital parado em estoque hoje.</span>
+          </div>
+          <div>
+            <strong>{{ formatarMoeda(custosResumo.valorSaidas) }}</strong>
+            <span>foi consumido em saidas no periodo selecionado.</span>
+          </div>
+          <div>
+            <strong>{{ grupoMaisCaroNome }}</strong>
+            <span>grupo com maior valor acumulado no estoque.</span>
+          </div>
+          <div>
+            <strong>{{ fornecedorMaiorCustoNome }}</strong>
+            <span>fornecedor com maior valor de entrada no periodo.</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <section class="summary-row">
       <article class="panel-card panel-highlight">
         <div class="panel-header">

@@ -66,6 +66,46 @@ interface ItemSaidaResumo {
   movimentacoes: number;
 }
 
+interface CustoResumo {
+  valorEstoque: number;
+  valorEntradas: number;
+  valorSaidas: number;
+  saldoPeriodo: number;
+  ticketMedioEntrada: number;
+  ticketMedioSaida: number;
+}
+
+interface EvolucaoCusto {
+  periodo: string;
+  entradas: number;
+  saidas: number;
+  saldo: number;
+  entradasAltura: number;
+  saidasAltura: number;
+}
+
+interface GrupoCustoResumo {
+  nome: string;
+  valorEstoque: number;
+  valorSaidas: number;
+  percentualEstoque: number;
+}
+
+interface FornecedorCustoResumo {
+  nome: string;
+  documento: string;
+  valor: number;
+  entradas: number;
+}
+
+interface ItemCustoResumo {
+  codigo: string;
+  nome: string;
+  grupo: string;
+  quantidadeSaida: number;
+  valorSaida: number;
+}
+
 interface RadarChartSlice {
   label: string;
   value: number;
@@ -96,6 +136,18 @@ export class DashboardProdutoComponent {
   itensMaisSaem: ItemSaidaResumo[] = [];
   saidaChartSlices: RadarChartSlice[] = [];
   entradaChartSlices: RadarChartSlice[] = [];
+  custosResumo: CustoResumo = {
+    valorEstoque: 0,
+    valorEntradas: 0,
+    valorSaidas: 0,
+    saldoPeriodo: 0,
+    ticketMedioEntrada: 0,
+    ticketMedioSaida: 0
+  };
+  evolucaoCustos: EvolucaoCusto[] = [];
+  gruposCustoResumo: GrupoCustoResumo[] = [];
+  fornecedoresCustoResumo: FornecedorCustoResumo[] = [];
+  itensMaiorCustoSaida: ItemCustoResumo[] = [];
 
   constructor(
     private itemService: ItemService,
@@ -141,6 +193,14 @@ export class DashboardProdutoComponent {
     return this.montarChartStyle(this.entradaChartSlices);
   }
 
+  get grupoMaisCaroNome(): string {
+    return this.gruposCustoResumo.length ? this.gruposCustoResumo[0].nome : '-';
+  }
+
+  get fornecedorMaiorCustoNome(): string {
+    return this.fornecedoresCustoResumo.length ? this.fornecedoresCustoResumo[0].nome : '-';
+  }
+
   carregarDashboard(): void {
     this.carregando = true;
     this.erro = null;
@@ -166,6 +226,11 @@ export class DashboardProdutoComponent {
         this.itensMaisSaem = this.montarItensMaisSaem(itens, saidasFiltradas);
         this.entradaChartSlices = this.montarEntradaChart(itens, entradasFiltradas);
         this.saidaChartSlices = this.montarSaidaChart(itens, saidasFiltradas);
+        this.custosResumo = this.montarResumoCustos(itens, entradasFiltradas, saidasFiltradas);
+        this.evolucaoCustos = this.montarEvolucaoCustos(itens, entradasFiltradas, saidasFiltradas);
+        this.gruposCustoResumo = this.montarResumoCustosPorGrupo(itens, saidasFiltradas);
+        this.fornecedoresCustoResumo = this.montarResumoCustosPorFornecedor(itens, entradasFiltradas);
+        this.itensMaiorCustoSaida = this.montarItensMaiorCustoSaida(itens, saidasFiltradas);
         this.ultimaAtualizacao = new Date();
         this.carregando = false;
       },
@@ -440,6 +505,158 @@ export class DashboardProdutoComponent {
       .slice(0, 8);
   }
 
+  private montarResumoCustos(itens: Item[], entradas: any[], saidas: any[]): CustoResumo {
+    const valorEstoque = this.calcularValorEstoqueAtual(itens);
+    const valorEntradas = this.calcularValorEntradas(itens, entradas);
+    const valorSaidas = this.calcularValorSaidas(itens, saidas);
+
+    return {
+      valorEstoque,
+      valorEntradas,
+      valorSaidas,
+      saldoPeriodo: valorEntradas - valorSaidas,
+      ticketMedioEntrada: entradas.length ? valorEntradas / entradas.length : 0,
+      ticketMedioSaida: saidas.length ? valorSaidas / saidas.length : 0
+    };
+  }
+
+  private montarEvolucaoCustos(itens: Item[], entradas: any[], saidas: any[]): EvolucaoCusto[] {
+    const mapa = new Map<string, { data: Date; entradas: number; saidas: number }>();
+
+    for (const entrada of entradas || []) {
+      const data = this.obterDataRegistro(entrada, 'data_entrada');
+      if (!data) continue;
+
+      const chave = this.obterChaveMes(data);
+      const registro = this.obterRegistroEvolucao(mapa, chave, data);
+      registro.entradas += this.calcularValorItensMovimentacao(itens, entrada?.itens || []);
+    }
+
+    for (const saida of saidas || []) {
+      const data = this.obterDataRegistro(saida, 'data_saida');
+      if (!data) continue;
+
+      const chave = this.obterChaveMes(data);
+      const registro = this.obterRegistroEvolucao(mapa, chave, data);
+      registro.saidas += this.calcularValorItensMovimentacao(itens, saida?.itens || []);
+    }
+
+    const maiorValor = Math.max(
+      ...Array.from(mapa.values()).flatMap((registro) => [registro.entradas, registro.saidas]),
+      1
+    );
+
+    return Array.from(mapa.entries())
+      .sort((a, b) => a[1].data.getTime() - b[1].data.getTime())
+      .slice(-8)
+      .map(([periodo, registro]) => ({
+        periodo,
+        entradas: registro.entradas,
+        saidas: registro.saidas,
+        saldo: registro.entradas - registro.saidas,
+        entradasAltura: this.calcularAlturaBarra(registro.entradas, maiorValor),
+        saidasAltura: this.calcularAlturaBarra(registro.saidas, maiorValor)
+      }));
+  }
+
+  private montarResumoCustosPorGrupo(itens: Item[], saidas: any[]): GrupoCustoResumo[] {
+    const mapa = new Map<string, GrupoCustoResumo>();
+    const valorEstoqueTotal = this.calcularValorEstoqueAtual(itens);
+
+    for (const item of itens || []) {
+      const grupo = item.tipo_item?.nome || 'Sem grupo';
+      if (!mapa.has(grupo)) {
+        mapa.set(grupo, {
+          nome: grupo,
+          valorEstoque: 0,
+          valorSaidas: 0,
+          percentualEstoque: 0
+        });
+      }
+
+      mapa.get(grupo)!.valorEstoque += Number(item.quantidade_atual || 0) * Number(item.valor_unitario || 0);
+    }
+
+    for (const saida of saidas || []) {
+      for (const itemSaida of saida?.itens || []) {
+        const item = itens.find((registro) => registro.id === Number(itemSaida?.item));
+        const grupo = item?.tipo_item?.nome || 'Sem grupo';
+        if (!mapa.has(grupo)) continue;
+
+        mapa.get(grupo)!.valorSaidas += Number(itemSaida?.quantidade || 0) * Number(item?.valor_unitario || 0);
+      }
+    }
+
+    return Array.from(mapa.values())
+      .map((grupo) => ({
+        ...grupo,
+        percentualEstoque: valorEstoqueTotal ? (grupo.valorEstoque / valorEstoqueTotal) * 100 : 0
+      }))
+      .sort((a, b) => b.valorEstoque - a.valorEstoque || b.valorSaidas - a.valorSaidas)
+      .slice(0, 6);
+  }
+
+  private montarResumoCustosPorFornecedor(itens: Item[], entradas: any[]): FornecedorCustoResumo[] {
+    const mapa = new Map<string, FornecedorCustoResumo>();
+
+    for (const entrada of entradas || []) {
+      const nota = entrada?.nota_fiscal_detalhe;
+      const nome = String(nota?.nome_fornecedor || entrada?.recebido_por || 'Fornecedor nao informado').trim();
+      const documento = String(nota?.cnpj_cpf || '-').trim() || '-';
+      const chave = `${nome.toLowerCase()}::${documento}`;
+
+      if (!mapa.has(chave)) {
+        mapa.set(chave, {
+          nome,
+          documento,
+          valor: 0,
+          entradas: 0
+        });
+      }
+
+      const registro = mapa.get(chave)!;
+      registro.valor += this.calcularValorItensMovimentacao(itens, entrada?.itens || []);
+      registro.entradas += 1;
+    }
+
+    return Array.from(mapa.values())
+      .filter((fornecedor) => fornecedor.valor > 0)
+      .sort((a, b) => b.valor - a.valor || b.entradas - a.entradas)
+      .slice(0, 6);
+  }
+
+  private montarItensMaiorCustoSaida(itens: Item[], saidas: any[]): ItemCustoResumo[] {
+    const mapa = new Map<number, ItemCustoResumo>();
+
+    for (const saida of saidas || []) {
+      for (const itemSaida of saida?.itens || []) {
+        const itemId = Number(itemSaida?.item);
+        const item = itens.find((registro) => registro.id === itemId);
+        if (!item) continue;
+
+        if (!mapa.has(itemId)) {
+          mapa.set(itemId, {
+            codigo: item.codigo,
+            nome: item.nome,
+            grupo: item.tipo_item?.nome || 'Sem grupo',
+            quantidadeSaida: 0,
+            valorSaida: 0
+          });
+        }
+
+        const quantidade = Number(itemSaida?.quantidade || 0);
+        const registro = mapa.get(itemId)!;
+        registro.quantidadeSaida += quantidade;
+        registro.valorSaida += quantidade * Number(item.valor_unitario || 0);
+      }
+    }
+
+    return Array.from(mapa.values())
+      .filter((item) => item.valorSaida > 0)
+      .sort((a, b) => b.valorSaida - a.valorSaida || b.quantidadeSaida - a.quantidadeSaida)
+      .slice(0, 6);
+  }
+
   private montarEntradaChart(itens: Item[], entradas: any[]): RadarChartSlice[] {
     const itemMapa = new Map<number, { codigo: string; nome: string; quantidade: number }>();
     const grupoMapa = new Map<string, number>();
@@ -576,11 +793,65 @@ export class DashboardProdutoComponent {
     }, 0);
   }
 
-  private formatarMoeda(valor: number): string {
+  private calcularValorEntradas(itens: Item[], entradas: any[]): number {
+    return (entradas || []).reduce((totalEntradas, entrada) => {
+      return totalEntradas + this.calcularValorItensMovimentacao(itens, entrada?.itens || []);
+    }, 0);
+  }
+
+  private calcularValorItensMovimentacao(itens: Item[], itensMovimentacao: any[]): number {
+    return (itensMovimentacao || []).reduce((totalItens: number, itemMovimentacao: any) => {
+      const item = itens.find((registro) => registro.id === Number(itemMovimentacao?.item));
+      return totalItens + (Number(itemMovimentacao?.quantidade || 0) * Number(item?.valor_unitario || 0));
+    }, 0);
+  }
+
+  private obterRegistroEvolucao(mapa: Map<string, { data: Date; entradas: number; saidas: number }>, chave: string, data: Date) {
+    if (!mapa.has(chave)) {
+      mapa.set(chave, {
+        data,
+        entradas: 0,
+        saidas: 0
+      });
+    }
+
+    return mapa.get(chave)!;
+  }
+
+  private obterDataRegistro(registro: any, campoData: string): Date | null {
+    const valor = registro?.[campoData] || registro?.criado_em;
+    if (!valor) {
+      return null;
+    }
+
+    const data = new Date(valor);
+    return Number.isNaN(data.getTime()) ? null : data;
+  }
+
+  private obterChaveMes(data: Date): string {
+    return new Intl.DateTimeFormat('pt-BR', {
+      month: 'short',
+      year: '2-digit'
+    }).format(data).replace('.', '');
+  }
+
+  private calcularAlturaBarra(valor: number, maiorValor: number): number {
+    if (!valor || !maiorValor) {
+      return 6;
+    }
+
+    return Math.max((valor / maiorValor) * 100, 8);
+  }
+
+  formatarMoeda(valor: number): string {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(valor || 0);
+  }
+
+  formatarPercentual(valor: number): string {
+    return `${(valor || 0).toFixed(1).replace('.', ',')}%`;
   }
 
   private buscarGrupoDoItem(itens: Item[], itemId: number): string {
