@@ -5,6 +5,7 @@ from rest_framework.generics import ListAPIView
 from django.db import transaction
 from django.utils import timezone
 from app_pedido.models import Pedido
+from rest_framework.permissions import IsAuthenticated
 from .serializers import PedidoComItensSerializer
 from app_usuario.services import registrar_log
 
@@ -34,6 +35,7 @@ class AtualizarPedidoAPIView(APIView):
 class CriarPedidoAPI(generics.CreateAPIView):
     queryset = Pedido.objects.all()
     serializer_class = PedidoComItensSerializer
+    permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -47,7 +49,10 @@ class CriarPedidoAPI(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         pedido = serializer.save()
-        registrar_log(self.request.user, f'Pedido "{pedido.id} - {pedido.codigo_pedido}" criado com sucesso.')
+        registrar_log(
+            self.request.user,
+            f'Pedido "{pedido.id} - {pedido.codigo_pedido}" criado com sucesso.'
+        )
 
 
 class ListarPedidosAPI(ListAPIView):
