@@ -77,11 +77,6 @@ export class AssinaturaEpiService {
     this.baseUrl = environment.apiUrl + '/assinaturas-epi/';
   }
 
-  constructor(
-    private http: HttpClient,
-    private authService: AuthenticationService
-  ) {}
-
   listarCompetencias(filtros?: Record<string, string | number | null | undefined>): Observable<AssinaturaEpiCompetencia[]> {
     let params = new HttpParams();
 

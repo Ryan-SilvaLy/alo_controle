@@ -21,7 +21,7 @@ export class LogsComponent implements OnInit {
 
   ngOnInit(): void {
     this.logsService.listarLogs().subscribe({
-      next: (data) => {
+      next: (data: Log[]) => {
         this.logs = data;
         this.loading = false;
       },

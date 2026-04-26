@@ -26,6 +26,8 @@ export class LogsService {
   ) {
     this.baseUrl = environment.apiUrl + '/usuario/logs';
   }
-      return this.http.get<Log[]>(`${this.baseUrl}/`, { headers: this.authService.getAuthHeaders() });
-    }
+
+  listarLogs(): Observable<Log[]> {
+    return this.http.get<Log[]>(`${this.baseUrl}/`, { headers: this.authService.getAuthHeaders() });
+  }
 }
