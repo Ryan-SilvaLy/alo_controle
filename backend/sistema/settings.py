@@ -17,6 +17,9 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'chave-insegura-apenas-local')
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
+# Garantir que healthcheck.railway.app está sempre incluído
+if 'healthcheck.railway.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('healthcheck.railway.app')
 
 AUTH_USER_MODEL = 'app_usuario.Usuario'
 
