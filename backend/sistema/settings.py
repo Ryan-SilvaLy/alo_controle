@@ -8,25 +8,25 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ========================
+# SECURITY
+# ========================
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
+SECRET_KEY = os.getenv('SECRET_KEY', 'chave-insegura-apenas-local')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = str(os.getenv('SECRET_KEY'))
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
-ALLOWED_HOSTS = []
-
-AUTH_USER_MODEL = 'app_usuario.Usuario' # Definindo o meu proprio modelo de usuario
+AUTH_USER_MODEL = 'app_usuario.Usuario'
 
 
-# Application definition
+# ========================
+# APPS
+# ========================
 
 INSTALLED_APPS = [
-    # Meus apps
+    # Seus apps
     'app_assinatura_epi',
     'app_controle',
     'app_item',
@@ -34,10 +34,11 @@ INSTALLED_APPS = [
     'app_usuario',
     'app_produto',
 
-    # Meus outros apps
-    'rest_framework', # Django REST Framework
-    'corsheaders',  
+    # Terceiros
+    'rest_framework',
+    'corsheaders',
 
+    # Django
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -46,10 +47,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-# pip install django-cors-headers
+# ========================
+# MIDDLEWARE
+# ========================
+
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # Necessario para conexão entre backend e frontend.
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # importante produção
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -58,7 +65,17 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ========================
+# CORE
+# ========================
+
 ROOT_URLCONF = 'sistema.urls'
+
+WSGI_APPLICATION = 'sistema.wsgi.application'
+
+# ========================
+# TEMPLATES
+# ========================
 
 TEMPLATES = [
     {
@@ -75,22 +92,21 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sistema.wsgi.application'
-
-
-# Database
-# DATABASE_URL=postgresql://postgres:123456@localhost:5432/alo_controle
+# ========================
+# DATABASE
+# ========================
 
 DATABASES = {
     "default": dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
+        ssl_require=not DEBUG,
     )
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
+# ========================
+# PASSWORDS
+# ========================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -107,51 +123,63 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+# ========================
+# INTERNATIONAL
+# ========================
 
 LANGUAGE_CODE = 'pt-br'
-
 TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
+# ========================
+# STATIC FILES
+# ========================
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+# ========================
+# DEFAULT FIELD
+# ========================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ========================
+# DJANGO REST
+# ========================
 
-# Django REST Framework settings
-# https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication', # Um token é gerado e enviado junto com as requisições para verificar a identidade do usuário.
-        'rest_framework.authentication.SessionAuthentication',  # Permite que a autenticação no django-admin seja aplicada para o Rest Framework.
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated', # Todas as views da API exigirão que o usuário esteja autenticado para acessar os recursos. O usuário precisa estar logado para fazer qualquer requisição à API.
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 
+# ========================
+# JWT
+# ========================
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),  # Token válido por 1 dia
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Token de atualização válido por 7 dias
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
+# ========================
+# CORS
+# ========================
 
-# CORS settings
-# https://pypi.org/project/django-cors-headers/
-# Rota para permitir que o frontend (Angular) acesse o backend.
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",
-]
+CORS_ALLOWED_ORIGINS = os.getenv(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:4200"
+).split(",")
+
+# ========================
+# WHITENOISE
+# ========================
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
