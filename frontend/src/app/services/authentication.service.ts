@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, catchError, Observable, of, switchMap, tap } from 'rxjs';
 import { getFromSessionStorage, setInSessionStorage } from '../utils/storage-utils';
+import { environment } from '../../environments/environment';
 
 
 interface TokenResponse {
@@ -15,7 +16,7 @@ interface TokenResponse {
 
 export class AuthenticationService {
 
-  private baseUrl = 'http://127.0.0.1:8000/api/auth/';
+  private baseUrl = environment.apiUrl + '/auth/';
 
   private apiLogin = this.baseUrl + 'token/';
   private apiRefresh = this.baseUrl + 'token/refresh/';

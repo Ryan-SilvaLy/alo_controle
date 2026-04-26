@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from './authentication.service';
 
 export interface AssinaturaEpiLancamento {
@@ -68,7 +68,14 @@ export interface AssinaturaEpiCompetenciaDetalhe extends AssinaturaEpiCompetenci
   providedIn: 'root'
 })
 export class AssinaturaEpiService {
-  private baseUrl = 'http://127.0.0.1:8000/api/assinaturas-epi/';
+  private baseUrl: string;
+
+  constructor(
+    private http: HttpClient,
+    private authService: AuthenticationService
+  ) {
+    this.baseUrl = environment.apiUrl + '/assinaturas-epi/';
+  }
 
   constructor(
     private http: HttpClient,

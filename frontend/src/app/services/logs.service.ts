@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AuthenticationService } from './authentication.service';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 
 export interface Log {
@@ -17,17 +18,14 @@ export interface Log {
   providedIn: 'root'
 })
 export class LogsService {
-  private baseUrl = 'http://127.0.0.1:8000/api/usuario/logs';
+  private baseUrl: string;
 
   constructor(
     private http: HttpClient,
     private authService: AuthenticationService
-
-  ) 
-  { }
-
-    listarLogs(): Observable<Log[]> {
-  
+  ) {
+    this.baseUrl = environment.apiUrl + '/usuario/logs';
+  }
       return this.http.get<Log[]>(`${this.baseUrl}/`, { headers: this.authService.getAuthHeaders() });
     }
 }

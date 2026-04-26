@@ -2,20 +2,23 @@ import { Injectable } from '@angular/core';
 import { AuthenticationService } from './authentication.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 
 @Injectable({
   providedIn: 'root'
 })
 export class PedidoService {
-  private baseUrl = 'http://127.0.0.1:8000/api/pedido/';
+  private baseUrl: string;
   private pedido: any = null;
   private pedidoSelecionado = null;
   
   constructor(
     private authService: AuthenticationService,
     private http: HttpClient
-  ) {}
+  ) {
+    this.baseUrl = environment.apiUrl + '/pedido/';
+  }
 
 
   setPedido(pedido: any) {

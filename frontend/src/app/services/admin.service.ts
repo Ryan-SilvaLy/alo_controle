@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { getFromSessionStorage, setInSessionStorage } from '../utils/storage-utils';
 
@@ -35,13 +36,15 @@ export interface NovoUsuario extends BaseUsuario {
 export class AdminService {
   private usuarioSelecionado: Usuario | null = null;
 
-  private baseUrl = 'http://127.0.0.1:8000/api/usuario';
+  private baseUrl: string;
   private readonly STORAGE_KEY = 'usuario_selecionado';
 
   constructor(
     private http: HttpClient,
     private authService: AuthenticationService
-  ) { }
+  ) {
+    this.baseUrl = environment.apiUrl + '/usuario';
+  }
 
 
   setUsuarioSelecionado(usuario: Usuario) {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AuthenticationService } from './authentication.service';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 
 interface MovimentacoesEstoque {
@@ -14,12 +15,14 @@ interface MovimentacoesEstoque {
 })
 export class ControleService {
 
-  private baseUrl = 'http://127.0.0.1:8000/api/controle/';
+  private baseUrl: string;
 
   constructor(
     private authService: AuthenticationService,
     private http: HttpClient,
-  ) { }
+  ) {
+    this.baseUrl = environment.apiUrl + '/controle/';
+  }
   
   listarMovimentacoesEstoque(): Observable<MovimentacoesEstoque> {
     return this.http.get<MovimentacoesEstoque>(`${this.baseUrl}movimentacoes/estoque`, {

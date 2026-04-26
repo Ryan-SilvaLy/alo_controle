@@ -1,0 +1,9 @@
+.angular
+node_modules
+dist
+.git
+.gitignore
+README.md
+karma.conf.js
+tsconfig.spec.json
+src/**/*.spec.ts

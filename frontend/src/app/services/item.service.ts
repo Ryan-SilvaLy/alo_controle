@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { AuthenticationService } from './authentication.service';
 
 // Interface para o TipoItem
@@ -39,8 +40,8 @@ export interface Item extends ItemCreate {
 })
 export class ItemService {
   
-  private baseUrl = 'http://127.0.0.1:8000/api/item/';
-  private baseUrlTipoItem = 'http://127.0.0.1:8000/api/item/tipoItem';
+  private baseUrl: string;
+  private baseUrlTipoItem: string;
 
   public UNIDADE_MEDIDA_CHOICES: [string, string][] = [
     ['un', 'Unidade'],
@@ -57,8 +58,10 @@ export class ItemService {
   constructor(
     private http: HttpClient,
     private authService: AuthenticationService
-
-  ) { }
+  ) {
+    this.baseUrl = environment.apiUrl + '/item/';
+    this.baseUrlTipoItem = environment.apiUrl + '/item/tipoItem';
+  }
   
   criarItem(item: ItemCreate): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}criar/`, item, { headers: this.authService.getAuthHeaders() });
