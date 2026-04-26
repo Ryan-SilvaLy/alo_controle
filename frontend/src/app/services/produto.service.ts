@@ -18,7 +18,7 @@ export interface Produto {
 })
 export class ProdutoService {
 
-  private baseUrl = 'http://127.0.0.1:8000/api/produto/';
+  private baseUrl: string;
   constructor(
     private authService: AuthenticationService,
     private http: HttpClient,
