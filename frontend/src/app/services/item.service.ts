@@ -59,8 +59,8 @@ export class ItemService {
     private http: HttpClient,
     private authService: AuthenticationService
   ) {
-    this.baseUrl = environment.apiUrl + '/item/';
-    this.baseUrlTipoItem = environment.apiUrl + '/item/tipoItem';
+    this.baseUrl = environment.apiUrl + '/api/item/';
+    this.baseUrlTipoItem = environment.apiUrl + '/api/item/tipoItem';
   }
   
   criarItem(item: ItemCreate): Observable<any> {

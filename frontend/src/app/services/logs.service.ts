@@ -24,7 +24,7 @@ export class LogsService {
     private http: HttpClient,
     private authService: AuthenticationService
   ) {
-    this.baseUrl = environment.apiUrl + '/usuario/logs';
+    this.baseUrl = environment.apiUrl + '/api/usuario/logs';
   }
 
   listarLogs(): Observable<Log[]> {

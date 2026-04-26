@@ -23,7 +23,7 @@ export class ProdutoService {
     private authService: AuthenticationService,
     private http: HttpClient,
   ) {
-    this.baseUrl = environment.apiUrl + '/produto/';
+    this.baseUrl = environment.apiUrl + '/api/produto/';
   }
 
   listarProdutos(): Observable<any> {
@@ -63,6 +63,5 @@ export class ProdutoService {
     };
   }
 }
-
 
 

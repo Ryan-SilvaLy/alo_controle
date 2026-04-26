@@ -17,7 +17,7 @@ export class PedidoService {
     private authService: AuthenticationService,
     private http: HttpClient
   ) {
-    this.baseUrl = environment.apiUrl + '/pedido/';
+    this.baseUrl = environment.apiUrl + '/api/pedido/';
   }
 
 

@@ -43,7 +43,7 @@ export class AdminService {
     private http: HttpClient,
     private authService: AuthenticationService
   ) {
-    this.baseUrl = environment.apiUrl + '/usuario';
+    this.baseUrl = environment.apiUrl + '/api/usuario';
   }
 
 

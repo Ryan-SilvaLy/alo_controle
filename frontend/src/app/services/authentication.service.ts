@@ -16,7 +16,7 @@ interface TokenResponse {
 
 export class AuthenticationService {
 
-  private baseUrl = environment.apiUrl + '/auth/';
+  private baseUrl = environment.apiUrl + '/api/auth/';
 
   private apiLogin = this.baseUrl + 'token/';
   private apiRefresh = this.baseUrl + 'token/refresh/';
@@ -70,7 +70,7 @@ getUsuarioLogadoValue() {
   inicializarUsuarioLogado() {
     const token = localStorage.getItem('access_token');
     if (token) {
-      this.http.get<any>(`${environment.apiUrl}/usuario/pegar-usuario-logado/`, {
+      this.http.get<any>(`${environment.apiUrl}/api/usuario/pegar-usuario-logado/`, {
         headers: this.getAuthHeaders()
       }).subscribe({
         next: (usuario) => this.setUsuarioLogado(usuario),
@@ -112,7 +112,7 @@ login(username: string, password: string): Observable<any> {
       localStorage.setItem('refresh_token', response.refresh);
       this.loggedIn.next(true);
     }),
-    switchMap(() => this.http.get<any>(`${environment.apiUrl}/usuario/pegar-usuario-logado/`, {
+    switchMap(() => this.http.get<any>(`${environment.apiUrl}/api/usuario/pegar-usuario-logado/`, {
       headers: this.getAuthHeaders()
     })),
     tap(usuario => this.setUsuarioLogado(usuario))

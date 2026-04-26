@@ -21,7 +21,7 @@ export class ControleService {
     private authService: AuthenticationService,
     private http: HttpClient,
   ) {
-    this.baseUrl = environment.apiUrl + '/controle/';
+    this.baseUrl = environment.apiUrl + '/api/controle/';
   }
   
   listarMovimentacoesEstoque(): Observable<MovimentacoesEstoque> {
