@@ -124,6 +124,7 @@ export class DashboardProdutoComponent {
   carregando = true;
   erro: string | null = null;
   periodoSelecionado = 'geral';
+  incluirGruposSecundarios = false;
   ultimaAtualizacao: Date | null = null;
 
   metricas: DashboardMetric[] = [];
@@ -212,25 +213,33 @@ export class DashboardProdutoComponent {
       pedidos: this.pedidoService.listarPedidos()
     }).subscribe({
       next: ({ itens, entradas, saidas, pedidos }) => {
-        const entradasFiltradas = this.filtrarPorPeriodo(entradas, 'data_entrada');
-        const saidasFiltradas = this.filtrarPorPeriodo(saidas, 'data_saida');
+        const itensAnalise = this.filtrarItensPorStatusKpi(itens);
+        const entradasFiltradas = this.filtrarMovimentacoesPorItens(
+          this.filtrarPorPeriodo(entradas, 'data_entrada'),
+          itensAnalise
+        );
+        const saidasFiltradas = this.filtrarMovimentacoesPorItens(
+          this.filtrarPorPeriodo(saidas, 'data_saida'),
+          itensAnalise
+        );
         const pedidosLista = Array.isArray(pedidos) ? pedidos : [];
+        const pedidosAnalise = this.filtrarPedidosPorStatusKpi(pedidosLista, itens);
 
-        this.metricas = this.montarMetricas(itens, entradasFiltradas, saidasFiltradas, pedidosLista);
-        this.estoqueCritico = this.montarEstoqueCritico(itens);
-        this.gruposResumo = this.montarResumoGrupos(itens, entradasFiltradas, saidasFiltradas);
+        this.metricas = this.montarMetricas(itensAnalise, entradasFiltradas, saidasFiltradas, pedidosAnalise);
+        this.estoqueCritico = this.montarEstoqueCritico(itensAnalise);
+        this.gruposResumo = this.montarResumoGrupos(itensAnalise, entradasFiltradas, saidasFiltradas);
         this.fornecedoresResumo = this.montarFornecedores(entradasFiltradas);
-        this.pedidosPendentes = this.montarPedidosPendentes(pedidosLista);
-        this.setoresMaisPedem = this.montarRankingPedidos(pedidosLista, 'setor_destino');
-        this.solicitantesMaisPedem = this.montarRankingPedidos(pedidosLista, 'solicitante');
-        this.itensMaisSaem = this.montarItensMaisSaem(itens, saidasFiltradas);
-        this.entradaChartSlices = this.montarEntradaChart(itens, entradasFiltradas);
-        this.saidaChartSlices = this.montarSaidaChart(itens, saidasFiltradas);
-        this.custosResumo = this.montarResumoCustos(itens, entradasFiltradas, saidasFiltradas);
-        this.evolucaoCustos = this.montarEvolucaoCustos(itens, entradasFiltradas, saidasFiltradas);
-        this.gruposCustoResumo = this.montarResumoCustosPorGrupo(itens, saidasFiltradas);
-        this.fornecedoresCustoResumo = this.montarResumoCustosPorFornecedor(itens, entradasFiltradas);
-        this.itensMaiorCustoSaida = this.montarItensMaiorCustoSaida(itens, saidasFiltradas);
+        this.pedidosPendentes = this.montarPedidosPendentes(pedidosAnalise);
+        this.setoresMaisPedem = this.montarRankingPedidos(pedidosAnalise, 'setor_destino');
+        this.solicitantesMaisPedem = this.montarRankingPedidos(pedidosAnalise, 'solicitante');
+        this.itensMaisSaem = this.montarItensMaisSaem(itensAnalise, saidasFiltradas);
+        this.entradaChartSlices = this.montarEntradaChart(itensAnalise, entradasFiltradas);
+        this.saidaChartSlices = this.montarSaidaChart(itensAnalise, saidasFiltradas);
+        this.custosResumo = this.montarResumoCustos(itensAnalise, entradasFiltradas, saidasFiltradas);
+        this.evolucaoCustos = this.montarEvolucaoCustos(itensAnalise, entradasFiltradas, saidasFiltradas);
+        this.gruposCustoResumo = this.montarResumoCustosPorGrupo(itensAnalise, saidasFiltradas);
+        this.fornecedoresCustoResumo = this.montarResumoCustosPorFornecedor(itensAnalise, entradasFiltradas);
+        this.itensMaiorCustoSaida = this.montarItensMaiorCustoSaida(itensAnalise, saidasFiltradas);
         this.ultimaAtualizacao = new Date();
         this.carregando = false;
       },
@@ -261,6 +270,45 @@ export class DashboardProdutoComponent {
 
       return new Date(data) >= limite;
     });
+  }
+
+  private filtrarItensPorStatusKpi(itens: Item[]): Item[] {
+    if (this.incluirGruposSecundarios) {
+      return itens ?? [];
+    }
+
+    return (itens ?? []).filter((item) => !item.tipo_item?.grupo_secundario);
+  }
+
+  private filtrarMovimentacoesPorItens<T extends Record<string, any>>(movimentacoes: T[], itensAnalise: Item[]): T[] {
+    if (this.incluirGruposSecundarios) {
+      return movimentacoes ?? [];
+    }
+
+    const idsPermitidos = new Set((itensAnalise ?? []).map((item) => Number(item.id)));
+
+    return (movimentacoes ?? [])
+      .map((movimentacao) => ({
+        ...movimentacao,
+        itens: (movimentacao?.['itens'] || []).filter((itemMovimentacao: any) =>
+          idsPermitidos.has(Number(itemMovimentacao?.item))
+        )
+      }))
+      .filter((movimentacao) => (movimentacao?.['itens'] || []).length > 0);
+  }
+
+  private filtrarPedidosPorStatusKpi(pedidos: any[], itens: Item[]): any[] {
+    if (this.incluirGruposSecundarios) {
+      return pedidos ?? [];
+    }
+
+    const gruposSecundariosIds = new Set(
+      (itens ?? [])
+        .filter((item) => !!item.tipo_item?.grupo_secundario)
+        .map((item) => Number(item.tipo_item.id))
+    );
+
+    return (pedidos ?? []).filter((pedido) => !gruposSecundariosIds.has(Number(pedido?.tipo_item)));
   }
 
   private montarMetricas(itens: Item[], entradas: any[], saidas: any[], pedidos: any[]): DashboardMetric[] {

@@ -8,6 +8,7 @@ import { AuthenticationService } from './authentication.service';
 export interface TipoItem {
   id: number;
   nome: string;
+  grupo_secundario?: boolean;
   criado_em?: string;
   atualizado_em?: string;
 }

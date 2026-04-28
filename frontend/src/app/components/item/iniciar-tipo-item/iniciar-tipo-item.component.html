@@ -66,6 +66,7 @@
           <tr>
             <th class="px-4 py-3 text-left">ID</th>
             <th class="px-4 py-3 text-left">Nome</th>
+            <th class="px-4 py-3 text-center">Status KPI</th>
             <th class="px-4 py-3 text-center">Situacao</th>
             <th class="px-4 py-3 text-center">Acoes</th>
           </tr>
@@ -74,6 +75,14 @@
           <tr *ngFor="let tipo of tiposItensPaginados" class="border-t border-slate-200 hover:bg-slate-50">
             <td class="px-4 py-3">{{ tipo.id }}</td>
             <td class="px-4 py-3">{{ tipo.nome }}</td>
+            <td class="px-4 py-3 text-center">
+              <span
+                class="inline-flex rounded-full px-3 py-1 text-xs"
+                [ngClass]="tipo.grupo_secundario ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'"
+              >
+                {{ tipo.grupo_secundario ? 'Secundario' : 'Principal' }}
+              </span>
+            </td>
             <td class="px-4 py-3 text-center">
               <span
                 class="inline-flex rounded-full px-3 py-1 text-xs"
@@ -91,6 +100,16 @@
                   title="Atualizar tipo de item"
                 >
                   <i class="fa fa-pen"></i>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="alternarStatusKpi(tipo)"
+                  class="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:border-amber-300 hover:text-amber-700 transition"
+                  [title]="tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundario'"
+                >
+                  <i [ngClass]="tipo.grupo_secundario ? 'fa fa-star' : 'fa fa-layer-group'"></i>
+                  <span>{{ tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundario' }}</span>
                 </button>
 
                 <button
@@ -143,6 +162,15 @@
             Nome e obrigatorio.
           </small>
         </div>
+
+        <label class="mt-4 flex items-center gap-2 rounded border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            formControlName="grupo_secundario"
+            class="h-4 w-4"
+          />
+          Grupo secundario nos KPIs
+        </label>
 
         <div class="mt-5 flex justify-end gap-3">
           <button

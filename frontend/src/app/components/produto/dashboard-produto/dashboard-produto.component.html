@@ -20,6 +20,27 @@
         </select>
       </label>
 
+      <label class="period-field">
+        <span>Grupos</span>
+        <label class="inline-flex items-center gap-2 rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700">
+          <input
+            type="checkbox"
+            [(ngModel)]="incluirGruposSecundarios"
+            (ngModelChange)="carregarDashboard()"
+          />
+          Incluir grupos secundarios
+        </label>
+      </label>
+
+      <a
+        routerLink="/item/iniciar-tipo-item"
+        class="inline-flex min-h-10 items-center gap-2 whitespace-nowrap rounded bg-slate-900 px-3 py-2 text-sm text-white no-underline transition hover:bg-teal-700 hover:text-white"
+        title="Abrir lista de tipos de item"
+      >
+        <i class="fa fa-layer-group"></i>
+        <span>Tipos de item</span>
+      </a>
+
       <!-- <a
         routerLink="/produto/iniciar"
         class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200 no-underline"

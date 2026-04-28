@@ -5,6 +5,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 class TipoItem(models.Model):
     nome = models.CharField(verbose_name='Nome do Tipo de Item', max_length=40, unique=True)
+    grupo_secundario = models.BooleanField(default=False, verbose_name='Grupo secundario para KPIs')
 
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)

@@ -40,7 +40,10 @@ export class ModalTipoItemComponent {
     }
 
     this.carregando = true;
-    this.itemService.criarTipoItem({ nome: this.novoTipoNome.trim() }).subscribe({
+    this.itemService.criarTipoItem({
+      nome: this.novoTipoNome.trim(),
+      grupo_secundario: false,
+    }).subscribe({
       next: (res) => {
         this.snackbar.show('Tipo de item criado com sucesso.', 'success');
         this.carregando = false;

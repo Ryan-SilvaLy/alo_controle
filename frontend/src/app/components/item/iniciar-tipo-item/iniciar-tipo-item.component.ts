@@ -41,6 +41,7 @@ atualizarItensPaginados() {
   ) {
     this.formAtualizar = this.fb.group({
       nome: ['', Validators.required],
+      grupo_secundario: [false],
     });
   }
 
@@ -100,6 +101,7 @@ carregarTiposItens() {
     this.idTipoItem = tipo.id;
     this.formAtualizar.patchValue({
       nome: tipo.nome,
+      grupo_secundario: !!tipo.grupo_secundario,
     });
   }
 
@@ -144,6 +146,32 @@ tipoCriado(novoTipo: TipoItem) {
   this.carregarTiposItens();
 }
 
+alternarStatusKpi(tipo: TipoItem) {
+  const novoStatus = !tipo.grupo_secundario;
 
+  this.itemService.atualizarTipoItem(tipo.id, { grupo_secundario: novoStatus }).subscribe({
+    next: (tipoAtualizado) => {
+      const aplicarAtualizacao = (registro: any) => {
+        if (registro.id === tipo.id) {
+          registro.grupo_secundario = tipoAtualizado?.grupo_secundario ?? novoStatus;
+        }
+        return registro;
+      };
+
+      this.tiposItens = this.tiposItens.map(aplicarAtualizacao);
+      this.tiposItensSemRelacionamento = this.tiposItensSemRelacionamento.map(aplicarAtualizacao);
+      this.atualizarItensPaginados();
+
+      this.snackbar.show(
+        novoStatus ? 'Grupo marcado como secundario para KPIs.' : 'Grupo marcado como principal para KPIs.',
+        'success'
+      );
+    },
+    error: (err) => {
+      console.error(err);
+      this.snackbar.show('Erro ao alterar status KPI do grupo.', 'error');
+    }
+  });
+}
 
 }
