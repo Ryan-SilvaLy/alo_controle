@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthenticationService } from './authentication.service';
 
@@ -69,6 +69,8 @@ export interface AssinaturaEpiCompetenciaDetalhe extends AssinaturaEpiCompetenci
 })
 export class AssinaturaEpiService {
   private baseUrl: string;
+  private assinaturasAtualizadasSubject = new Subject<void>();
+  assinaturasAtualizadas$ = this.assinaturasAtualizadasSubject.asObservable();
 
   constructor(
     private http: HttpClient,
@@ -103,6 +105,12 @@ export class AssinaturaEpiService {
       `${this.baseUrl}competencias/${competenciaId}/gerar-relatorio/`,
       {},
       { headers: this.authService.getAuthHeaders() }
+    ).pipe(tap(() => this.notificarAssinaturasAtualizadas()));
+  }
+
+  contarCompetenciasAbertas(): Observable<number> {
+    return this.listarCompetencias({ status: 'aberta' }).pipe(
+      map((competencias) => Array.isArray(competencias) ? competencias.length : 0)
     );
   }
 
@@ -129,12 +137,16 @@ export class AssinaturaEpiService {
       `${this.baseUrl}relatorios/${id}/marcar-assinado/`,
       {},
       { headers: this.authService.getAuthHeaders() }
-    );
+    ).pipe(tap(() => this.notificarAssinaturasAtualizadas()));
   }
 
   obterDadosImpressao(id: number): Observable<AssinaturaEpiRelatorio> {
     return this.http.get<AssinaturaEpiRelatorio>(`${this.baseUrl}relatorios/${id}/imprimir/`, {
       headers: this.authService.getAuthHeaders()
     });
+  }
+
+  notificarAssinaturasAtualizadas(): void {
+    this.assinaturasAtualizadasSubject.next();
   }
 }

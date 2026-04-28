@@ -59,6 +59,14 @@
       <a routerLink="/pedido/listar" routerLinkActive="is-active" class="nav-link">
         <i class="fas fa-receipt"></i>
         <span>Pedidos</span>
+        <span
+          *ngIf="totalPedidosNotificacao > 0"
+          class="nav-badge"
+          [attr.aria-label]="totalPedidosNotificacao + ' pedido(s) aguardando acao'"
+        >
+          <i class="fas fa-bell"></i>
+          {{ totalPedidosNotificacao > 99 ? '99+' : totalPedidosNotificacao }}
+        </span>
       </a>
 
       <a
@@ -89,6 +97,14 @@
       >
         <i class="fas fa-file-signature"></i>
         <span>Assinaturas EPI</span>
+        <span
+          *ngIf="totalAssinaturasEpiAbertas > 0"
+          class="nav-badge"
+          [attr.aria-label]="totalAssinaturasEpiAbertas + ' assinatura(s) EPI aberta(s)'"
+        >
+          <i class="fas fa-file-circle-exclamation"></i>
+          {{ totalAssinaturasEpiAbertas > 99 ? '99+' : totalAssinaturasEpiAbertas }}
+        </span>
       </a>
 
       <a

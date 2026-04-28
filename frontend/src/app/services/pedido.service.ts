@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthenticationService } from './authentication.service';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 
@@ -12,6 +12,8 @@ export class PedidoService {
   private baseUrl: string;
   private pedido: any = null;
   private pedidoSelecionado = null;
+  private pedidosAtualizadosSubject = new Subject<void>();
+  pedidosAtualizados$ = this.pedidosAtualizadosSubject.asObservable();
   
   constructor(
     private authService: AuthenticationService,
@@ -50,7 +52,7 @@ export class PedidoService {
 
     return this.http.patch(`${this.baseUrl}atualizar-status/${id}/`, body, {
       headers: this.authService.getAuthHeaders()
-    });
+    }).pipe(tap(() => this.notificarPedidosAtualizados()));
   }
 
   atualizarStatusComprasPedido(id: number, statusCompras: 'visto' | 'negado', motivoNegado?: string): Observable<any> {
@@ -61,13 +63,13 @@ export class PedidoService {
 
     return this.http.patch(`${this.baseUrl}atualizar-status-compras/${id}/`, body, {
       headers: this.authService.getAuthHeaders()
-    });
+    }).pipe(tap(() => this.notificarPedidosAtualizados()));
   }
 
   atualizarPedido(id: number, body: any): Observable<any> {
     return this.http.patch(`${this.baseUrl}atualizar/${id}/`, body, {
       headers: this.authService.getAuthHeaders()
-    });
+    }).pipe(tap(() => this.notificarPedidosAtualizados()));
   }
 
   buscarPedidoPorId(id: number): Observable<any> {
@@ -80,10 +82,24 @@ export class PedidoService {
     return this.http.get<any>(`${this.baseUrl}listar/`, { headers: this.authService.getAuthHeaders() });
   }
 
+  contarPedidosNotificacao(nivelPermissao?: string): Observable<number> {
+    const statusAlvo = nivelPermissao === 'compra' ? 'enviado' : 'pendente';
+
+    return this.listarPedidos().pipe(
+      map((res) => {
+        const pedidos = Array.isArray(res) ? res : [];
+        return pedidos.filter((pedido: any) => pedido?.status === statusAlvo).length;
+      })
+    );
+  }
 
   criarPedido(body: any): Observable<any> {
     return this.http.post(`${this.baseUrl}criar/`, body, {
       headers: this.authService.getAuthHeaders()
-    });
+    }).pipe(tap(() => this.notificarPedidosAtualizados()));
+  }
+
+  notificarPedidosAtualizados(): void {
+    this.pedidosAtualizadosSubject.next();
   }
 }

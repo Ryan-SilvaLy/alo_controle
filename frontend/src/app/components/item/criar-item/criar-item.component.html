@@ -31,7 +31,8 @@
             <input
               type="text"
               name="nome"
-              [(ngModel)]="item.nome"
+              [ngModel]="item.nome"
+              (ngModelChange)="onNomeChange($event)"
               required
               maxlength="50"
               placeholder="Ex: Mouse Óptico USB"
@@ -148,7 +149,8 @@
               <input
                 type="text"
                 name="codigo"
-                [(ngModel)]="item.codigo"
+                [ngModel]="item.codigo"
+                (ngModelChange)="onCodigoChange($event)"
                 maxlength="8"
                 class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
               />
