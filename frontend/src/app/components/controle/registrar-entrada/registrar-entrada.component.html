@@ -26,7 +26,7 @@
         <div class="grid grid-cols-12 gap-3">
           <div class="col-span-12 md:col-span-5">
             <label class="block text-xs font-medium text-gray-700 mb-1">
-              Recebido Por <span class="text-red-500">*</span>
+              Recebido por <span class="text-red-500">*</span>
             </label>
             <app-autocomplete-select
               formControlName="recebido_por"
@@ -36,7 +36,7 @@
               [freeText]="true"
               [maxLength]="40"
               placeholder="Quem recebeu"
-              emptyText="Nenhuma sugestao encontrada"
+              emptyText="Nenhuma sugestão encontrada"
             ></app-autocomplete-select>
             <div
               *ngIf="form.get('recebido_por')?.touched && form.get('recebido_por')?.invalid"
@@ -87,7 +87,7 @@
         <div class="grid grid-cols-12 gap-3">
           <div class="col-span-12 md:col-span-3">
             <label class="block text-xs font-medium text-gray-700 mb-1">
-              Número da Nota
+              Número da nota
             </label>
             <app-autocomplete-select
               formControlName="numero_nota"
@@ -96,14 +96,14 @@
               [valueWith]="textoValue"
               [freeText]="true"
               [maxLength]="30"
-              placeholder="Numero da nota"
+              placeholder="Número da nota"
               emptyText="Nenhuma nota encontrada"
             ></app-autocomplete-select>
           </div>
 
           <div class="col-span-12 md:col-span-5">
             <label class="block text-xs font-medium text-gray-700 mb-1">
-              Nome do Fornecedor
+              Nome do fornecedor
             </label>
             <app-autocomplete-select
               formControlName="nome_fornecedor"
@@ -130,7 +130,7 @@
               [maxLength]="14"
               inputMode="numeric"
               [onlyNumbers]="true"
-              placeholder="Apenas numeros"
+              placeholder="Apenas números"
               emptyText="Nenhum CNPJ/CPF encontrado"
             ></app-autocomplete-select>
           </div>
@@ -183,8 +183,8 @@
                   [disabledIds]="getItensSelecionadosForaLinha(i)"
                   [labelWith]="itemLabel"
                   [secondaryWith]="itemSecondary"
-                  placeholder="Buscar por codigo, nome, grupo..."
-                  emptyText="Nenhum item disponivel"
+                  placeholder="Buscar por código, nome ou grupo..."
+                  emptyText="Nenhum item disponível"
                   (selected)="onItemSelecionado(i)"
                 ></app-autocomplete-select>
               </div>
@@ -244,7 +244,7 @@
     <div class="p-3 space-y-4 text-sm text-gray-700">
       <div class="grid grid-cols-12 gap-3">
         <div class="col-span-12 md:col-span-6">
-          <p><strong>Recebido Por:</strong> {{ form.value.recebido_por }}</p>
+          <p><strong>Recebido por:</strong> {{ form.value.recebido_por }}</p>
         </div>
 
         <div class="col-span-12 md:col-span-6" *ngIf="form.value.observacao">

@@ -103,7 +103,7 @@ carregarCodigosBarras() {
     },
     error: () => {
       this.carregandoCodigos = false;
-      this.snackbar.show('Erro ao listar codigos de barras.', 'error');
+      this.snackbar.show('Não foi possível listar os códigos de barras.', 'error');
     }
   });
 }
@@ -163,7 +163,7 @@ async imprimirCodigosSelecionados() {
     await this.pdfService.gerarPdfCodigosBarras(itensSelecionados);
   } catch (err) {
     console.error(err);
-    this.snackbar.show('Erro ao gerar PDF dos codigos de barras.', 'error');
+    this.snackbar.show('Não foi possível gerar o PDF dos códigos de barras.', 'error');
   } finally {
     this.imprimindoCodigos = false;
   }
@@ -174,13 +174,13 @@ async imprimirCodigosSelecionados() {
     if (this.formAtualizar.valid) {
       this.itemService.atualizarTipoItem(this.idTipoItem, this.formAtualizar.value).subscribe({
         next: () => {
-          this.snackbar.show('Tipo de item atualizado com sucesso!', 'success');
+          this.snackbar.show('Tipo de item atualizado com sucesso.', 'success');
           this.fecharModal();
           this.carregarTiposItens();
         },
         error: (err) => {
           console.error(err);
-          this.snackbar.show('Erro ao atualizar tipo de item', 'error');
+          this.snackbar.show('Não foi possível atualizar o tipo de item.', 'error');
         },
       });
     }
@@ -216,13 +216,13 @@ confirmarExclusao() {
 
   this.itemService.excluirTipoItem(this.tipoItemParaExcluir.id).subscribe({
     next: () => {
-      this.snackbar.show('Tipo de item excluído com sucesso!', 'success');
+      this.snackbar.show('Tipo de item excluído com sucesso.', 'success');
       this.fecharModalExcluir();
       this.carregarTiposItens();
     },
     error: (err) => {
       console.error(err);
-      this.snackbar.show('Erro ao excluir tipo de item', 'error');
+      this.snackbar.show('Não foi possível excluir o tipo de item.', 'error');
     }
   });
 
@@ -253,13 +253,13 @@ alternarStatusKpi(tipo: TipoItem) {
       this.atualizarItensPaginados();
 
       this.snackbar.show(
-        novoStatus ? 'Grupo marcado como secundario para KPIs.' : 'Grupo marcado como principal para KPIs.',
+        novoStatus ? 'Grupo marcado como secundário para KPIs.' : 'Grupo marcado como principal para KPIs.',
         'success'
       );
     },
     error: (err) => {
       console.error(err);
-      this.snackbar.show('Erro ao alterar status KPI do grupo.', 'error');
+      this.snackbar.show('Não foi possível alterar o status KPI do grupo.', 'error');
     }
   });
 }

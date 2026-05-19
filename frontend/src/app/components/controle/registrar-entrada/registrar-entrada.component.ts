@@ -123,7 +123,7 @@ export class RegistrarEntradaComponent {
       return;
     }
     if (this.itens.length === 0) {
-      this.snackbar.show('Você deve adicionar ao menos um item à entrada.', 'warning');
+      this.snackbar.show('Adicione ao menos um item à entrada.', 'warning');
       return;
     }
 
@@ -228,7 +228,7 @@ export class RegistrarEntradaComponent {
       },
       error: () => {
         this.carregandoRegistro = false;
-        this.snackbar.show('Erro ao carregar a entrada para edição.', 'error');
+        this.snackbar.show('Não foi possível carregar a entrada para edição.', 'error');
         this.router.navigate(['/controle/iniciar']);
       }
     });
@@ -243,12 +243,12 @@ export class RegistrarEntradaComponent {
         this.itens.clear();
         this.adicionarItem();
         this.snackbar.show(
-          notaFiscalId ? 'Entrada registrada com nota fiscal' : 'Entrada registrada sem nota fiscal',
+          notaFiscalId ? 'Entrada registrada com nota fiscal.' : 'Entrada registrada sem nota fiscal.',
           'success'
         );
         this.router.navigate(['/controle/iniciar']);
       },
-      error: err => this.exibirErroEntrada(err, notaFiscalId ? 'Erro ao criar entrada com nota fiscal' : 'Erro ao criar entrada')
+      error: err => this.exibirErroEntrada(err, notaFiscalId ? 'Não foi possível registrar a entrada com nota fiscal.' : 'Não foi possível registrar a entrada.')
     });
   }
 
@@ -266,7 +266,7 @@ export class RegistrarEntradaComponent {
           this.snackbar.show('Entrada atualizada com sucesso.', 'success');
           this.router.navigate(['/controle/iniciar']);
         },
-        error: err => this.exibirErroEntrada(err, 'Erro ao atualizar entrada')
+        error: err => this.exibirErroEntrada(err, 'Não foi possível atualizar a entrada.')
       });
     };
 
@@ -281,7 +281,7 @@ export class RegistrarEntradaComponent {
 
     requisicaoNota.subscribe({
       next: nota => concluirAtualizacao(nota.id),
-      error: err => this.exibirErroEntrada(err, 'Erro ao salvar nota fiscal')
+      error: err => this.exibirErroEntrada(err, 'Não foi possível salvar a nota fiscal.')
     });
   }
 

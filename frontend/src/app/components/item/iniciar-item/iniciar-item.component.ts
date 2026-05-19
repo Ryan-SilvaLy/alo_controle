@@ -84,7 +84,7 @@ export class IniciarItemComponent {
       this.carregando = false;
       this.erro = null;
 
-      // gera lista de tipos únicos
+      // Gera lista de tipos únicos.
       this.tipos = Array.from(
         new Map(this.itens.map(i => [i.tipo_item.id, i.tipo_item])).values()
       );
@@ -93,7 +93,7 @@ export class IniciarItemComponent {
     },
     error: () => {
       this.carregando = false;
-      this.erro = 'Erro ao carregar itens.';
+      this.erro = 'Não foi possível carregar os itens.';
       this.snackbar.show(this.erro, 'error');
     }
   });
@@ -200,7 +200,7 @@ resetarFiltros() {
         this.fecharModal();
       },
       error: () => {
-        this.snackbar.show('Erro ao atualizar status.', 'error');
+        this.snackbar.show('Não foi possível atualizar o status.', 'error');
       }
     });
   }
@@ -216,7 +216,7 @@ resetarFiltros() {
     this.pdfService.gerarPdfItensEmBaixa(itensEmBaixa);
   }
 
-  // 🔹 Novo método para acionar modal do CriarItemComponent
+  // Abre o modal de criação de item.
   abrirModalCriarItem() {
     this.criarItemComponent.abrirModal();
   }

@@ -53,7 +53,7 @@ export class ModalTipoItemComponent {
       error: (err) => {
         this.carregando = false;
         console.error(err);
-        this.snackbar.show('Erro ao criar tipo de item.', 'error');
+        this.snackbar.show('Não foi possível criar o tipo de item.', 'error');
       }
     });
   }

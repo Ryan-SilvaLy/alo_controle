@@ -11,7 +11,7 @@
           (click)="abrirModalCriarItem()"
         >
           <i class="fa fa-plus"></i>
-          Novo Item
+          Novo item
         </button>
 
         <a
@@ -19,7 +19,7 @@
           class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 text-sm font-medium flex items-center gap-2 no-underline"
         >
           <i class="fa fa-list"></i>
-          Tipos de Itens
+          Tipos de itens
         </a>
 
         <button
@@ -27,7 +27,7 @@
           class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 hover:bg-slate-100 text-sm font-medium flex items-center gap-2"
         >
           <i class="fa fa-print"></i>
-          PDF Itens em Baixa
+          PDF de itens em baixa
         </button>
 
        
@@ -223,7 +223,7 @@
               *ngIf="item.codigo_barras"
               type="button"
               class="valor-eye-btn"
-              title="Ver codigo de barras"
+              title="Ver código de barras"
               (click)="abrirCodigoBarras(item)"
               (mouseenter)="abrirCodigoBarras(item)"
             >
@@ -303,7 +303,7 @@
   >
     <div class="mb-3 flex items-start justify-between gap-3 border-b border-slate-200 pb-2">
       <div>
-        <h3 class="text-base font-semibold">Codigo de barras</h3>
+        <h3 class="text-base font-semibold">Código de barras</h3>
         <p class="text-xs text-slate-500">{{ itemCodigoBarrasAberto.codigo }} - {{ itemCodigoBarrasAberto.nome }}</p>
       </div>
 
@@ -323,21 +323,21 @@
         <strong>{{ itemCodigoBarrasAberto.tipo_item.nome }}</strong>
       </div>
       <div class="flex justify-between gap-3">
-        <span>Codigo</span>
+        <span>Código</span>
         <strong>{{ itemCodigoBarrasAberto.codigo_barras }}</strong>
       </div>
       <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-center">
         <img
           *ngIf="itemCodigoBarrasAberto.codigo_barras_imagem_base64"
           [src]="'data:image/png;base64,' + itemCodigoBarrasAberto.codigo_barras_imagem_base64"
-          alt="Codigo de barras"
+          alt="Código de barras"
           class="mx-auto max-h-28"
         />
         <span
           *ngIf="!itemCodigoBarrasAberto.codigo_barras_imagem_base64"
           class="text-xs text-slate-500"
         >
-          Imagem indisponivel no momento.
+          Imagem indisponível no momento.
         </span>
       </div>
     </div>
@@ -374,7 +374,7 @@
 
     <div class="space-y-2 text-sm">
       <div class="flex justify-between gap-3">
-        <span>Valor unitario</span>
+        <span>Valor unitário</span>
         <strong>{{ formatarMoeda(itemValorAberto.valor_unitario) }}</strong>
       </div>
       <div class="flex justify-between gap-3">

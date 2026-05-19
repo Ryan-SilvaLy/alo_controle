@@ -59,7 +59,7 @@ export class CriarItemComponent {
       },
       error: (err) => {
         console.error('Erro ao listar tipos de item:', err);
-        this.snackbar.show('Erro ao carregar tipos de item.', 'error');
+        this.snackbar.show('Não foi possível carregar os tipos de item.', 'error');
       }
     });
   }
@@ -102,7 +102,7 @@ export class CriarItemComponent {
       !this.item?.codigo?.trim() ||
       !this.item?.codigo_barras?.trim()
     ) {
-      this.snackbar.show('Por favor, preencha todos os campos obrigatorios.', 'warning');
+      this.snackbar.show('Preencha todos os campos obrigatórios.', 'warning');
       return;
     }
 
@@ -122,16 +122,16 @@ export class CriarItemComponent {
           const mensagens = Array.isArray(err.error.errors.codigo_barras)
             ? err.error.errors.codigo_barras.join(' ')
             : err.error.errors.codigo_barras;
-          this.snackbar.show(`Erro no codigo de barras: ${mensagens}`, 'error');
+          this.snackbar.show(`Erro no código de barras: ${mensagens}`, 'error');
 
         } else if (err?.error?.errors?.codigo) {
           const mensagens = Array.isArray(err.error.errors.codigo)
             ? err.error.errors.codigo.join(' ')
             : err.error.errors.codigo;
-          this.snackbar.show(`Erro no codigo do item: ${mensagens}`, 'error');
+          this.snackbar.show(`Erro no código do item: ${mensagens}`, 'error');
 
         } else {
-          this.snackbar.show(err?.error?.message || 'Erro ao criar item. Verifique os dados.', 'error');
+          this.snackbar.show(err?.error?.message || 'Não foi possível criar o item. Verifique os dados.', 'error');
         }
       }
     });
@@ -148,13 +148,13 @@ export class CriarItemComponent {
   onGerarCodigoItem() {
     const codigo = this.gerarCodigoItemPorNome(this.item.nome);
     if (!codigo) {
-      this.snackbar.show('Informe um nome com letras para gerar o codigo do item.', 'warning');
+      this.snackbar.show('Informe um nome com letras para gerar o código do item.', 'warning');
       return;
     }
 
     this.item.codigo = codigo;
     this.codigoGeradoAutomaticamente = true;
-    this.snackbar.show('Codigo do item gerado com sucesso.', 'success');
+    this.snackbar.show('Código do item gerado com sucesso.', 'success');
   }
 
   onNomeChange(nome: string) {
@@ -171,7 +171,7 @@ export class CriarItemComponent {
 
   onGerarCodigoBarras() {
     this.item.codigo_barras = this.gerarCodigoBarras();
-    this.snackbar.show('Codigo de barras gerado com sucesso.', 'success');
+    this.snackbar.show('Código de barras gerado com sucesso.', 'success');
   }
 
   tipoCriado(novoTipo: TipoItem) {

@@ -26,7 +26,7 @@
         <div class="grid grid-cols-12 gap-3">
           <div class="col-span-12 md:col-span-3">
             <label class="block text-xs font-medium text-gray-700 mb-1">
-              Bloco de Requisição <span class="text-red-500">*</span>
+              Bloco de requisição <span class="text-red-500">*</span>
             </label>
             <input
               formControlName="bloco_requisicao"
@@ -44,7 +44,7 @@
 
           <div class="col-span-12 md:col-span-4">
             <label class="block text-xs font-medium text-gray-700 mb-1">
-              Setor Destino <span class="text-red-500">*</span>
+              Setor de destino <span class="text-red-500">*</span>
             </label>
             <app-autocomplete-select
               formControlName="setor"
@@ -75,8 +75,8 @@
               [valueWith]="textoValue"
               [freeText]="true"
               [maxLength]="40"
-              placeholder="Responsavel"
-              emptyText="Nenhum responsavel encontrado"
+              placeholder="Responsável"
+              emptyText="Nenhum responsável encontrado"
             ></app-autocomplete-select>
             <div
               *ngIf="form.get('responsavel')?.touched && form.get('responsavel')?.invalid"
@@ -122,7 +122,7 @@
 
         <div class="rounded border border-blue-200 bg-blue-50 p-2">
           <label class="block text-xs font-medium text-gray-700 mb-1">
-            Leitura por codigo de barras
+            Leitura por código de barras
           </label>
           <div class="flex flex-col gap-2 md:flex-row">
             <input
@@ -134,7 +134,7 @@
               [value]="codigoBarrasLeitura"
               (input)="codigoBarrasLeitura = $any($event.target).value"
               (keydown.enter)="lerCodigoBarras($event)"
-              placeholder="Posicione o cursor aqui e leia o codigo"
+              placeholder="Posicione o cursor aqui e leia o código"
               class="w-full border border-blue-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <button
@@ -173,8 +173,8 @@
                   [options]="itensDisponiveis"
                   [labelWith]="itemLabel"
                   [secondaryWith]="itemSecondary"
-                  placeholder="Buscar por codigo, nome, grupo..."
-                  emptyText="Nenhum item disponivel"
+                  placeholder="Buscar por código, nome ou grupo..."
+                  emptyText="Nenhum item disponível"
                   (selected)="onItemSelecionado(i)"
                 ></app-autocomplete-select>
               </div>
@@ -218,8 +218,8 @@
                   [valueWith]="textoValue"
                   [freeText]="true"
                   [maxLength]="50"
-                  placeholder="Patrimonio"
-                  emptyText="Nenhum patrimonio encontrado"
+                  placeholder="Patrimônio"
+                  emptyText="Nenhum patrimônio encontrado"
                 ></app-autocomplete-select>
               </div>
 

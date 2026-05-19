@@ -13,7 +13,7 @@
             {{ tiposItens.length }} tipo(s) cadastrado(s)
           </span>
           <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-            {{ tiposItensSemRelacionamento.length }} disponivel(is) para exclusao
+            {{ tiposItensSemRelacionamento.length }} disponível(is) para exclusão
           </span>
         </div>
       </div>
@@ -23,7 +23,7 @@
         class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
         (click)="modalTipo.abrir()"
       >
-        Criar Tipo Item
+        Criar tipo de item
       </button>
     </div>
   </section>
@@ -31,7 +31,7 @@
   <section class="rounded-lg border border-slate-300 bg-white px-4 py-3 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <p class="mb-0 text-sm text-slate-800">Controle de paginas</p>
+        <p class="mb-0 text-sm text-slate-800">Controle de páginas</p>
         <p class="mb-0 text-xs text-slate-500">
           Exibindo {{ tiposItensPaginados.length }} de {{ tiposItens.length }} registro(s)
         </p>
@@ -50,7 +50,7 @@
   <section class="rounded-lg border border-slate-300 bg-white px-4 py-3 shadow-sm">
     <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div>
-        <p class="mb-0 text-sm text-slate-800">Impressao de codigos de barras</p>
+        <p class="mb-0 text-sm text-slate-800">Impressão de códigos de barras</p>
         <p class="mb-0 text-xs text-slate-500">
           {{ idsCodigosSelecionados.size }} selecionado(s) de {{ itensCodigosFiltrados.length }} item(ns) filtrado(s)
         </p>
@@ -92,11 +92,11 @@
       </div>
 
       <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Codigo</label>
+        <label class="mb-1 block text-xs font-semibold text-slate-700">Código</label>
         <input
           type="text"
           class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          placeholder="Codigo do item ou barras"
+          placeholder="Código do item ou de barras"
           [(ngModel)]="filtrosCodigos.codigo"
           (input)="filtrarCodigosBarras()"
         />
@@ -116,7 +116,7 @@
             </th>
             <th class="px-3 py-2 text-left">Item</th>
             <th class="px-3 py-2 text-left">Grupo</th>
-            <th class="px-3 py-2 text-left">Codigo de barras</th>
+            <th class="px-3 py-2 text-left">Código de barras</th>
             <th class="px-3 py-2 text-left">Imagem</th>
           </tr>
         </thead>
@@ -136,7 +136,7 @@
               <img
                 *ngIf="item.codigo_barras_imagem_base64"
                 [src]="'data:image/png;base64,' + item.codigo_barras_imagem_base64"
-                alt="Codigo de barras"
+                alt="Código de barras"
                 class="h-10 max-w-44 object-contain"
               />
               <span *ngIf="!item.codigo_barras_imagem_base64" class="text-xs text-slate-500">
@@ -148,7 +148,7 @@
       </table>
 
       <div *ngIf="!carregandoCodigos && itensCodigosFiltrados.length === 0" class="py-4 text-center text-sm text-slate-500">
-        Nenhum codigo de barras encontrado.
+        Nenhum código de barras encontrado.
       </div>
     </div>
   </section>
@@ -173,8 +173,8 @@
             <th class="px-4 py-3 text-left">ID</th>
             <th class="px-4 py-3 text-left">Nome</th>
             <th class="px-4 py-3 text-center">Status KPI</th>
-            <th class="px-4 py-3 text-center">Situacao</th>
-            <th class="px-4 py-3 text-center">Acoes</th>
+            <th class="px-4 py-3 text-center">Situação</th>
+            <th class="px-4 py-3 text-center">Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -186,7 +186,7 @@
                 class="inline-flex rounded-full px-3 py-1 text-xs"
                 [ngClass]="tipo.grupo_secundario ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'"
               >
-                {{ tipo.grupo_secundario ? 'Secundario' : 'Principal' }}
+                {{ tipo.grupo_secundario ? 'Secundário' : 'Principal' }}
               </span>
             </td>
             <td class="px-4 py-3 text-center">
@@ -212,10 +212,10 @@
                   type="button"
                   (click)="alternarStatusKpi(tipo)"
                   class="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:border-amber-300 hover:text-amber-700 transition"
-                  [title]="tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundario'"
+                  [title]="tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundário'"
                 >
                   <i [ngClass]="tipo.grupo_secundario ? 'fa fa-star' : 'fa fa-layer-group'"></i>
-                  <span>{{ tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundario' }}</span>
+                  <span>{{ tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundário' }}</span>
                 </button>
 
                 <button
@@ -265,7 +265,7 @@
             *ngIf="formAtualizar.get('nome')?.invalid && formAtualizar.get('nome')?.touched"
             class="mt-1 block text-xs text-red-500"
           >
-            Nome e obrigatorio.
+            Nome é obrigatório.
           </small>
         </div>
 
@@ -275,7 +275,7 @@
             formControlName="grupo_secundario"
             class="h-4 w-4"
           />
-          Grupo secundario nos KPIs
+          Grupo secundário nos KPIs
         </label>
 
         <div class="mt-5 flex justify-end gap-3">
@@ -304,7 +304,7 @@
       <div class="flex items-start justify-between border-b border-slate-200 px-5 py-4">
         <div>
           <h2 class="mb-1 text-lg text-red-600">Excluir tipo de item</h2>
-          <p class="mb-0 text-sm text-slate-500">Revise a informacao antes de confirmar.</p>
+          <p class="mb-0 text-sm text-slate-500">Revise a informação antes de confirmar.</p>
         </div>
 
         <button
@@ -323,7 +323,7 @@
         </div>
 
         <p class="mt-4 text-sm text-red-600">
-          Esta acao nao podera ser desfeita.
+          Esta ação não poderá ser desfeita.
         </p>
 
         <div class="mt-5 flex justify-end gap-3">

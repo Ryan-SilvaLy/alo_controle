@@ -117,7 +117,7 @@ export class RegistrarSaidaComponent {
         this.focarCampoCodigoBarras();
       },
       error: () => {
-        this.snackbar.show('Codigo de barras nao encontrado.', 'warning');
+        this.snackbar.show('Código de barras não encontrado.', 'warning');
         this.codigoBarrasLeitura = '';
         this.buscandoCodigoBarras = false;
         this.focarCampoCodigoBarras();
@@ -138,7 +138,7 @@ export class RegistrarSaidaComponent {
     }
 
     if (this.itens.length === 0) {
-      this.snackbar.show('Você deve adicionar ao menos um item à saída.', 'warning');
+      this.snackbar.show('Adicione ao menos um item à saída.', 'warning');
       return;
     }
 
@@ -170,7 +170,7 @@ export class RegistrarSaidaComponent {
         this.form.reset();
         this.itens.clear();
         this.adicionarItem();
-        this.snackbar.show(this.modoEdicao ? 'Saída atualizada com sucesso!' : 'Saída registrada com sucesso!', 'success');
+        this.snackbar.show(this.modoEdicao ? 'Saída atualizada com sucesso.' : 'Saída registrada com sucesso.', 'success');
         if (possuiItemEpi) {
           this.snackbar.show('Retirada de EPI registrada no controle de assinaturas.', 'info');
         }
@@ -193,7 +193,7 @@ export class RegistrarSaidaComponent {
   getPatrimonioNome(patrimonioId: any): string {
     const id = Number(patrimonioId);
     const p = this.patrimonios.find(x => x.id === id);
-    return p ? `${p.patrimonio} - ${p.nome}` : 'Patrimônio desconhecido';
+    return p ? `${p.patrimonio} - ${p.nome}` : 'Patrimônio não encontrado';
   }
 
   private itemSelecionadoEhEpi(itemId: any): boolean {
@@ -282,7 +282,7 @@ export class RegistrarSaidaComponent {
       },
       error: () => {
         this.carregandoRegistro = false;
-        this.snackbar.show('Erro ao carregar a saída para edição.', 'error');
+        this.snackbar.show('Não foi possível carregar a saída para edição.', 'error');
         this.router.navigate(['/controle/iniciar']);
       }
     });
@@ -345,7 +345,7 @@ export class RegistrarSaidaComponent {
 
       const mensagemFinal = mensagens.length > 0
         ? mensagens.join(', ')
-        : 'Erro de validação no backend.';
+        : 'Não foi possível validar os dados informados.';
 
       this.snackbar.show(mensagemFinal, 'error');
       return;
@@ -356,6 +356,6 @@ export class RegistrarSaidaComponent {
       return;
     }
 
-    this.snackbar.show('Erro desconhecido. Por favor, tente novamente.', 'error');
+    this.snackbar.show('Não foi possível concluir a operação. Tente novamente.', 'error');
   }
 }

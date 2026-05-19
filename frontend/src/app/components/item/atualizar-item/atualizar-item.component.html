@@ -4,7 +4,7 @@
 
       <div class="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-gray-300 bg-white px-4 py-3">
         <div>
-          <h2 class="text-lg sm:text-xl font-semibold">Atualizar Item</h2>
+          <h2 class="text-lg sm:text-xl font-semibold">Atualizar item</h2>
           <p class="text-sm text-slate-600">
             Revise e ajuste os dados principais do item selecionado.
           </p>
@@ -29,7 +29,7 @@
           class="grid gap-3 md:grid-cols-3 text-sm"
         >
           <div>
-            <label class="mb-1 block font-medium">Codigo *</label>
+            <label class="mb-1 block font-medium">Código *</label>
             <div class="flex gap-2">
               <input
                 type="text"
@@ -46,7 +46,7 @@
               </button>
             </div>
             <small *ngIf="form.get('codigo')?.invalid && form.get('codigo')?.touched" class="mt-1 block text-xs text-red-500">
-              Codigo e obrigatorio.
+              Código é obrigatório.
             </small>
           </div>
 
@@ -59,12 +59,12 @@
               class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
             />
             <small *ngIf="form.get('nome')?.invalid && form.get('nome')?.touched" class="mt-1 block text-xs text-red-500">
-              Nome e obrigatorio.
+              Nome é obrigatório.
             </small>
           </div>
 
           <div class="md:col-span-3">
-            <label class="mb-1 block font-medium">Descricao</label>
+            <label class="mb-1 block font-medium">Descrição</label>
             <textarea
               formControlName="descricao"
               rows="2"
@@ -74,7 +74,7 @@
           </div>
 
           <div>
-            <label class="mb-1 block font-medium">Tipo de Item *</label>
+            <label class="mb-1 block font-medium">Tipo de item *</label>
             <div class="flex gap-2">
               <select
                 formControlName="tipo_item_id"
@@ -96,7 +96,7 @@
               </button>
             </div>
             <small *ngIf="form.get('tipo_item_id')?.invalid && form.get('tipo_item_id')?.touched" class="mt-1 block text-xs text-red-500">
-              Tipo de item e obrigatorio.
+              Tipo de item é obrigatório.
             </small>
           </div>
 
@@ -123,7 +123,7 @@
           </div>
 
           <div>
-            <label class="mb-1 block font-medium">Qtd Atual *</label>
+            <label class="mb-1 block font-medium">Qtd. atual *</label>
             <input
               type="number"
               formControlName="quantidade_atual"
@@ -132,7 +132,7 @@
           </div>
 
           <div>
-            <label class="mb-1 block font-medium">Qtd Minima *</label>
+            <label class="mb-1 block font-medium">Qtd. mínima *</label>
             <input
               type="number"
               formControlName="quantidade_minima"
@@ -141,7 +141,7 @@
           </div>
 
           <div>
-            <label class="mb-1 block font-medium">Valor Unitario</label>
+            <label class="mb-1 block font-medium">Valor unitário</label>
             <input
               type="number"
               formControlName="valor_unitario"
@@ -152,7 +152,7 @@
           </div>
 
           <div class="md:col-span-3 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-slate-700">
-            Atualize os dados com cuidado para manter codigo, tipo, localizacao e quantidades coerentes com o estoque.
+            Atualize os dados com cuidado para manter código, tipo, localização e quantidades coerentes com o estoque.
           </div>
         </form>
       </div>
