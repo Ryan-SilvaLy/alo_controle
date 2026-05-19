@@ -134,11 +134,14 @@
             <td class="px-3 py-2">{{ item.codigo_barras }}</td>
             <td class="px-3 py-2">
               <img
-                *ngIf="item.codigo_barras_imagem_base64 || item.codigo_barras_imagem"
-                [src]="item.codigo_barras_imagem_base64 ? 'data:image/png;base64,' + item.codigo_barras_imagem_base64 : item.codigo_barras_imagem"
+                *ngIf="item.codigo_barras_imagem_base64"
+                [src]="'data:image/png;base64,' + item.codigo_barras_imagem_base64"
                 alt="Codigo de barras"
                 class="h-10 max-w-44 object-contain"
               />
+              <span *ngIf="!item.codigo_barras_imagem_base64" class="text-xs text-slate-500">
+                Sem imagem
+              </span>
             </td>
           </tr>
         </tbody>

@@ -186,15 +186,15 @@ export class PdfService {
       doc.setFont('helvetica', 'normal');
       doc.text(`${item.codigo} | ${item.tipo_item?.nome || ''}`, x + 2, y + 8);
 
-      const imagemBase64 = item.codigo_barras_imagem_base64
-        ? `data:image/png;base64,${item.codigo_barras_imagem_base64}`
-        : null;
-
-      if (imagemBase64 || item.codigo_barras_imagem) {
-        const imagem = imagemBase64 || await this.carregarImagemBase64(item.codigo_barras_imagem || '');
-        if (imagem) {
-          doc.addImage(imagem, 'PNG', x + 2, y + 10, larguraEtiqueta - 5, 14);
-        }
+      if (item.codigo_barras_imagem_base64) {
+        doc.addImage(
+          `data:image/png;base64,${item.codigo_barras_imagem_base64}`,
+          'PNG',
+          x + 2,
+          y + 10,
+          larguraEtiqueta - 5,
+          14
+        );
       }
 
       doc.setFontSize(7);
@@ -213,19 +213,4 @@ export class PdfService {
     return valor.length > tamanho ? `${valor.slice(0, tamanho - 3)}...` : valor;
   }
 
-  private async carregarImagemBase64(url: string): Promise<string | null> {
-    try {
-      const resposta = await fetch(url);
-      const blob = await resposta.blob();
-
-      return await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(String(reader.result));
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(blob);
-      });
-    } catch {
-      return null;
-    }
-  }
 }

@@ -328,11 +328,17 @@
       </div>
       <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-center">
         <img
-          *ngIf="itemCodigoBarrasAberto.codigo_barras_imagem_base64 || itemCodigoBarrasAberto.codigo_barras_imagem"
-          [src]="itemCodigoBarrasAberto.codigo_barras_imagem_base64 ? 'data:image/png;base64,' + itemCodigoBarrasAberto.codigo_barras_imagem_base64 : itemCodigoBarrasAberto.codigo_barras_imagem"
+          *ngIf="itemCodigoBarrasAberto.codigo_barras_imagem_base64"
+          [src]="'data:image/png;base64,' + itemCodigoBarrasAberto.codigo_barras_imagem_base64"
           alt="Codigo de barras"
           class="mx-auto max-h-28"
         />
+        <span
+          *ngIf="!itemCodigoBarrasAberto.codigo_barras_imagem_base64"
+          class="text-xs text-slate-500"
+        >
+          Imagem indisponivel no momento.
+        </span>
       </div>
     </div>
   </div>
