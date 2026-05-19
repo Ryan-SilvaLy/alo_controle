@@ -1,23 +1,23 @@
 <div *ngIf="aberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-    <h2 class="text-xl font-bold mb-4 text-gray-800">Confirmação do Pedido</h2>
+    <h2 class="text-xl font-bold mb-4 text-gray-800">Confirmação do pedido</h2>
 
     <div class="mb-4">
       <p><strong>Solicitante:</strong> {{ pedido.solicitante }}</p>
-      <p><strong>Setor de Destino:</strong> {{ pedido.setor_destino }}</p>
+      <p><strong>Setor de destino:</strong> {{ pedido.setor_destino }}</p>
       <p><strong>Responsável:</strong> {{ pedido.responsavel_setor }}</p>
     </div>
 
     <div class="mb-4">
-      <h3 class="font-semibold mb-2">Itens do Pedido:</h3>
+      <h3 class="font-semibold mb-2">Itens do pedido:</h3>
       <table class="w-full border border-gray-300 rounded">
         <thead class="bg-gray-100">
           <tr>
             <th class="px-2 py-1 text-left border-b">Nome</th>
             <th class="px-2 py-1 text-left border-b">Código</th>
-            <th class="px-2 py-1 text-left border-b">Qtd. Pedida</th>
-            <th class="px-2 py-1 text-left border-b">Qtd. Atual</th>
-            <th class="px-2 py-1 text-left border-b">Últ. Entrada</th>
+            <th class="px-2 py-1 text-left border-b">Qtd. pedida</th>
+            <th class="px-2 py-1 text-left border-b">Qtd. atual</th>
+            <th class="px-2 py-1 text-left border-b">Últ. entrada</th>
           </tr>
         </thead>
         <tbody>

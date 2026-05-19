@@ -38,7 +38,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.atualizarContadorPedidos();
         this.atualizarContadorAssinaturasEpi();
       } else {
-        this.snackbar.show('Usuario nao encontrado', 'error');
+        this.snackbar.show('Usuário não encontrado.', 'error');
       }
     }));
 

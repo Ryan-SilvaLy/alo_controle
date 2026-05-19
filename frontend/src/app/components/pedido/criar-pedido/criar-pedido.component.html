@@ -14,7 +14,7 @@
         <article class="metric-card">
           <span class="metric-label">Itens no pedido</span>
           <strong class="metric-value">{{ itens.length }}</strong>
-          <small class="metric-note">Linhas ativas no formulario</small>
+          <small class="metric-note">Linhas ativas no formulário</small>
         </article>
 
         <article class="metric-card">
@@ -45,7 +45,7 @@
               <span class="section-tag">Etapa 1</span>
               <h2>Dados do pedido</h2>
             </div>
-            <p>Identifique quem esta solicitando e para qual setor o pedido sera enviado.</p>
+            <p>Identifique quem está solicitando e para qual setor o pedido será enviado.</p>
           </div>
 
           <div class="info-grid">
@@ -61,7 +61,7 @@
               />
               <small>Nome da pessoa que abriu o pedido.</small>
               <div *ngIf="pedidoForm.get('solicitante')?.invalid && pedidoForm.get('solicitante')?.touched" class="field-error">
-                Campo obrigatorio.
+                Campo obrigatório.
               </div>
             </div>
 
@@ -75,25 +75,25 @@
                 formControlName="setor_destino"
                 maxlength="40"
               />
-              <small>Area que vai receber os itens.</small>
+              <small>Área que vai receber os itens.</small>
               <div *ngIf="pedidoForm.get('setor_destino')?.invalid && pedidoForm.get('setor_destino')?.touched" class="field-error">
-                Campo obrigatorio.
+                Campo obrigatório.
               </div>
             </div>
 
             <div class="field-block field-block-wide">
-              <label for="responsavel_setor">Responsavel do setor</label>
+              <label for="responsavel_setor">Responsável do setor</label>
               <input
                 id="responsavel_setor"
                 class="custom-input"
                 type="text"
-                placeholder="Responsavel"
+                placeholder="Responsável"
                 formControlName="responsavel_setor"
                 maxlength="40"
               />
-              <small>Pessoa responsavel por receber ou acompanhar o pedido.</small>
+              <small>Pessoa responsável por receber ou acompanhar o pedido.</small>
               <div *ngIf="pedidoForm.get('responsavel_setor')?.invalid && pedidoForm.get('responsavel_setor')?.touched" class="field-error">
-                Campo obrigatorio.
+                Campo obrigatório.
               </div>
             </div>
           </div>
@@ -117,7 +117,7 @@
 
           <p class="section-copy">
             O primeiro item selecionado define o grupo do pedido. Depois disso, os
-            proximos campos mostram somente itens do mesmo grupo.
+            próximos campos mostram somente itens do mesmo grupo.
           </p>
 
           <div class="group-lock-banner" [class.group-lock-banner-active]="temGrupoDefinido()">
@@ -169,13 +169,13 @@
                   class="meta-chip"
                   [class.meta-chip-alert]="itemSelecionado.situacao === 'baixo'"
                 >
-                  {{ itemSelecionado.situacao || 'Sem situacao' }}
+                  {{ itemSelecionado.situacao || 'Sem situação' }}
                 </span>
                 <span class="meta-chip">
                   {{ getUnidadeMedidaLabel(itemSelecionado.unidade_medida) }}
                 </span>
                 <span class="meta-chip">
-                  Minimo: {{ itemSelecionado.quantidade_minima }}
+                  Mínimo: {{ itemSelecionado.quantidade_minima }}
                 </span>
               </div>
 
@@ -187,14 +187,14 @@
                     type="number"
                     [id]="'quantidade-' + i"
                     formControlName="quantidade_pedida"
-                    placeholder="Ex: 10"
+                    placeholder="Ex.: 10"
                     min="1"
                   />
                   <small>Informe a quantidade desejada para este item.</small>
                 </div>
 
                 <div class="field-block">
-                  <label [for]="'ultima-entrada-' + i">Ultima entrada</label>
+                  <label [for]="'ultima-entrada-' + i">Última entrada</label>
                   <input
                     class="custom-input"
                     type="text"
@@ -202,7 +202,7 @@
                     [value]="itemGroup.get('ultima_entrada_estoque')?.value ? (itemGroup.get('ultima_entrada_estoque')?.value | date:'dd/MM/yyyy') : 'Sem registro'"
                     readonly
                   />
-                  <small>Data da ultima movimentacao de entrada.</small>
+                  <small>Data da última movimentação de entrada.</small>
                 </div>
 
                 <div class="field-block">
@@ -214,14 +214,14 @@
                     formControlName="quantidade_atual_estoque"
                     readonly
                   />
-                  <small>Estoque atual disponivel para consulta rapida.</small>
+                  <small>Estoque atual disponível para consulta rápida.</small>
                 </div>
               </div>
             </article>
 
             <div *ngIf="itens.length === 0" class="empty-state">
               <h3>Nenhum item adicionado</h3>
-              <p>Comece adicionando a primeira linha do pedido para liberar o resumo e a validacao.</p>
+              <p>Comece adicionando a primeira linha do pedido para liberar o resumo e a validação.</p>
               <button type="button" class="action-button secondary" (click)="adicionarItem()">
                 Adicionar primeiro item
               </button>
@@ -235,7 +235,7 @@
           <div class="section-heading">
             <div>
               <span class="section-tag">Resumo</span>
-              <h2>Visao geral do pedido</h2>
+              <h2>Visão geral do pedido</h2>
             </div>
             <p>Confira rapidamente os principais indicadores antes de enviar.</p>
           </div>
@@ -243,17 +243,17 @@
           <div class="summary-grid">
             <div class="summary-box">
               <span>Solicitante</span>
-              <strong>{{ pedidoForm.get('solicitante')?.value || 'Nao informado' }}</strong>
+              <strong>{{ pedidoForm.get('solicitante')?.value || 'Não informado' }}</strong>
             </div>
 
             <div class="summary-box">
               <span>Setor</span>
-              <strong>{{ pedidoForm.get('setor_destino')?.value || 'Nao informado' }}</strong>
+              <strong>{{ pedidoForm.get('setor_destino')?.value || 'Não informado' }}</strong>
             </div>
 
             <div class="summary-box">
-              <span>Responsavel</span>
-              <strong>{{ pedidoForm.get('responsavel_setor')?.value || 'Nao informado' }}</strong>
+              <span>Responsável</span>
+              <strong>{{ pedidoForm.get('responsavel_setor')?.value || 'Não informado' }}</strong>
             </div>
 
             <div class="summary-box">
@@ -265,7 +265,7 @@
           <div class="insight-strip">
             <span class="insight-label">Atenção</span>
             <p>
-              {{ getItensEmBaixaSelecionados() }} item(ns) selecionado(s) estao com situacao de baixa.
+              {{ getItensEmBaixaSelecionados() }} item(ns) selecionado(s) estão com situação de baixa.
             </p>
           </div>
 

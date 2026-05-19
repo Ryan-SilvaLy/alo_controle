@@ -3,10 +3,10 @@
     <section class="hero-card">
       <div class="hero-copy">
         <span class="eyebrow">Resumo de estoque</span>
-        <h1>Movimentacoes por item</h1>
+        <h1>Movimentações por item</h1>
         <p>
           Visualize todos os itens cadastrados no estoque e acompanhe quanto entrou,
-          quanto saiu e quantas movimentacoes cada item recebeu.
+          quanto saiu e quantas movimentações cada item recebeu.
         </p>
       </div>
 
@@ -35,15 +35,15 @@
       </article>
 
       <article class="metric-card metric-card-warning">
-        <span class="metric-label">Total de saidas</span>
+        <span class="metric-label">Total de saídas</span>
         <strong class="metric-value">{{ totalSaidas }}</strong>
         <small class="metric-note">Quantidade somada de tudo que saiu</small>
       </article>
 
       <article class="metric-card">
-        <span class="metric-label">Com movimentacao</span>
+        <span class="metric-label">Com movimentação</span>
         <strong class="metric-value">{{ itensComMovimentacao }}</strong>
-        <small class="metric-note">Itens que ja tiveram entrada ou saida</small>
+        <small class="metric-note">Itens que já tiveram entrada ou saída</small>
       </article>
     </section>
 
@@ -54,9 +54,9 @@
       <div class="panel-header">
         <div>
           <span class="panel-tag">Itens</span>
-          <h2>Painel de movimentacoes</h2>
+          <h2>Painel de movimentações</h2>
         </div>
-        <p>{{ itensFiltrados.length }} item(ns) visiveis</p>
+        <p>{{ itensFiltrados.length }} item(ns) visíveis</p>
       </div>
 
       <div class="toolbar">
@@ -67,7 +67,7 @@
             type="text"
             [(ngModel)]="termoBusca"
             class="toolbar-input"
-            placeholder="Codigo, nome, grupo, prateleira..."
+            placeholder="Código, nome, grupo, prateleira..."
           />
         </div>
 
@@ -88,15 +88,15 @@
         <table class="movement-table">
           <thead>
             <tr>
-              <th>Codigo</th>
+              <th>Código</th>
               <th>Item</th>
               <th>Grupo</th>
               <th>Estoque</th>
               <th>Entrou</th>
               <th>Saiu</th>
               <th>Movs.</th>
-              <th>Ultima entrada</th>
-              <th>Ultima saida</th>
+              <th>Última entrada</th>
+              <th>Última saída</th>
             </tr>
           </thead>
           <tbody>

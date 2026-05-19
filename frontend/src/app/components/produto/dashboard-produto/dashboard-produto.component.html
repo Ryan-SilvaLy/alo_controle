@@ -2,21 +2,21 @@
   <section class="dashboard-hero">
     <div class="hero-copy">
       <span class="hero-eyebrow">Dashboard de estoque</span>
-      <h1>Visao executiva do almoxarifado</h1>
+      <h1>Visão executiva do almoxarifado</h1>
       <p>
-        Painel com dados reais de itens, movimentacoes, pedidos e fornecedores,
-        organizado para leitura rapida e tomada de decisao.
+        Painel com dados reais de itens, movimentações, pedidos e fornecedores,
+        organizado para leitura rápida e tomada de decisão.
       </p>
     </div>
 
     <div class="hero-actions">
       <label class="period-field">
-        <span>Periodo</span>
+        <span>Período</span>
         <select [(ngModel)]="periodoSelecionado" (ngModelChange)="carregarDashboard()">
-          <option value="geral">Historico completo</option>
-          <option value="7d">Ultimos 7 dias</option>
-          <option value="30d">Ultimos 30 dias</option>
-          <option value="90d">Ultimos 90 dias</option>
+          <option value="geral">Histórico completo</option>
+          <option value="7d">Últimos 7 dias</option>
+          <option value="30d">Últimos 30 dias</option>
+          <option value="90d">Últimos 90 dias</option>
         </select>
       </label>
 
@@ -95,11 +95,11 @@
             <strong>{{ formatarMoeda(custosResumo.valorEntradas) }}</strong>
           </div>
           <div>
-            <span class="mini-label">Saidas valorizadas</span>
+            <span class="mini-label">Saídas valorizadas</span>
             <strong>{{ formatarMoeda(custosResumo.valorSaidas) }}</strong>
           </div>
           <div>
-            <span class="mini-label">Saldo do periodo</span>
+            <span class="mini-label">Saldo do período</span>
             <strong [ngClass]="custosResumo.saldoPeriodo >= 0 ? 'positive-value' : 'negative-value'">
               {{ formatarMoeda(custosResumo.saldoPeriodo) }}
             </strong>
@@ -107,8 +107,8 @@
         </div>
 
         <div class="finance-note">
-          <span>Ticket medio de entrada: {{ formatarMoeda(custosResumo.ticketMedioEntrada) }}</span>
-          <span>Ticket medio de saida: {{ formatarMoeda(custosResumo.ticketMedioSaida) }}</span>
+          <span>Ticket médio de entrada: {{ formatarMoeda(custosResumo.ticketMedioEntrada) }}</span>
+          <span>Ticket médio de saída: {{ formatarMoeda(custosResumo.ticketMedioSaida) }}</span>
         </div>
       </article>
 
@@ -118,7 +118,7 @@
             <span class="panel-tag">Trajetoria</span>
             <h2>Evolucao de custos</h2>
           </div>
-          <p>Entradas x saidas</p>
+          <p>Entradas x saídas</p>
         </div>
 
         <div *ngIf="!evolucaoCustos.length" class="panel-empty">
@@ -136,7 +136,7 @@
               <span
                 class="cost-bar cost-bar-exit"
                 [style.height.%]="ponto.saidasAltura"
-                [title]="'Saidas: ' + formatarMoeda(ponto.saidas)"
+                [title]="'Saídas: ' + formatarMoeda(ponto.saidas)"
               ></span>
             </div>
             <strong>{{ ponto.periodo }}</strong>
@@ -148,7 +148,7 @@
 
         <div class="chart-legend" *ngIf="evolucaoCustos.length">
           <span><i class="legend-swatch entry-swatch"></i> Entradas</span>
-          <span><i class="legend-swatch exit-swatch"></i> Saidas</span>
+          <span><i class="legend-swatch exit-swatch"></i> Saídas</span>
         </div>
       </article>
     </section>
@@ -164,7 +164,7 @@
         </div>
 
         <div *ngIf="!gruposCustoResumo.length" class="panel-empty">
-          Nenhum grupo com valor unitario informado.
+          Nenhum grupo com valor unitário informado.
         </div>
 
         <div class="table-shell" *ngIf="gruposCustoResumo.length">
@@ -173,7 +173,7 @@
               <tr>
                 <th>Grupo</th>
                 <th>Valor estoque</th>
-                <th>Saidas</th>
+                <th>Saídas</th>
                 <th>% estoque</th>
               </tr>
             </thead>
@@ -195,11 +195,11 @@
             <span class="panel-tag">Gasto</span>
             <h2>Fornecedores por valor</h2>
           </div>
-          <p>Entradas estimadas pelo valor unitario</p>
+          <p>Entradas estimadas pelo valor unitário</p>
         </div>
 
         <div *ngIf="!fornecedoresCustoResumo.length" class="panel-empty">
-          Nenhum fornecedor com valor movimentado no periodo.
+          Nenhum fornecedor com valor movimentado no período.
         </div>
 
         <div class="table-shell" *ngIf="fornecedoresCustoResumo.length">
@@ -230,20 +230,20 @@
         <div class="panel-header">
           <div>
             <span class="panel-tag">Consumo</span>
-            <h2>Itens com maior custo de saida</h2>
+            <h2>Itens com maior custo de saída</h2>
           </div>
           <p>O que mais pesa no almoxarifado</p>
         </div>
 
         <div *ngIf="!itensMaiorCustoSaida.length" class="panel-empty">
-          Nenhuma saida com valor calculado no periodo.
+          Nenhuma saída com valor calculado no período.
         </div>
 
         <div class="table-shell" *ngIf="itensMaiorCustoSaida.length">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Codigo</th>
+                <th>Código</th>
                 <th>Item</th>
                 <th>Grupo</th>
                 <th>Qtd.</th>
@@ -267,7 +267,7 @@
         <div class="panel-header">
           <div>
             <span class="panel-tag">Leitura executiva</span>
-            <h2>Resumo para decisao</h2>
+            <h2>Resumo para decisão</h2>
           </div>
         </div>
 
@@ -278,7 +278,7 @@
           </div>
           <div>
             <strong>{{ formatarMoeda(custosResumo.valorSaidas) }}</strong>
-            <span>foi consumido em saidas no periodo selecionado.</span>
+            <span>foi consumido em saídas no período selecionado.</span>
           </div>
           <div>
             <strong>{{ grupoMaisCaroNome }}</strong>
@@ -286,7 +286,7 @@
           </div>
           <div>
             <strong>{{ fornecedorMaiorCustoNome }}</strong>
-            <span>fornecedor com maior valor de entrada no periodo.</span>
+            <span>fornecedor com maior valor de entrada no período.</span>
           </div>
         </div>
       </article>
@@ -312,7 +312,7 @@
             <strong>{{ estoqueCritico.length }}</strong>
           </div>
           <div>
-            <span class="mini-label">Ultima atualizacao</span>
+            <span class="mini-label">Última atualização</span>
             <strong>{{ ultimaAtualizacao ? (ultimaAtualizacao | date:'dd/MM/yyyy HH:mm') : '-' }}</strong>
           </div>
         </div>
@@ -321,8 +321,8 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <span class="panel-tag">Acoes rapidas</span>
-            <h2>Navegacao</h2>
+            <span class="panel-tag">Ações rápidas</span>
+            <h2>Navegação</h2>
           </div>
         </div>
 
@@ -347,7 +347,7 @@
         </div>
 
         <div *ngIf="!entradaChartSlices.length" class="panel-empty">
-          Sem dados suficientes de entrada para gerar o grafico.
+          Sem dados suficientes de entrada para gerar o gráfico.
         </div>
 
         <div class="donut-layout" *ngIf="entradaChartSlices.length">
@@ -376,14 +376,14 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <span class="panel-tag">Saidas</span>
+            <span class="panel-tag">Saídas</span>
             <h2>Radar circular de lideranca</h2>
           </div>
-          <p>Item, grupo e setor com maior saida</p>
+          <p>Item, grupo e setor com maior saída</p>
         </div>
 
         <div *ngIf="!saidaChartSlices.length" class="panel-empty">
-          Sem dados suficientes de saida para gerar o grafico.
+          Sem dados suficientes de saída para gerar o gráfico.
         </div>
 
         <div class="donut-layout" *ngIf="saidaChartSlices.length">
@@ -391,7 +391,7 @@
             <div class="donut-chart" [style.background]="saidaChartStyle">
               <div class="donut-center">
                 <strong>{{ saidaChartTotal }}</strong>
-                <span>un. de saida</span>
+                <span>un. de saída</span>
               </div>
             </div>
           </div>
@@ -417,7 +417,7 @@
             <span class="panel-tag">Desempenho</span>
             <h2>Movimento por grupo</h2>
           </div>
-          <p>Mais ativos no periodo</p>
+          <p>Mais ativos no período</p>
         </div>
 
         <div class="table-shell">
@@ -428,7 +428,7 @@
                 <th>Itens</th>
                 <th>Estoque</th>
                 <th>Entradas</th>
-                <th>Saidas</th>
+                <th>Saídas</th>
                 <th>Movs.</th>
               </tr>
             </thead>
@@ -528,24 +528,24 @@
       <article class="panel-card">
         <div class="panel-header">
           <div>
-            <span class="panel-tag">Saidas</span>
+            <span class="panel-tag">Saídas</span>
             <h2>Itens que mais saem</h2>
           </div>
-          <p>Maior consumo no periodo</p>
+          <p>Maior consumo no período</p>
         </div>
 
         <div *ngIf="!itensMaisSaem.length" class="panel-empty">
-          Nenhuma saida registrada no periodo selecionado.
+          Nenhuma saída registrada no período selecionado.
         </div>
 
         <div class="table-shell" *ngIf="itensMaisSaem.length">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Codigo</th>
+                <th>Código</th>
                 <th>Item</th>
                 <th>Grupo</th>
-                <th>Qtd. saida</th>
+                <th>Qtd. saída</th>
                 <th>Movs.</th>
               </tr>
             </thead>
@@ -574,18 +574,18 @@
         </div>
 
         <div *ngIf="!estoqueCritico.length" class="panel-empty">
-          Nenhum item abaixo do minimo neste recorte.
+          Nenhum item abaixo do mínimo neste recorte.
         </div>
 
         <div class="table-shell" *ngIf="estoqueCritico.length">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Codigo</th>
+                <th>Código</th>
                 <th>Item</th>
                 <th>Grupo</th>
                 <th>Atual</th>
-                <th>Minimo</th>
+                <th>Mínimo</th>
                 <th>Deficit</th>
               </tr>
             </thead>

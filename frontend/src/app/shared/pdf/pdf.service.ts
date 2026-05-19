@@ -30,7 +30,7 @@ export class PdfService {
     doc.text(`Relatório gerado por: ${usuario}`, 14, 22);
     doc.text(`Data/Hora: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 28);
     doc.setFontSize(10);
-    doc.text('Itens em Baixa no Estoque', 14, 35);
+    doc.text('Itens em baixa no estoque', 14, 35);
 
     return doc;
   }
@@ -54,7 +54,7 @@ export class PdfService {
     ]);
 
     autoTable(doc, {
-      head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd Atual', 'Qtd Mínima']],
+      head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. mínima']],
       body: tabela,
       startY: 40,
       styles: { fontSize: 9 },
@@ -88,7 +88,7 @@ export class PdfService {
   ]);
 
   autoTable(doc, {
-    head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd Atual', 'Qtd Mínima']],
+    head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. mínima']],
     body: tabela,
     startY: 40,
     styles: { fontSize: 9 },
@@ -100,7 +100,7 @@ export class PdfService {
 
   gerarPdfAssinaturaEpi(relatorio: AssinaturaEpiRelatorio): void {
     const doc = new jsPDF();
-    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'USUARIO';
+    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'Usuário';
     const dataGeracao = new Date(relatorio.gerado_em);
     const assinaturaData = relatorio.assinado_em ? new Date(relatorio.assinado_em) : null;
 
@@ -108,8 +108,8 @@ export class PdfService {
     doc.text('CONTROLE DE ASSINATURAS DE EPI', 14, 16);
     doc.setFontSize(10);
     doc.text(`Solicitante: ${relatorio.solicitante_nome}`, 14, 24);
-    doc.text(`Competencia: ${relatorio.competencia_label}`, 14, 30);
-    doc.text(`Relatorio: ${relatorio.sequencia_relatorio}`, 14, 36);
+    doc.text(`Competência: ${relatorio.competencia_label}`, 14, 30);
+    doc.text(`Relatório: ${relatorio.sequencia_relatorio}`, 14, 36);
     doc.text(`Gerado em: ${dataGeracao.toLocaleDateString('pt-BR')} ${dataGeracao.toLocaleTimeString('pt-BR')}`, 14, 42);
     doc.text(`Gerado por: ${relatorio.gerado_por_nome || usuario}`, 14, 48);
 
@@ -122,7 +122,7 @@ export class PdfService {
 
     autoTable(doc, {
       startY: 56,
-      head: [['Data Saida', 'Bloco/Requisicao', 'Item', 'Quantidade']],
+      head: [['Data saída', 'Bloco/Requisição', 'Item', 'Quantidade']],
       body: tabela.length ? tabela : [['-', '-', 'Nenhum item encontrado', '-']],
       styles: { fontSize: 9, cellPadding: 2.5 },
       headStyles: { fillColor: [32, 94, 73], textColor: 255 },
@@ -131,7 +131,7 @@ export class PdfService {
     const finalY = (doc as any).lastAutoTable?.finalY || 80;
     doc.setDrawColor(120);
     doc.line(14, finalY + 24, 110, finalY + 24);
-    doc.text('Assinatura do funcionario', 14, finalY + 30);
+    doc.text('Assinatura do funcionário', 14, finalY + 30);
 
     doc.setFontSize(10);
     doc.text(

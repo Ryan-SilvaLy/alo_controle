@@ -2,10 +2,10 @@
   <div class="controle-shell">
     <section class="hero-card">
       <div class="hero-copy">
-        <span class="eyebrow">Painel de movimentacoes</span>
-        <h1>Controle de entradas e saidas do estoque</h1>
+        <span class="eyebrow">Painel de movimentações</span>
+        <h1>Controle de entradas e saídas do estoque</h1>
         <p>
-          Acompanhe as ultimas movimentacoes e prepare a base visual para um dashboard futuro,
+          Acompanhe as últimas movimentações e prepare a base visual para um dashboard futuro,
           mas com uma leitura mais operacional e compacta desde agora.
         </p>
       </div>
@@ -13,9 +13,9 @@
 
     <section class="metrics-grid">
       <article class="metric-card">
-        <span class="metric-label">Total de movimentacoes</span>
+        <span class="metric-label">Total de movimentações</span>
         <strong class="metric-value">{{ getTotalMovimentacoes() }}</strong>
-        <small class="metric-note">Entradas e saidas carregadas neste painel</small>
+        <small class="metric-note">Entradas e saídas carregadas neste painel</small>
       </article>
 
       <article class="metric-card metric-card-entry">
@@ -27,26 +27,26 @@
       <article class="metric-card metric-card-exit">
         <span class="metric-label">Itens em blocos</span>
         <strong class="metric-value">{{ getItensComBloco() }}</strong>
-        <small class="metric-note">Itens que ja apareceram em algum bloco de saida</small>
+        <small class="metric-note">Itens que já apareceram em algum bloco de saída</small>
       </article>
 
       <article class="metric-card">
-        <span class="metric-label">Ultima movimentacao</span>
+        <span class="metric-label">Última movimentação</span>
         <strong class="metric-value metric-value-sm">{{ getUltimaMovimentacaoLabel() }}</strong>
-        <small class="metric-note">Data mais recente entre entradas e saidas</small>
+        <small class="metric-note">Data mais recente entre entradas e saídas</small>
       </article>
     </section>
 
-    <div *ngIf="carregando" class="feedback-state">Carregando movimentacoes...</div>
+    <div *ngIf="carregando" class="feedback-state">Carregando movimentações...</div>
     <div *ngIf="erro" class="feedback-state feedback-error">{{ erro }}</div>
 
     <section *ngIf="!carregando && !erro" class="panel-card">
       <div class="panel-header panel-header-tight">
         <div>
           <span class="panel-tag">Itens</span>
-          <h2>Itens por movimentacao</h2>
+          <h2>Itens por movimentação</h2>
         </div>
-        <p>{{ itensConsolidados.length }} linha(s) visiveis</p>
+        <p>{{ itensConsolidados.length }} linha(s) visíveis</p>
       </div>
 
       <div class="toolbar">
@@ -56,7 +56,7 @@
             <select id="filtro-tipo" [(ngModel)]="filtroTipo" class="toolbar-input">
               <option value="todos">Todos</option>
               <option value="entrada">Entradas</option>
-              <option value="saida">Saidas</option>
+              <option value="saida">Saídas</option>
             </select>
           </div>
 
@@ -67,7 +67,7 @@
               type="text"
               [(ngModel)]="termoBusca"
               class="toolbar-input"
-              placeholder="Item, codigo, bloco, solicitante..."
+              placeholder="Item, código, bloco, solicitante..."
             />
           </div>
 
@@ -85,14 +85,14 @@
             class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
             (click)="registrarEntrada()"
           >
-            Nova Entrada
+            Nova entrada
           </button>
 
           <button
             class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition duration-200"
             (click)="registrarSaida()"
           >
-            Nova Saida
+            Nova saída
           </button>
         </div>
       </div>
@@ -111,7 +111,7 @@
               <th>Solicitante / Fornecedor</th>
               <th>Bloco / Documento</th>
               <th>Data</th>
-              <th class="actions-col">Acoes</th>
+              <th class="actions-col">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -142,7 +142,7 @@
 
               <td class="actions-col">
                 <div class="table-actions">
-                  <button (click)="visualizarUltimoRegistro(itemResumo)" class="icon-button" title="Ver movimentacao">
+                  <button (click)="visualizarUltimoRegistro(itemResumo)" class="icon-button" title="Ver movimentação">
                     <i class="fas fa-box-open"></i>
                   </button>
 
@@ -150,12 +150,12 @@
                     *ngIf="podeOperarEstoque"
                     (click)="editarUltimoRegistro(itemResumo)"
                     class="icon-button"
-                    title="Editar movimentacao"
+                    title="Editar movimentação"
                   >
                     <i class="fas fa-edit"></i>
                   </button>
 
-                  <button (click)="imprimirUltimoRegistro(itemResumo)" class="icon-button icon-button-print" title="Imprimir movimentacao">
+                  <button (click)="imprimirUltimoRegistro(itemResumo)" class="icon-button icon-button-print" title="Imprimir movimentação">
                     <i class="fas fa-print"></i>
                   </button>
                 </div>
@@ -166,7 +166,7 @@
       </div>
 
       <div class="pagination-bar" *ngIf="itensConsolidados.length > itensPorPagina">
-        <span>Pagina {{ paginaAtual > totalPaginas ? totalPaginas : paginaAtual }} de {{ totalPaginas }}</span>
+        <span>Página {{ paginaAtual > totalPaginas ? totalPaginas : paginaAtual }} de {{ totalPaginas }}</span>
 
         <div class="pagination-actions">
           <button
@@ -184,7 +184,7 @@
             (click)="proximaPagina()"
             [disabled]="paginaAtual >= totalPaginas"
           >
-            Proxima
+            Próxima
           </button>
         </div>
       </div>
@@ -194,12 +194,12 @@
       *ngIf="!carregando && !erro && movimentacoes.entradas.length === 0 && movimentacoes.saidas.length === 0"
       class="feedback-state"
     >
-      Nenhuma movimentacao registrada.
+      Nenhuma movimentação registrada.
     </div>
   </div>
 </div>
 
-<!-- MODAL DE VISUALIZACAO -->
+<!-- MODAL DE VISUALIZAÇÃO -->
 <div *ngIf="modalAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
     <div class="flex justify-between items-center mb-4">
@@ -219,14 +219,14 @@
           <div>
             <strong>{{ item.item_nome || item.produto_nome }}</strong>
             <div class="text-sm text-gray-600">Quantidade: {{ item.quantidade }}</div>
-            <div class="text-sm text-gray-600" *ngIf="item.patrimonio">Patrimonio: {{ item.patrimonio }}</div>
+            <div class="text-sm text-gray-600" *ngIf="item.patrimonio">Patrimônio: {{ item.patrimonio }}</div>
           </div>
         </div>
       </li>
     </ul>
 
     <div class="pagination-bar pagination-bar-modal" *ngIf="itensModal.length > itensModalPorPagina">
-      <span>Pagina {{ paginaModalAtual > totalPaginasModal ? totalPaginasModal : paginaModalAtual }} de {{ totalPaginasModal }}</span>
+      <span>Página {{ paginaModalAtual > totalPaginasModal ? totalPaginasModal : paginaModalAtual }} de {{ totalPaginasModal }}</span>
       <div class="pagination-actions">
         <button
           type="button"
@@ -243,24 +243,24 @@
           (click)="proximaPaginaModal()"
           [disabled]="paginaModalAtual >= totalPaginasModal"
         >
-          Proxima
+          Próxima
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL DE EXCLUSAO -->
+<!-- MODAL DE EXCLUSÃO -->
 <div *ngIf="modalExclusaoAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
   <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-    <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar Exclusao</h3>
+    <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar exclusão</h3>
 
     <p class="mb-4">
-      Tem certeza que deseja excluir {{ tipoExclusao === 'entrada' ? 'a entrada' : 'a saida' }}
+      Tem certeza que deseja excluir {{ tipoExclusao === 'entrada' ? 'a entrada' : 'a saída' }}
       <strong>#{{ registroParaExcluir?.id }}</strong>?
     </p>
 
-    <p class="text-sm text-gray-600 mb-6">Esta acao nao pode ser desfeita.</p>
+    <p class="text-sm text-gray-600 mb-6">Esta ação não pode ser desfeita.</p>
 
     <div class="flex justify-end space-x-3">
       <button
@@ -309,7 +309,7 @@
   </div>
 </div>
 
-<!-- MODAL DE NOVA SAIDA -->
+<!-- MODAL DE NOVA SAÍDA -->
 <div
   *ngIf="modalSaidaAberto"
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-3"

@@ -39,7 +39,7 @@ export class AtualizarPedidoComponent implements OnInit {
     this.pedidoOriginal = this.pedidoService.getPedido();
 
     if (!this.pedidoOriginal) {
-      alert('Nenhum pedido selecionado para edição');
+      alert('Nenhum pedido selecionado para edição.');
       this.router.navigate(['/pedido/listar']);
       return;
     }
@@ -108,7 +108,7 @@ adicionarItem() {
   });
 
   this.itens.push(grupo);
-  this.snackBar.show('Novo item adicionado ao pedido', 'success');
+  this.snackBar.show('Novo item adicionado ao pedido.', 'success');
 }
 
 removerItem(index: number) {
@@ -144,13 +144,13 @@ atualizarPedido() {
 
   // Verifica se o formulário é inválido
   if (this.pedidoForm.invalid) {
-    this.snackBar.show('Por favor, preencha todos os campos obrigatórios', 'error');
+    this.snackBar.show('Preencha todos os campos obrigatórios.', 'error');
     return;
   }
 
   // Verifica se há pelo menos um item no pedido
   if (this.itens.length === 0) {
-    this.snackBar.show('Adicione ao menos um item no pedido', 'error');
+    this.snackBar.show('Adicione ao menos um item ao pedido.', 'error');
     return;
   }
 
@@ -167,7 +167,7 @@ atualizarPedido() {
       this.router.navigate(['/pedido/listar']);
     },
     error: (err) => {
-      this.snackBar.show('Erro ao atualizar pedido.', 'error');
+      this.snackBar.show('Não foi possível atualizar o pedido.', 'error');
       console.error(err);
     }
   });
@@ -176,7 +176,7 @@ atualizarPedido() {
 abrirModalConfirmacao() {
   // Valida campos principais
   if (!this.pedidoForm.valid || this.itens.length === 0) {
-    this.snackBar.show('Preencha todos os campos obrigatórios e adicione pelo menos 1 item', 'error');
+    this.snackBar.show('Preencha todos os campos obrigatórios e adicione pelo menos um item.', 'error');
     return;
   }
 

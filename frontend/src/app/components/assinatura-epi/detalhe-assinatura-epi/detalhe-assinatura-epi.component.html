@@ -1,7 +1,7 @@
 <div class="detail-page">
   <div class="header-row">
     <div>
-      <span class="eyebrow">Competencia</span>
+      <span class="eyebrow">Competência</span>
       <h1 *ngIf="competencia">{{ competencia.solicitante_nome }} - {{ competencia.competencia_label }}</h1>
     </div>
 
@@ -13,43 +13,43 @@
   <ng-container *ngIf="!carregando && competencia">
     <section class="summary-grid">
       <article class="summary-card">
-        <span>Status da competencia</span>
-        <strong>{{ competencia.status }}</strong>
+        <span>Status da competência</span>
+        <strong>{{ getStatusCompetenciaLabel(competencia.status) }}</strong>
       </article>
 
       <article class="summary-card">
-        <span>Pendentes de impressao</span>
+        <span>Pendentes de impressão</span>
         <strong>{{ competencia.pendentes_impressao }}</strong>
       </article>
 
       <article class="summary-card">
-        <span>Relatorios gerados</span>
+        <span>Relatórios gerados</span>
         <strong>{{ competencia.relatorios_gerados }}</strong>
       </article>
 
       <article class="summary-card">
         <span>Status assinatura</span>
-        <strong>{{ competencia.status_assinatura }}</strong>
+        <strong>{{ getStatusAssinaturaLabel(competencia.status_assinatura) }}</strong>
       </article>
     </section>
 
     <section class="table-card">
       <div class="table-header">
-        <h2>Lancamentos vinculados a saida</h2>
-        <a [routerLink]="['/assinatura-epi/historico', competencia.id]" class="btn-back">Ver historico</a>
+        <h2>Lançamentos vinculados à saída</h2>
+        <a [routerLink]="['/assinatura-epi/historico', competencia.id]" class="btn-back">Ver histórico</a>
       </div>
 
       <div class="table-shell">
         <table>
           <thead>
             <tr>
-              <th>Data saida</th>
+              <th>Data saída</th>
               <th>Item</th>
               <th>Quantidade</th>
-              <th>Bloco/Requisicao</th>
+              <th>Bloco/Requisição</th>
               <th>Setor</th>
-              <th>Responsavel</th>
-              <th>Status impressao</th>
+              <th>Responsável</th>
+              <th>Status impressão</th>
             </tr>
           </thead>
           <tbody>
@@ -62,12 +62,12 @@
               <td>{{ lancamento.responsavel_nome_snapshot }}</td>
               <td>
                 <span class="status-pill" [class.status-cancelado]="lancamento.status_lancamento === 'cancelado'">
-                  {{ lancamento.status_lancamento }}
+                  {{ getStatusLancamentoLabel(lancamento.status_lancamento) }}
                 </span>
               </td>
             </tr>
             <tr *ngIf="competencia.lancamentos.length === 0">
-              <td colspan="7">Nenhum lancamento encontrado.</td>
+              <td colspan="7">Nenhum lançamento encontrado.</td>
             </tr>
           </tbody>
         </table>

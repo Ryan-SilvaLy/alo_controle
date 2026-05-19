@@ -98,7 +98,7 @@ export class CriarPedidoComponent implements OnInit {
     });
 
     this.atualizarItensSelecionados();
-    this.snackBar.show('Novo item adicionado ao pedido', 'success');
+    this.snackBar.show('Novo item adicionado ao pedido.', 'success');
   }
 
   removerItem(index: number) {
@@ -140,28 +140,28 @@ export class CriarPedidoComponent implements OnInit {
     this.pedidoForm.markAllAsTouched();
 
     if (this.pedidoForm.invalid) {
-      this.snackBar.show('Por favor, preencha todos os campos obrigatorios', 'error');
+      this.snackBar.show('Preencha todos os campos obrigatórios.', 'error');
       return;
     }
 
     if (this.itens.length === 0) {
-      this.snackBar.show('Adicione ao menos um item no pedido', 'error');
+      this.snackBar.show('Adicione ao menos um item ao pedido.', 'error');
       return;
     }
 
     if (this.getQuantidadeTiposSelecionados() > 1) {
-      this.snackBar.show('Todos os itens do pedido devem pertencer ao mesmo grupo', 'error');
+      this.snackBar.show('Todos os itens do pedido devem pertencer ao mesmo grupo.', 'error');
       return;
     }
 
     const pedido = this.pedidoForm.getRawValue();
     this.pedidoService.criarPedido(pedido).subscribe({
       next: res => {
-        this.snackBar.show(`Pedido criado com sucesso! Codigo: ${res.codigo_pedido}`, 'success');
+        this.snackBar.show(`Pedido criado com sucesso. Código: ${res.codigo_pedido}`, 'success');
         this.router.navigate(['/pedido/listar']);
       },
       error: err => {
-        this.snackBar.show('Erro ao criar pedido', 'error');
+        this.snackBar.show('Não foi possível criar o pedido.', 'error');
         console.error(err);
       }
     });
@@ -225,7 +225,7 @@ export class CriarPedidoComponent implements OnInit {
 
   getUnidadeMedidaLabel(unidade: string | undefined): string {
     if (!unidade) {
-      return 'Unidade nao informada';
+      return 'Unidade não informada';
     }
 
     const encontrada = this.itemService.UNIDADE_MEDIDA_CHOICES.find(([valor]) => valor === unidade);
@@ -257,7 +257,7 @@ export class CriarPedidoComponent implements OnInit {
     }
 
     const item = this.itensDisponiveis.find(itemDisponivel => itemDisponivel.tipo_item?.id === grupoBaseId);
-    return item?.tipo_item?.nome || 'Grupo nao identificado';
+    return item?.tipo_item?.nome || 'Grupo não identificado';
   }
 
   temGrupoDefinido(): boolean {
@@ -294,7 +294,7 @@ export class CriarPedidoComponent implements OnInit {
     const grupoBaseId = this.getGrupoBaseId(indexAtual);
 
     if (!itemSelecionado?.tipo_item?.id) {
-      this.snackBar.show('Esse item nao possui grupo vinculado e nao pode entrar no pedido', 'error');
+      this.snackBar.show('Esse item não possui grupo vinculado e não pode entrar no pedido.', 'error');
       return false;
     }
 
@@ -302,7 +302,7 @@ export class CriarPedidoComponent implements OnInit {
       return true;
     }
 
-    this.snackBar.show('Todos os itens do pedido precisam ser do mesmo grupo', 'error');
+    this.snackBar.show('Todos os itens do pedido precisam ser do mesmo grupo.', 'error');
     return false;
   }
 }

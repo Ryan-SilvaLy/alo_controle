@@ -90,7 +90,7 @@ export class FornecedorProdutoComponent {
       },
       error: (err) => {
         console.error('Erro ao carregar fornecedores:', err);
-        this.erro = 'Nao foi possivel carregar os fornecedores vinculados as notas fiscais.';
+        this.erro = 'Não foi possível carregar os fornecedores vinculados às notas fiscais.';
         this.carregando = false;
       }
     });
@@ -114,7 +114,7 @@ export class FornecedorProdutoComponent {
         continue;
       }
 
-      const nomeFornecedor = (nota?.nome_fornecedor || 'Fornecedor nao informado').trim();
+      const nomeFornecedor = (nota?.nome_fornecedor || 'Fornecedor não informado').trim();
       const cnpjCpf = (nota?.cnpj_cpf || '').trim();
       const chaveBase = cnpjCpf || nomeFornecedor;
       const chave = chaveBase.toLowerCase();

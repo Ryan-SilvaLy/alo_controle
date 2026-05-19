@@ -147,7 +147,7 @@ export class RegistrarEntradaComponent {
     if (possuiNotaFiscal) {
       this.controleService.criarNotaFiscal(this.getDadosNotaFiscal()).subscribe({
         next: nota => this.salvarNovaEntrada(nota.id),
-        error: err => this.exibirErroEntrada(err, 'Erro ao criar nota fiscal')
+        error: err => this.exibirErroEntrada(err, 'Não foi possível criar a nota fiscal.')
       });
       return;
     }

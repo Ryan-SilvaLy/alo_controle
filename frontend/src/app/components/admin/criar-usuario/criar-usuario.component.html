@@ -3,7 +3,7 @@
   <!-- HEADER -->
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <div>
-      <h2 class="text-2xl font-semibold text-slate-900 mb-1">Criar Usuário</h2>
+      <h2 class="text-2xl font-semibold text-slate-900 mb-1">Criar usuário</h2>
       <p class="text-sm text-slate-500 mb-0">
         Preencha os dados de acesso e identificação do novo usuário.
       </p>
@@ -27,18 +27,18 @@
 
         <!-- Username -->
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Username *</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Usuário *</label>
           <input
             maxlength="20"
             formControlName="username"
             class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            placeholder="Ex: joao.silva"
+            placeholder="Ex.: joao.silva"
           />
           <p class="text-xs text-slate-500 mt-1 mb-0">Login sem espaços.</p>
           <p class="text-red-500 text-xs mt-1" *ngIf="form.get('username')?.touched && form.get('username')?.errors">
             <span *ngIf="form.get('username')?.errors?.['required']">Campo obrigatório.</span>
             <span *ngIf="form.get('username')?.errors?.['pattern']">
-              Use letras, números, _ . -
+              Use letras, números, ponto, hífen ou sublinhado.
             </span>
           </p>
         </div>
@@ -76,7 +76,7 @@
             maxlength="50"
             formControlName="cargo"
             class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            placeholder="Ex: Porteiro"
+            placeholder="Ex.: porteiro"
           />
         </div>
 
@@ -87,7 +87,7 @@
             maxlength="50"
             formControlName="setor"
             class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            placeholder="Ex: Portaria"
+            placeholder="Ex.: portaria"
           />
         </div>
 
@@ -105,7 +105,7 @@
 
         <!-- Confirmar Senha -->
         <div class="md:col-span-3">
-          <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar Senha *</label>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Confirmar senha *</label>
           <input
             maxlength="20"
             type="password"
@@ -144,7 +144,7 @@
             class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
             [disabled]="form.invalid"
           >
-            Criar
+            Salvar
           </button>
         </div>
       </div>

@@ -72,7 +72,7 @@ export class CriarUsuarioComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao criar usuário:', err);
-        this.snackbar.show(err.error?.nivel_permissao || 'Erro ao criar usuário.', 'error')
+        this.snackbar.show(err.error?.nivel_permissao || 'Não foi possível criar o usuário.', 'error')
       }
     });
   }

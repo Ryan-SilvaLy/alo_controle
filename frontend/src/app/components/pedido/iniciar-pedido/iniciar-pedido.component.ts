@@ -235,7 +235,7 @@ export class IniciarPedidoComponent implements OnInit {
 
     const itemSelecionado = this.itensDisponiveis.find((item) => item.id === itemId);
     if (!itemSelecionado) {
-      this.snackBar.show('Item nao encontrado para adicionar ao pedido.', 'error');
+      this.snackBar.show('Item não encontrado para adicionar ao pedido.', 'error');
       return;
     }
 
@@ -293,7 +293,7 @@ export class IniciarPedidoComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao atualizar pedido:', err);
-        this.snackBar.show('Erro ao atualizar pedido.', 'error');
+        this.snackBar.show('Não foi possível atualizar o pedido.', 'error');
       }
     });
   }
@@ -314,7 +314,7 @@ export class IniciarPedidoComponent implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao atualizar status:', err);
-        this.snackBar.show(err?.error?.detail || 'Erro ao atualizar status do pedido.', 'error');
+        this.snackBar.show(err?.error?.detail || 'Não foi possível atualizar o status do pedido.', 'error');
       }
     });
   }
@@ -326,8 +326,8 @@ export class IniciarPedidoComponent implements OnInit {
         this.carregarPedidos();
       },
       error: (err) => {
-        console.error('Erro ao marcar ciencia de compras:', err);
-        this.snackBar.show(err?.error?.detail || 'Erro ao marcar ciencia de compras.', 'error');
+        console.error('Erro ao marcar ciência de compras:', err);
+        this.snackBar.show(err?.error?.detail || 'Não foi possível marcar ciência de compras.', 'error');
       }
     });
   }
@@ -350,7 +350,7 @@ export class IniciarPedidoComponent implements OnInit {
         },
         error: (err) => {
           console.error('Erro ao negar pedido por compras:', err);
-          this.snackBar.show(err?.error?.detail || 'Erro ao negar pedido por compras.', 'error');
+          this.snackBar.show(err?.error?.detail || 'Não foi possível negar o pedido por compras.', 'error');
         }
       });
   }

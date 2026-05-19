@@ -26,7 +26,7 @@ export class DetalheAssinaturaEpiComponent {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
       this.carregando = false;
-      this.snackbar.show('Competencia nao informada.', 'error');
+      this.snackbar.show('Competência não informada.', 'error');
       return;
     }
 
@@ -37,8 +37,24 @@ export class DetalheAssinaturaEpiComponent {
       },
       error: () => {
         this.carregando = false;
-        this.snackbar.show('Erro ao carregar os detalhes da competencia.', 'error');
+        this.snackbar.show('Não foi possível carregar os detalhes da competência.', 'error');
       }
     });
+  }
+
+  getStatusCompetenciaLabel(status: string): string {
+    return status === 'fechada' ? 'Fechada' : 'Aberta';
+  }
+
+  getStatusAssinaturaLabel(status: string): string {
+    if (status === 'pendente_assinatura') return 'Pendente de assinatura';
+    if (status === 'assinado') return 'Assinado';
+    return 'Sem relatório';
+  }
+
+  getStatusLancamentoLabel(status: string): string {
+    if (status === 'cancelado') return 'Cancelado';
+    if (status === 'impresso') return 'Impresso';
+    return 'Pendente';
   }
 }

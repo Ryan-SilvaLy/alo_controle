@@ -164,13 +164,13 @@ export class DashboardProdutoComponent {
   get tituloPeriodo(): string {
     switch (this.periodoSelecionado) {
       case '7d':
-        return 'ultimos 7 dias';
+        return 'últimos 7 dias';
       case '30d':
-        return 'ultimos 30 dias';
+        return 'últimos 30 dias';
       case '90d':
-        return 'ultimos 90 dias';
+        return 'últimos 90 dias';
       default:
-        return 'historico completo';
+        return 'histórico completo';
     }
   }
 
@@ -245,7 +245,7 @@ export class DashboardProdutoComponent {
       },
       error: (err) => {
         console.error('Erro ao carregar dashboard:', err);
-        this.erro = 'Nao foi possivel carregar os dados do dashboard.';
+        this.erro = 'Não foi possível carregar os dados do dashboard.';
         this.snackBar.show(this.erro, 'error');
         this.carregando = false;
       }
@@ -333,7 +333,7 @@ export class DashboardProdutoComponent {
       {
         label: 'Estoque baixo',
         value: estoqueBaixo,
-        note: 'Itens abaixo do minimo',
+        note: 'Itens abaixo do mínimo',
         tone: estoqueBaixo > 0 ? 'danger' : 'info'
       },
       {
@@ -343,21 +343,21 @@ export class DashboardProdutoComponent {
         tone: 'info'
       },
       {
-        label: 'Saidas no periodo',
+        label: 'Saídas no período',
         value: saidasQuantidade,
-        note: `${saidas.length} registro(s) de saida`,
+        note: `${saidas.length} registro(s) de saída`,
         tone: 'warning'
       },
       {
         label: 'Valor do estoque',
         value: this.formatarMoeda(valorEstoqueAtual),
-        note: `${itensComValor}/${totalItens} item(ns) com valor unitario`,
+        note: `${itensComValor}/${totalItens} item(ns) com valor unitário`,
         tone: 'info'
       },
       {
-        label: 'Valor de saidas',
+        label: 'Valor de saídas',
         value: this.formatarMoeda(valorSaidas),
-        note: `${saidasQuantidade} unidade(s) baixadas no periodo`,
+        note: `${saidasQuantidade} unidade(s) baixadas no período`,
         tone: 'warning'
       },
       {
@@ -444,7 +444,7 @@ export class DashboardProdutoComponent {
       const nota = entrada?.nota_fiscal_detalhe;
       if (!nota?.nome_fornecedor && !nota?.cnpj_cpf) continue;
 
-      const nome = (nota?.nome_fornecedor || 'Fornecedor nao informado').trim();
+      const nome = (nota?.nome_fornecedor || 'Fornecedor não informado').trim();
       const documento = (nota?.cnpj_cpf || '-').trim() || '-';
       const chave = `${nome.toLowerCase()}::${documento}`;
       const numeroNota = String(nota?.numero_nota || '-');
@@ -649,7 +649,7 @@ export class DashboardProdutoComponent {
 
     for (const entrada of entradas || []) {
       const nota = entrada?.nota_fiscal_detalhe;
-      const nome = String(nota?.nome_fornecedor || entrada?.recebido_por || 'Fornecedor nao informado').trim();
+      const nome = String(nota?.nome_fornecedor || entrada?.recebido_por || 'Fornecedor não informado').trim();
       const documento = String(nota?.cnpj_cpf || '-').trim() || '-';
       const chave = `${nome.toLowerCase()}::${documento}`;
 

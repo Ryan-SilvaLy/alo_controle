@@ -56,7 +56,7 @@ export class IniciarAssinaturaEpiComponent {
       },
       error: () => {
         this.carregando = false;
-        this.erro = 'Erro ao carregar as competencias de assinatura de EPI.';
+        this.erro = 'Não foi possível carregar as competências de assinatura de EPI.';
       }
     });
   }
@@ -88,13 +88,13 @@ export class IniciarAssinaturaEpiComponent {
     this.assinaturaEpiService.gerarRelatorio(competencia.id).subscribe({
       next: (relatorio) => {
         this.pdfService.gerarPdfAssinaturaEpi(relatorio);
-        this.snackbar.show('Relatorio gerado e enviado para PDF.', 'success');
+        this.snackbar.show('Relatório gerado e enviado para PDF.', 'success');
         this.carregandoAcaoId = null;
         this.carregarCompetencias();
       },
       error: (err) => {
         this.carregandoAcaoId = null;
-        const mensagem = err?.error?.non_field_errors?.[0] || err?.error?.detail || 'Nao foi possivel gerar o relatorio.';
+        const mensagem = err?.error?.non_field_errors?.[0] || err?.error?.detail || 'Não foi possível gerar o relatório.';
         this.snackbar.show(mensagem, 'error');
       }
     });
@@ -109,33 +109,33 @@ export class IniciarAssinaturaEpiComponent {
         const relatorio = this.obterUltimoRelatorioPendente(detalhe);
         if (!relatorio) {
           this.carregandoAcaoId = null;
-          this.snackbar.show('Nao existe relatorio pendente de assinatura para esta competencia.', 'warning');
+          this.snackbar.show('Não existe relatório pendente de assinatura para esta competência.', 'warning');
           return;
         }
 
         this.assinaturaEpiService.marcarAssinado(relatorio.id).subscribe({
           next: () => {
             this.carregandoAcaoId = null;
-            this.snackbar.show('Relatorio marcado como assinado.', 'success');
+            this.snackbar.show('Relatório marcado como assinado.', 'success');
             this.carregarCompetencias();
           },
           error: () => {
             this.carregandoAcaoId = null;
-            this.snackbar.show('Erro ao marcar o relatorio como assinado.', 'error');
+            this.snackbar.show('Não foi possível marcar o relatório como assinado.', 'error');
           }
         });
       },
       error: () => {
         this.carregandoAcaoId = null;
-        this.snackbar.show('Erro ao consultar os relatorios desta competencia.', 'error');
+        this.snackbar.show('Não foi possível consultar os relatórios desta competência.', 'error');
       }
     });
   }
 
   getStatusAssinaturaLabel(status: string): string {
-    if (status === 'pendente_assinatura') return 'Pendente assinatura';
+    if (status === 'pendente_assinatura') return 'Pendente de assinatura';
     if (status === 'assinado') return 'Assinado';
-    return 'Sem relatorio';
+    return 'Sem relatório';
   }
 
   getStatusCompetenciaLabel(status: string): string {

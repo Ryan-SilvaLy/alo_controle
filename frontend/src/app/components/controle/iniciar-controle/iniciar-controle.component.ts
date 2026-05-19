@@ -72,7 +72,7 @@ export class IniciarControleComponent {
     this.controleService.listarMovimentacoesEstoque()
       .pipe(
         catchError(() => {
-          this.erro = 'Erro ao carregar dados.';
+          this.erro = 'Não foi possível carregar os dados.';
           this.carregando = false;
           return of({ entradas: [], saidas: [] });
         })
@@ -111,7 +111,7 @@ export class IniciarControleComponent {
   visualizarItensEntrada(entrada: any) {
     this.controleService.listarItensEntrada(entrada.id).subscribe((itens: any[]) => {
       this.itensModal = itens;
-      this.tituloModal = `Itens da Entrada #${entrada.id}`;
+      this.tituloModal = `Itens da entrada #${entrada.id}`;
       this.paginaModalAtual = 1;
       this.modalAberto = true;
     });
@@ -132,14 +132,14 @@ export class IniciarControleComponent {
   imprimirEntrada(registro: any) {
     this.controleService.listarItensEntrada(registro.id).subscribe({
       next: (itens) => this.imprimirMovimentacao('Entrada', registro, itens),
-      error: () => this.snackbar.show('Erro ao carregar itens para impressao.', 'error')
+      error: () => this.snackbar.show('Não foi possível carregar os itens para impressão.', 'error')
     });
   }
 
   visualizarItensSaida(saida: any) {
     this.controleService.listarItensSaida(saida.id).subscribe((itens: any[]) => {
       this.itensModal = itens;
-      this.tituloModal = `Itens da Saida #${saida.id}`;
+      this.tituloModal = `Itens da saída #${saida.id}`;
       this.paginaModalAtual = 1;
       this.modalAberto = true;
     });
@@ -159,8 +159,8 @@ export class IniciarControleComponent {
 
   imprimirSaida(registro: any) {
     this.controleService.listarItensSaida(registro.id).subscribe({
-      next: (itens) => this.imprimirMovimentacao('Saida', registro, itens),
-      error: () => this.snackbar.show('Erro ao carregar itens para impressao.', 'error')
+      next: (itens) => this.imprimirMovimentacao('Saída', registro, itens),
+      error: () => this.snackbar.show('Não foi possível carregar os itens para impressão.', 'error')
     });
   }
 
@@ -182,13 +182,13 @@ export class IniciarControleComponent {
     this.controleService[serviceMethod](this.registroParaExcluir.id).subscribe({
       next: () => {
         this.snackbar.show(
-          `${this.tipoExclusao === 'entrada' ? 'Entrada' : 'Saida'} excluida com sucesso.`,
+          `${this.tipoExclusao === 'entrada' ? 'Entrada' : 'Saída'} excluída com sucesso.`,
           'success'
         );
         this.carregarMovimentacoes();
         this.fecharModalExclusao();
       },
-      error: () => this.snackbar.show(`Erro ao excluir a ${this.tipoExclusao}.`, 'error')
+      error: () => this.snackbar.show(`Não foi possível excluir a ${this.tipoExclusao}.`, 'error')
     });
   }
 
@@ -232,7 +232,7 @@ export class IniciarControleComponent {
             item: itemMov,
             data: saida.data_saida,
             referencia: saida.id,
-            principal: saida.bloco_requisicao || `Saida #${saida.id}`,
+            principal: saida.bloco_requisicao || `Saída #${saida.id}`,
             secundario: itemMov.solicitante || saida.registrado_por || '---',
             bloco: saida.bloco_requisicao || null,
             registro: saida,
@@ -428,7 +428,7 @@ export class IniciarControleComponent {
     return {
       chave: `${contexto.tipo}-${contexto.referencia}-${contexto.index}-${itemMov.item || itemMov.item_codigo || itemMov.item_nome || 'item'}`,
       tipo: contexto.tipo,
-      statusLabel: contexto.tipo === 'entrada' ? 'Entrada' : 'Saida',
+      statusLabel: contexto.tipo === 'entrada' ? 'Entrada' : 'Saída',
       itemId: itemMov.item || null,
       codigo: itemMov.item_codigo || '---',
       nome: itemMov.item_nome || itemMov.produto_nome || 'Item sem nome',
@@ -450,11 +450,11 @@ export class IniciarControleComponent {
     }
   }
 
-  private imprimirMovimentacao(tipo: 'Entrada' | 'Saida', registro: any, itens: any[]) {
+  private imprimirMovimentacao(tipo: 'Entrada' | 'Saída', registro: any, itens: any[]) {
     const popup = window.open('', '_blank', 'width=900,height=700');
 
     if (!popup) {
-      this.snackbar.show('Nao foi possivel abrir a janela de impressao.', 'warning');
+      this.snackbar.show('Não foi possível abrir a janela de impressão.', 'warning');
       return;
     }
 
@@ -486,17 +486,17 @@ export class IniciarControleComponent {
           <h1>${titulo}</h1>
           <div class="meta">
             <div><strong>Data:</strong> ${tipo === 'Entrada' ? (registro.data_entrada ?? '-') : (registro.data_saida ?? '-')}</div>
-            <div><strong>Observacao:</strong> ${registro.observacao ?? '-'}</div>
-            <div><strong>${tipo === 'Entrada' ? 'Recebido por' : 'Responsavel'}:</strong> ${tipo === 'Entrada' ? (registro.recebido_por ?? '-') : (registro.responsavel ?? registro.registrado_por ?? '-')}</div>
+            <div><strong>Observação:</strong> ${registro.observacao ?? '-'}</div>
+            <div><strong>${tipo === 'Entrada' ? 'Recebido por' : 'Responsável'}:</strong> ${tipo === 'Entrada' ? (registro.recebido_por ?? '-') : (registro.responsavel ?? registro.registrado_por ?? '-')}</div>
           </div>
           <table>
             <thead>
               <tr>
-                <th>Codigo</th>
+                <th>Código</th>
                 <th>Item</th>
                 <th>Quantidade</th>
                 <th>Solicitante</th>
-                <th>Patrimonio</th>
+                <th>Patrimônio</th>
               </tr>
             </thead>
             <tbody>

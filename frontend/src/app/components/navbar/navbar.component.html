@@ -5,24 +5,24 @@
         ALO CONTROLE
         <i class="fas fa-cogs"></i>
       </a>
-      <span class="navbar-subtitle">Gestao de estoque e movimentacoes</span>
+      <span class="navbar-subtitle">Gestão de estoque e movimentações</span>
     </div>
 
     <div class="user-column">
       <div class="user-profile">
-        <div class="user-photo" aria-label="Foto do usuario">
+        <div class="user-photo" aria-label="Foto do usuário">
           {{ infoUsuario?.nome?.charAt(0) }}
         </div>
         <div class="user-info">
-          <div><strong>Nome:</strong> {{ infoUsuario?.nome || 'Nao informado' }}</div>
-          <div><strong>Setor:</strong> {{ infoUsuario?.setor || 'Nao informado' }}</div>
-          <div><strong>Cargo:</strong> {{ infoUsuario?.cargo || 'Nao informado' }}</div>
+          <div><strong>Nome:</strong> {{ infoUsuario?.nome || 'Não informado' }}</div>
+          <div><strong>Setor:</strong> {{ infoUsuario?.setor || 'Não informado' }}</div>
+          <div><strong>Cargo:</strong> {{ infoUsuario?.cargo || 'Não informado' }}</div>
         </div>
       </div>
 
       <div class="user-actions">
         <span class="nivel-permissao">
-          Nivel: {{ infoUsuario?.nivel_permissao || 'Nao definido' }}
+          Nível: {{ infoUsuario?.nivel_permissao || 'Não definido' }}
         </span>
 
         <div class="settings-wrapper">
@@ -36,12 +36,12 @@
           </button>
 
           <ul *ngIf="isSettingsOpen" class="settings-menu">
-            <li><a routerLink="/configuracoes" (click)="onLinkClick()"><i class="fas fa-sliders-h"></i> Configuracoes do sistema</a></li>
-            <li><a routerLink="/perfil" (click)="onLinkClick()"><i class="fas fa-user"></i> Perfil do usuario</a></li>
-            <li><a routerLink="/permissoes" (click)="onLinkClick()"><i class="fas fa-key"></i> Gerenciamento de permissoes</a></li>
-            <li><a routerLink="/backup" (click)="onLinkClick()"><i class="fas fa-database"></i> Backup e restauracao</a></li>
+            <li><a routerLink="/configuracoes" (click)="onLinkClick()"><i class="fas fa-sliders-h"></i> Configurações do sistema</a></li>
+            <li><a routerLink="/perfil" (click)="onLinkClick()"><i class="fas fa-user"></i> Perfil do usuário</a></li>
+            <li><a routerLink="/permissoes" (click)="onLinkClick()"><i class="fas fa-key"></i> Gerenciamento de permissões</a></li>
+            <li><a routerLink="/backup" (click)="onLinkClick()"><i class="fas fa-database"></i> Backup e restauração</a></li>
             <li><a routerLink="/logs" (click)="onLinkClick()"><i class="fas fa-file-alt"></i> Logs e auditoria</a></li>
-            <li><a routerLink="/ajuda" (click)="onLinkClick()"><i class="fas fa-question-circle"></i> Ajuda e documentacao</a></li>
+            <li><a routerLink="/ajuda" (click)="onLinkClick()"><i class="fas fa-question-circle"></i> Ajuda e documentação</a></li>
             <li><button (click)="logout()" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</button></li>
           </ul>
         </div>
@@ -62,7 +62,7 @@
         <span
           *ngIf="totalPedidosNotificacao > 0"
           class="nav-badge"
-          [attr.aria-label]="totalPedidosNotificacao + ' pedido(s) aguardando acao'"
+          [attr.aria-label]="totalPedidosNotificacao + ' pedido(s) aguardando ação'"
         >
           <i class="fas fa-bell"></i>
           {{ totalPedidosNotificacao > 99 ? '99+' : totalPedidosNotificacao }}
@@ -114,7 +114,7 @@
         class="nav-link"
       >
         <i class="fas fa-chart-pie"></i>
-        <span>Relatorios</span>
+        <span>Relatórios</span>
       </a>
 
       <a

@@ -26,7 +26,7 @@ export class LogsComponent implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.error = 'Erro ao carregar logs.';
+        this.error = 'Não foi possível carregar os logs.';
         this.loading = false;
       }
     });

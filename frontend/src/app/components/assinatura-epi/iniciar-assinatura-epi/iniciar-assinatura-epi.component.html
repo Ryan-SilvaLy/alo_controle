@@ -4,7 +4,7 @@
       <span class="eyebrow">Controle mensal</span>
       <h1>Assinaturas de EPI por solicitante</h1>
       <p>
-        O painel consolida retiradas vindas da saida de estoque, separa por competencia
+        O painel consolida retiradas vindas da saída de estoque, separa por competência
         mensal e controla o que ainda precisa ser impresso ou assinado.
       </p>
     </div>
@@ -18,7 +18,7 @@
       </label>
 
       <label>
-        <span>Mes</span>
+        <span>Mês</span>
         <input [(ngModel)]="filtros.mes" type="number" min="1" max="12" placeholder="04" />
       </label>
 
@@ -43,19 +43,19 @@
     </div>
   </section>
 
-  <div *ngIf="carregando" class="feedback-card">Carregando competencias...</div>
+  <div *ngIf="carregando" class="feedback-card">Carregando competências...</div>
   <div *ngIf="erro" class="feedback-card feedback-error">{{ erro }}</div>
 
   <section *ngIf="!carregando && !erro" class="table-card">
     <div class="table-header">
       <div>
-        <span class="eyebrow">Competencias</span>
+        <span class="eyebrow">Competências</span>
         <h2>{{ competencias.length }} registro(s) encontrado(s)</h2>
       </div>
     </div>
 
     <div *ngIf="competencias.length === 0" class="feedback-card">
-      Nenhuma competencia encontrada para os filtros informados.
+      Nenhuma competência encontrada para os filtros informados.
     </div>
 
     <div *ngIf="competencias.length > 0" class="table-shell">
@@ -63,12 +63,12 @@
         <thead>
           <tr>
             <th>Solicitante</th>
-            <th>Competencia</th>
+            <th>Competência</th>
             <th>Status</th>
-            <th>Pendentes de impressao</th>
-            <th>Relatorios gerados</th>
+            <th>Pendentes de impressão</th>
+            <th>Relatórios gerados</th>
             <th>Status assinatura</th>
-            <th>Acoes</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -119,11 +119,11 @@
                     (click)="gerarRelatorio(competencia)"
                   >
                     <i class="fas fa-file-export menu-item-icon"></i>
-                    Gerar relatorio
+                    Gerar relatório
                   </button>
                   <button type="button" class="menu-item" (click)="abrirHistorico(competencia)">
                     <i class="fas fa-clock-rotate-left menu-item-icon"></i>
-                    Ver historico
+                    Ver histórico
                   </button>
                   <button
                     type="button"

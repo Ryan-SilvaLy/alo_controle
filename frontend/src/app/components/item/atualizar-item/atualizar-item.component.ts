@@ -53,7 +53,7 @@ ngOnInit(): void {
   carregarTiposItem(): void {
     this.itemService.listarTipoItem().subscribe({
       next: (res) => this.tiposItem = res,
-      error: () => this.snackbar.show('Erro ao carregar tipos de item', 'error')
+      error: () => this.snackbar.show('Não foi possível carregar os tipos de item.', 'error')
     });
   }
 
@@ -74,11 +74,11 @@ ngOnInit(): void {
             unidade_medida: item.unidade_medida,
           });
         } else {
-          this.snackbar.show('Item não encontrado', 'error');
+          this.snackbar.show('Item não encontrado.', 'error');
           this.router.navigate(['/item/iniciar']);
         }
       },
-      error: () => this.snackbar.show('Erro ao carregar itens', 'error')
+      error: () => this.snackbar.show('Não foi possível carregar os itens.', 'error')
     });
   }
 
@@ -94,18 +94,18 @@ fecharModal() {
 }
   atualizar(): void {
     if (this.form.invalid) {
-      this.snackbar.show('Preencha todos os campos obrigatórios', 'error');
+      this.snackbar.show('Preencha todos os campos obrigatórios.', 'error');
       return;
     }
 
     this.itemService.atualizarItem(this.itemId, this.form.value).subscribe({
       next: () => {
-        this.snackbar.show('Item atualizado com sucesso!', 'success');
+        this.snackbar.show('Item atualizado com sucesso.', 'success');
         this.fecharModal();
         this.itemAtualizado.emit();
       },
       error: (err) => {
-        this.snackbar.show('Erro ao atualizar item', 'error');
+        this.snackbar.show('Não foi possível atualizar o item.', 'error');
         console.error('Erro ao atualizar item:', err);
       }
     });

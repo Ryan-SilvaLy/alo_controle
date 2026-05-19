@@ -33,7 +33,7 @@ export class HistoricoRelatorioComponent {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (!id) {
       this.carregando = false;
-      this.snackbar.show('Competencia nao informada.', 'error');
+      this.snackbar.show('Competência não informada.', 'error');
       return;
     }
 
@@ -50,7 +50,7 @@ export class HistoricoRelatorioComponent {
       },
       error: () => {
         this.carregando = false;
-        this.snackbar.show('Erro ao carregar o historico da competencia.', 'error');
+        this.snackbar.show('Não foi possível carregar o histórico da competência.', 'error');
       }
     });
   }
@@ -65,7 +65,7 @@ export class HistoricoRelatorioComponent {
       },
       error: () => {
         this.carregandoRelatorioId = null;
-        this.snackbar.show('Erro ao carregar os dados para reimpressao.', 'error');
+        this.snackbar.show('Não foi possível carregar os dados para reimpressão.', 'error');
       }
     });
   }
@@ -76,15 +76,21 @@ export class HistoricoRelatorioComponent {
     this.assinaturaEpiService.marcarAssinado(relatorio.id).subscribe({
       next: () => {
         this.carregandoRelatorioId = null;
-        this.snackbar.show('Relatorio marcado como assinado.', 'success');
+        this.snackbar.show('Relatório marcado como assinado.', 'success');
         if (this.competencia) {
           this.carregarCompetencia(this.competencia.id);
         }
       },
       error: () => {
         this.carregandoRelatorioId = null;
-        this.snackbar.show('Erro ao marcar o relatorio como assinado.', 'error');
+        this.snackbar.show('Não foi possível marcar o relatório como assinado.', 'error');
       }
     });
+  }
+
+  getStatusAssinaturaLabel(status: string): string {
+    if (status === 'pendente_assinatura') return 'Pendente de assinatura';
+    if (status === 'assinado') return 'Assinado';
+    return 'Sem relatório';
   }
 }

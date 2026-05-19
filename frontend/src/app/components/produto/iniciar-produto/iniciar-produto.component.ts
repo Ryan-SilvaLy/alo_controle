@@ -92,7 +92,7 @@ export class IniciarProdutoComponent {
       },
       error: (err) => {
         console.error(err);
-        this.erro = 'Erro ao carregar o resumo de movimentacoes por item.';
+        this.erro = 'Não foi possível carregar o resumo de movimentações por item.';
         this.snackbar.show(this.erro, 'error');
         this.carregando = false;
       }

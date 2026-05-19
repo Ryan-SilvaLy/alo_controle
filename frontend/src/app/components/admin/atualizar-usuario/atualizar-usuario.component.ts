@@ -53,7 +53,7 @@ export class AtualizarUsuarioComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.snackbar.show('Erro ao atualizar usuário.', 'error');
+        this.snackbar.show('Não foi possível atualizar o usuário.', 'error');
       }
     });
   }
