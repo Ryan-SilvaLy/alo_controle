@@ -216,7 +216,21 @@
         <td>{{ item.id }}</td>
         <td>{{ item.nome }}</td>
         <td>{{ item.codigo }}</td>
-        <td>{{ item.codigo_barras || '-' }}</td>
+        <td>
+          <div class="valor-unitario-cell">
+            <span>{{ item.codigo_barras || '-' }}</span>
+            <button
+              *ngIf="item.codigo_barras"
+              type="button"
+              class="valor-eye-btn"
+              title="Ver codigo de barras"
+              (click)="abrirCodigoBarras(item)"
+              (mouseenter)="abrirCodigoBarras(item)"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </td>
         <td>{{ item.tipo_item.nome }}</td>
         <td>{{ item.prateleira_estoque }}</td>
         <td>{{ item.quantidade_atual | quantidadeFormat:item.unidade_medida }}</td>
@@ -276,6 +290,52 @@
   </div>
 
 
+</div>
+
+<div
+  *ngIf="itemCodigoBarrasAberto"
+  class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-3"
+  (click)="fecharCodigoBarras()"
+>
+  <div
+    class="w-full max-w-sm rounded-lg bg-white p-4 text-slate-900 shadow-xl"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="mb-3 flex items-start justify-between gap-3 border-b border-slate-200 pb-2">
+      <div>
+        <h3 class="text-base font-semibold">Codigo de barras</h3>
+        <p class="text-xs text-slate-500">{{ itemCodigoBarrasAberto.codigo }} - {{ itemCodigoBarrasAberto.nome }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="rounded px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+        (click)="fecharCodigoBarras()"
+        aria-label="Fechar"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="space-y-2 text-sm">
+      <div class="flex justify-between gap-3">
+        <span>Grupo</span>
+        <strong>{{ itemCodigoBarrasAberto.tipo_item.nome }}</strong>
+      </div>
+      <div class="flex justify-between gap-3">
+        <span>Codigo</span>
+        <strong>{{ itemCodigoBarrasAberto.codigo_barras }}</strong>
+      </div>
+      <div class="mt-3 rounded border border-slate-200 bg-slate-50 p-3 text-center">
+        <img
+          *ngIf="itemCodigoBarrasAberto.codigo_barras_imagem"
+          [src]="itemCodigoBarrasAberto.codigo_barras_imagem"
+          alt="Codigo de barras"
+          class="mx-auto max-h-28"
+        />
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- =========================

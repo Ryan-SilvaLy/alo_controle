@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 8mm;
+    }
+
+    body {
+      margin: 0;
+      color: #111827;
+      font-family: Arial, sans-serif;
+      font-size: 8pt;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4mm;
+    }
+
+    .etiqueta {
+      border: 1px solid #d1d5db;
+      padding: 2.5mm;
+      height: 30mm;
+      overflow: hidden;
+      page-break-inside: avoid;
+    }
+
+    .nome {
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .meta {
+      color: #4b5563;
+      margin-top: 1mm;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 15mm;
+      object-fit: contain;
+      margin-top: 1mm;
+    }
+
+    .codigo {
+      margin-top: 1mm;
+      text-align: center;
+      font-size: 7pt;
+      letter-spacing: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="grid">
+    {% for etiqueta in etiquetas %}
+      <div class="etiqueta">
+        <div class="nome">{{ etiqueta.nome }}</div>
+        <div class="meta">{{ etiqueta.codigo }} | {{ etiqueta.tipo }}</div>
+        {% if etiqueta.imagem_base64 %}
+          <img src="data:image/png;base64,{{ etiqueta.imagem_base64 }}" alt="Codigo de barras">
+        {% endif %}
+        <div class="codigo">{{ etiqueta.codigo_barras }}</div>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>

@@ -1,6 +1,18 @@
 from django.urls import path
 from rest_framework import routers
-from .rest_views import ListarItensAPI, CriarItemAPI, DeletarItemAPI, BuscarItemAPI, AtualizarItemAPI, TipoItemViewSet, AtualizarStatusItemAPI, ItensPorTipoEstoqueBaixoView
+from .rest_views import (
+    ListarItensAPI,
+    CriarItemAPI,
+    DeletarItemAPI,
+    BuscarItemAPI,
+    AtualizarItemAPI,
+    TipoItemViewSet,
+    AtualizarStatusItemAPI,
+    ItensPorTipoEstoqueBaixoView,
+    BuscarItemPorCodigoBarrasAPI,
+    ListarCodigosBarrasAPI,
+    GerarPdfCodigosBarrasAPI,
+)
 
 router = routers.DefaultRouter()
 router.register(r'tipoItem', TipoItemViewSet, basename='tipoitem')
@@ -13,6 +25,9 @@ urlpatterns = [
     path('atualizar/<int:id>/', AtualizarItemAPI.as_view(), name='api_atualizar_item'),
     path('atualizar-status/<int:id>/', AtualizarStatusItemAPI.as_view(), name='api_atualizar_status_item'),
     path('por-tipo-baixo/', ItensPorTipoEstoqueBaixoView.as_view(), name='por-tipo-baixo'),
+    path('codigo-barras/buscar/<str:codigo_barras>/', BuscarItemPorCodigoBarrasAPI.as_view(), name='api_buscar_item_codigo_barras'),
+    path('codigo-barras/listar/', ListarCodigosBarrasAPI.as_view(), name='api_listar_codigos_barras'),
+    path('codigo-barras/pdf/', GerarPdfCodigosBarrasAPI.as_view(), name='api_pdf_codigos_barras'),
 ]
 
 # Adiciona as rotas do ViewSet.

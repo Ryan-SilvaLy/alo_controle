@@ -3,12 +3,15 @@ from rest_framework import serializers, status, generics, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, ValidationError
+from django.http import HttpResponse
 
 from app_item.models import Item, TipoItem
 from .serializers import ItemSerializer, TipoItemSerializer
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404
-from django.db.models import F
+from django.db.models import F, Q
+from django.template.loader import render_to_string
+import base64
 
 from app_usuario.services import registrar_log
 from app_pedido.services import sincronizar_pedido_automatico_para_item
@@ -188,3 +191,109 @@ class ItensPorTipoEstoqueBaixoView(generics.ListAPIView):
         if tipo_id:
             queryset = queryset.filter(tipo_item_id=tipo_id)
         return queryset
+
+
+class BuscarItemPorCodigoBarrasAPI(APIView):
+    def get(self, request, codigo_barras):
+        codigo = ''.join(filter(str.isdigit, str(codigo_barras or '')))
+
+        if not codigo:
+            return Response({'detail': 'Informe um código de barras válido.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        item = get_object_or_404(Item, codigo_barras=codigo)
+        garantir_imagem_codigo_barras(item)
+        serializer = ItemSerializer(item, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ListarCodigosBarrasAPI(ListAPIView):
+    serializer_class = ItemSerializer
+
+    def get_queryset(self):
+        queryset = Item.objects.select_related('tipo_item').exclude(codigo_barras__isnull=True).exclude(codigo_barras='')
+        grupo = self.request.query_params.get('grupo') or self.request.query_params.get('tipo')
+        nome = self.request.query_params.get('nome')
+        codigo = self.request.query_params.get('codigo')
+        termo = self.request.query_params.get('q')
+
+        if grupo:
+            queryset = queryset.filter(tipo_item_id=grupo)
+        if nome:
+            queryset = queryset.filter(nome__icontains=nome)
+        if codigo:
+            queryset = queryset.filter(Q(codigo__icontains=codigo) | Q(codigo_barras__icontains=codigo))
+        if termo:
+            queryset = queryset.filter(
+                Q(nome__icontains=termo) |
+                Q(codigo__icontains=termo) |
+                Q(codigo_barras__icontains=termo) |
+                Q(tipo_item__nome__icontains=termo)
+            )
+
+        return queryset.order_by('nome', 'codigo')
+
+    def list(self, request, *args, **kwargs):
+        queryset = list(self.filter_queryset(self.get_queryset()))
+        for item in queryset:
+            garantir_imagem_codigo_barras(item)
+        serializer = self.get_serializer(queryset, many=True)
+        dados = list(serializer.data)
+
+        for item, item_serializado in zip(queryset, dados):
+            item_serializado['codigo_barras_imagem_base64'] = obter_imagem_codigo_barras_base64(item)
+
+        return Response(dados, status=status.HTTP_200_OK)
+
+
+class GerarPdfCodigosBarrasAPI(APIView):
+    def post(self, request):
+        ids = request.data.get('ids') or request.data.get('itens') or []
+
+        if not isinstance(ids, list) or not ids:
+            return Response({'detail': 'Selecione ao menos um item.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        itens = Item.objects.select_related('tipo_item').filter(id__in=ids).order_by('nome', 'codigo')
+        etiquetas = []
+
+        for item in itens:
+            garantir_imagem_codigo_barras(item)
+            imagem_base64 = obter_imagem_codigo_barras_base64(item)
+
+            etiquetas.append({
+                'codigo': item.codigo,
+                'nome': item.nome,
+                'tipo': item.tipo_item.nome,
+                'codigo_barras': item.codigo_barras,
+                'imagem_base64': imagem_base64,
+            })
+
+        try:
+            from weasyprint import HTML
+            html = render_to_string('app_item/codigos_barras_pdf.html', {'etiquetas': etiquetas})
+            pdf = HTML(string=html, base_url=request.build_absolute_uri('/')).write_pdf()
+        except OSError as exc:
+            return Response(
+                {'detail': f'Nao foi possivel carregar as dependencias de PDF do WeasyPrint: {exc}'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="codigos_barras.pdf"'
+        return response
+
+
+def garantir_imagem_codigo_barras(item):
+    if item.codigo_barras and not item.codigo_barras_imagem:
+        item._gerar_imagem_codigo_barras()
+        item.save(update_fields=['codigo_barras_imagem'])
+
+
+def obter_imagem_codigo_barras_base64(item):
+    if not item.codigo_barras_imagem:
+        return ''
+
+    try:
+        with item.codigo_barras_imagem.open('rb') as arquivo:
+            return base64.b64encode(arquivo.read()).decode('ascii')
+    except FileNotFoundError:
+        return ''

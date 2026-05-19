@@ -14,7 +14,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'chave-insegura-apenas-local')
 
-DEBUG = os.getenv("DEBUG", "True") == "True"
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+DEBUG = env_bool("DEBUG", True)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -96,11 +103,20 @@ TEMPLATES = [
 # DATABASE
 # ========================
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_SSL_REQUIRE = os.getenv("DATABASE_SSL_REQUIRE")
+
+if DATABASE_SSL_REQUIRE is None:
+    banco_local = DATABASE_URL and ("localhost" in DATABASE_URL or "127.0.0.1" in DATABASE_URL)
+    DATABASE_SSL_REQUIRE = (not DEBUG) and not banco_local
+else:
+    DATABASE_SSL_REQUIRE = env_bool("DATABASE_SSL_REQUIRE")
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=DATABASE_URL,
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=DATABASE_SSL_REQUIRE,
     )
 }
 
@@ -139,6 +155,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # ========================
 # DEFAULT FIELD

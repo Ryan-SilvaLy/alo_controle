@@ -149,4 +149,83 @@ export class PdfService {
       `assinatura_epi_${relatorio.solicitante_nome}_${relatorio.competencia_label.replace('/', '_')}_relatorio_${relatorio.sequencia_relatorio}.pdf`
     );
   }
+
+  async gerarPdfCodigosBarras(itens: Item[]): Promise<void> {
+    if (!itens.length) {
+      this.snackbar.show('Selecione ao menos um item para imprimir.', 'warning');
+      return;
+    }
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const alturaPagina = doc.internal.pageSize.getHeight();
+    const margem = 8;
+    const colunas = 3;
+    const larguraEtiqueta = (larguraPagina - margem * 2) / colunas;
+    const alturaEtiqueta = 30;
+
+    for (let index = 0; index < itens.length; index++) {
+      const item = itens[index];
+      const coluna = index % colunas;
+      const linha = Math.floor((index % 27) / colunas);
+
+      if (index > 0 && index % 27 === 0) {
+        doc.addPage();
+      }
+
+      const x = margem + coluna * larguraEtiqueta;
+      const y = margem + linha * alturaEtiqueta;
+
+      doc.setDrawColor(210, 214, 220);
+      doc.rect(x, y, larguraEtiqueta - 1, alturaEtiqueta - 1);
+
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text(this.limitarTexto(item.nome, 28), x + 2, y + 4);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${item.codigo} | ${item.tipo_item?.nome || ''}`, x + 2, y + 8);
+
+      const imagemBase64 = item.codigo_barras_imagem_base64
+        ? `data:image/png;base64,${item.codigo_barras_imagem_base64}`
+        : null;
+
+      if (imagemBase64 || item.codigo_barras_imagem) {
+        const imagem = imagemBase64 || await this.carregarImagemBase64(item.codigo_barras_imagem || '');
+        if (imagem) {
+          doc.addImage(imagem, 'PNG', x + 2, y + 10, larguraEtiqueta - 5, 14);
+        }
+      }
+
+      doc.setFontSize(7);
+      doc.text(String(item.codigo_barras || ''), x + larguraEtiqueta / 2, y + 27, { align: 'center' });
+
+      if (y + alturaEtiqueta > alturaPagina - margem) {
+        continue;
+      }
+    }
+
+    doc.save(`codigos_barras_${new Date().toISOString().slice(0, 10)}.pdf`);
+  }
+
+  private limitarTexto(texto: string, tamanho: number): string {
+    const valor = String(texto || '');
+    return valor.length > tamanho ? `${valor.slice(0, tamanho - 3)}...` : valor;
+  }
+
+  private async carregarImagemBase64(url: string): Promise<string | null> {
+    try {
+      const resposta = await fetch(url);
+      const blob = await resposta.blob();
+
+      return await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(String(reader.result));
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
 }

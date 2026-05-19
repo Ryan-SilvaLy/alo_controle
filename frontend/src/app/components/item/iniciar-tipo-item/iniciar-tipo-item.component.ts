@@ -1,10 +1,11 @@
-import { ItemService, TipoItem } from './../../../services/item.service';
+import { Item, ItemService, TipoItem } from './../../../services/item.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { PaginationComponent } from '../../../shared/pagination/pagination.component';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { ModalTipoItemComponent } from '../modal-tipo-item/modal-tipo-item.component';
+import { PdfService } from '../../../shared/pdf/pdf.service';
 
 
 @Component({
@@ -21,6 +22,16 @@ export class IniciarTipoItemComponent implements OnInit {
   idTipoItem!: number;
   modalAberto = false; 
 tiposItensSemRelacionamento: any[] = []; 
+itensCodigosBarras: Item[] = [];
+itensCodigosFiltrados: Item[] = [];
+idsCodigosSelecionados = new Set<number>();
+carregandoCodigos = false;
+imprimindoCodigos = false;
+filtrosCodigos = {
+  tipo: '',
+  nome: '',
+  codigo: '',
+};
 
 tipoItemParaExcluir: any = null;
 modalExcluirAberto = false;
@@ -37,7 +48,8 @@ atualizarItensPaginados() {
   constructor(
     private itemService: ItemService,
     private fb: FormBuilder,
-    private snackbar: SnackbarService
+    private snackbar: SnackbarService,
+    private pdfService: PdfService
   ) {
     this.formAtualizar = this.fb.group({
       nome: ['', Validators.required],
@@ -47,6 +59,7 @@ atualizarItensPaginados() {
 
   ngOnInit(): void {
     this.carregarTiposItens();
+    this.carregarCodigosBarras();
   }
 
 carregarTiposItens() {
@@ -77,6 +90,83 @@ carregarTiposItens() {
       this.carregando = false;
     }
   });
+}
+
+carregarCodigosBarras() {
+  this.carregandoCodigos = true;
+
+  this.itemService.listarCodigosBarras().subscribe({
+    next: (itens) => {
+      this.itensCodigosBarras = itens;
+      this.filtrarCodigosBarras();
+      this.carregandoCodigos = false;
+    },
+    error: () => {
+      this.carregandoCodigos = false;
+      this.snackbar.show('Erro ao listar codigos de barras.', 'error');
+    }
+  });
+}
+
+filtrarCodigosBarras() {
+  const nome = this.filtrosCodigos.nome.toLowerCase().trim();
+  const codigo = this.filtrosCodigos.codigo.toLowerCase().trim();
+  const tipo = Number(this.filtrosCodigos.tipo || 0);
+
+  this.itensCodigosFiltrados = this.itensCodigosBarras.filter(item => {
+    const nomeMatch = !nome || item.nome.toLowerCase().includes(nome);
+    const codigoMatch = !codigo || item.codigo.toLowerCase().includes(codigo) || (item.codigo_barras || '').toLowerCase().includes(codigo);
+    const tipoMatch = !tipo || item.tipo_item?.id === tipo;
+    return nomeMatch && codigoMatch && tipoMatch;
+  });
+}
+
+alternarSelecaoCodigo(itemId: number, checked: boolean) {
+  if (checked) {
+    this.idsCodigosSelecionados.add(itemId);
+    return;
+  }
+
+  this.idsCodigosSelecionados.delete(itemId);
+}
+
+alternarTodosCodigos(checked: boolean) {
+  if (checked) {
+    this.itensCodigosFiltrados.forEach(item => this.idsCodigosSelecionados.add(item.id));
+    return;
+  }
+
+  this.itensCodigosFiltrados.forEach(item => this.idsCodigosSelecionados.delete(item.id));
+}
+
+codigoSelecionado(itemId: number): boolean {
+  return this.idsCodigosSelecionados.has(itemId);
+}
+
+todosCodigosFiltradosSelecionados(): boolean {
+  return this.itensCodigosFiltrados.length > 0
+    && this.itensCodigosFiltrados.every(item => this.idsCodigosSelecionados.has(item.id));
+}
+
+async imprimirCodigosSelecionados() {
+  const ids = Array.from(this.idsCodigosSelecionados);
+
+  if (!ids.length) {
+    this.snackbar.show('Selecione ao menos um item para imprimir.', 'warning');
+    return;
+  }
+
+  this.imprimindoCodigos = true;
+
+  try {
+    const itensSelecionados = this.itensCodigosBarras.filter(item => this.idsCodigosSelecionados.has(item.id));
+    await this.pdfService.gerarPdfCodigosBarras(itensSelecionados);
+  } catch (err) {
+    console.error(err);
+    this.snackbar.show('Erro ao gerar PDF dos codigos de barras.', 'error');
+  } finally {
+    this.imprimindoCodigos = false;
+  }
 }
 
 

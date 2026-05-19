@@ -41,6 +41,7 @@ export class IniciarItemComponent {
   modalAberto = false;
   itemSelecionado: Item | null = null;
   itemValorAberto: Item | null = null;
+  itemCodigoBarrasAberto: Item | null = null;
 
   paginaAtual = 1;
   itensPorPagina = 25;
@@ -168,6 +169,14 @@ resetarFiltros() {
 
   fecharValorEstoque(): void {
     this.itemValorAberto = null;
+  }
+
+  abrirCodigoBarras(item: Item): void {
+    this.itemCodigoBarrasAberto = item;
+  }
+
+  fecharCodigoBarras(): void {
+    this.itemCodigoBarrasAberto = null;
   }
 
   abrirModal(item: Item) {

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,6 +16,8 @@ import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select
   styleUrl: './registrar-saida.component.scss'
 })
 export class RegistrarSaidaComponent {
+  @ViewChild('campoCodigoBarras') campoCodigoBarras?: ElementRef<HTMLInputElement>;
+
   form: FormGroup;
   itensDisponiveis: Item[] = [];
   itensSelecionados: number[] = [];
@@ -29,6 +31,8 @@ export class RegistrarSaidaComponent {
   solicitantesOptions: string[] = [];
   patrimoniosOptions: string[] = [];
   patrimoniosHistoricosOptions: string[] = [];
+  codigoBarrasLeitura = '';
+  buscandoCodigoBarras = false;
   textoLabel = (value: string) => value || '';
   textoValue = (value: string) => value || '';
   itemLabel = (item: Item) => item ? `${item.codigo} - ${item.nome}` : '';
@@ -93,6 +97,32 @@ export class RegistrarSaidaComponent {
 
   onItemSelecionado(_index: number) {
     this.atualizarItensSelecionados();
+  }
+
+  lerCodigoBarras(event?: Event) {
+    event?.preventDefault();
+
+    const codigo = this.normalizarCodigoBarras(this.codigoBarrasLeitura);
+    if (!codigo || this.buscandoCodigoBarras) {
+      return;
+    }
+
+    this.buscandoCodigoBarras = true;
+
+    this.itemService.buscarItemPorCodigoBarras(codigo).subscribe({
+      next: (item) => {
+        this.adicionarOuSomarItemLido(item);
+        this.codigoBarrasLeitura = '';
+        this.buscandoCodigoBarras = false;
+        this.focarCampoCodigoBarras();
+      },
+      error: () => {
+        this.snackbar.show('Codigo de barras nao encontrado.', 'warning');
+        this.codigoBarrasLeitura = '';
+        this.buscandoCodigoBarras = false;
+        this.focarCampoCodigoBarras();
+      }
+    });
   }
 
   atualizarItensSelecionados() {
@@ -169,6 +199,44 @@ export class RegistrarSaidaComponent {
   private itemSelecionadoEhEpi(itemId: any): boolean {
     const itemSelecionado = this.itensDisponiveis.find(item => item.id === Number(itemId));
     return itemSelecionado?.tipo_item?.nome?.trim().toUpperCase() === 'EPI';
+  }
+
+  private adicionarOuSomarItemLido(item: Item) {
+    if (!this.itensDisponiveis.some(itemDisponivel => itemDisponivel.id === item.id)) {
+      this.itensDisponiveis = [...this.itensDisponiveis, item];
+    }
+
+    const itemExistente = this.itens.controls.find(control => Number(control.get('item')?.value) === item.id);
+
+    if (itemExistente) {
+      const quantidadeAtual = Number(itemExistente.get('quantidade')?.value || 0);
+      itemExistente.patchValue({ quantidade: quantidadeAtual + 1 });
+      this.snackbar.show(`Quantidade somada: ${item.codigo} - ${item.nome}`, 'success');
+      return;
+    }
+
+    const linhaVazia = this.itens.controls.find(control => !control.get('item')?.value);
+    const grupo = linhaVazia || this.criarItem();
+
+    grupo.patchValue({
+      item: item.id,
+      quantidade: 1
+    });
+
+    if (!linhaVazia) {
+      this.itens.push(grupo);
+    }
+
+    this.atualizarItensSelecionados();
+    this.snackbar.show(`Item adicionado: ${item.codigo} - ${item.nome}`, 'success');
+  }
+
+  private normalizarCodigoBarras(codigo: string): string {
+    return String(codigo || '').replace(/\D/g, '');
+  }
+
+  private focarCampoCodigoBarras() {
+    setTimeout(() => this.campoCodigoBarras?.nativeElement.focus(), 0);
   }
 
   private inicializarModoFormulario() {

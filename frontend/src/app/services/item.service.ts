@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -27,6 +27,8 @@ export interface ItemCreate {
   situacao?: string;
   status?: string;
   codigo_barras?: string;
+  codigo_barras_imagem?: string;
+  codigo_barras_imagem_base64?: string;
 }
 
 // Interface completa de Item (para GET)
@@ -84,6 +86,34 @@ export class ItemService {
   listarItensEmBaixaPorTipo(): Observable<any> {
   return this.http.get<any>(`${this.baseUrl}por-tipo-baixo/`, { headers: this.authService.getAuthHeaders() });
 }
+
+  buscarItemPorCodigoBarras(codigoBarras: string): Observable<Item> {
+    return this.http.get<Item>(`${this.baseUrl}codigo-barras/buscar/${encodeURIComponent(codigoBarras)}/`, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  listarCodigosBarras(filtros: { grupo?: number | string; nome?: string; codigo?: string; q?: string } = {}): Observable<Item[]> {
+    let params = new HttpParams();
+
+    Object.entries(filtros).forEach(([chave, valor]) => {
+      if (valor !== undefined && valor !== null && String(valor).trim() !== '') {
+        params = params.set(chave, String(valor));
+      }
+    });
+
+    return this.http.get<Item[]>(`${this.baseUrl}codigo-barras/listar/`, {
+      headers: this.authService.getAuthHeaders(),
+      params
+    });
+  }
+
+  gerarPdfCodigosBarras(ids: number[]): Observable<Blob> {
+    return this.http.post(`${this.baseUrl}codigo-barras/pdf/`, { ids }, {
+      headers: this.authService.getAuthHeaders(),
+      responseType: 'blob'
+    });
+  }
 
   criarTipoItem(data: any): Observable<any> {
     return this.http.post<any>(`${this.baseUrlTipoItem}/`, data, {
