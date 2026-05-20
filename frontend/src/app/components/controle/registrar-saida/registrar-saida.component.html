@@ -24,7 +24,7 @@
         </h3>
 
         <div class="grid grid-cols-12 gap-3">
-          <div class="col-span-12 md:col-span-3">
+          <div class="col-span-12 md:col-span-2">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Bloco de requisição <span class="text-red-500">*</span>
             </label>
@@ -42,7 +42,18 @@
             </div>
           </div>
 
-          <div class="col-span-12 md:col-span-4">
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
+              Data da movimentação <span class="text-red-500">*</span>
+            </label>
+            <input
+              formControlName="data_movimentacao"
+              type="date"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div class="col-span-12 md:col-span-3">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Setor de destino <span class="text-red-500">*</span>
             </label>
@@ -209,7 +220,8 @@
 
               <div class="col-span-12 md:col-span-2">
                 <label class="block text-xs font-medium text-gray-700 mb-1">
-                  Patrimônio
+                  {{ getPatrimonioCaLabel(itemGroup.get('item')?.value) }}
+                  <span *ngIf="itemSelecionadoEhEpi(itemGroup.get('item')?.value)" class="text-red-500">*</span>
                 </label>
                 <app-autocomplete-select
                   formControlName="patrimonio"
@@ -218,9 +230,16 @@
                   [valueWith]="textoValue"
                   [freeText]="true"
                   [maxLength]="50"
-                  placeholder="Patrimônio"
-                  emptyText="Nenhum patrimônio encontrado"
+                  [placeholder]="getPatrimonioCaPlaceholder(itemGroup.get('item')?.value)"
+                  emptyText="Nenhum registro encontrado"
                 ></app-autocomplete-select>
+                <div
+                  *ngIf="itemSelecionadoEhEpi(itemGroup.get('item')?.value) && getCaFeedback(i)"
+                  class="mt-1 text-[11px]"
+                  [ngClass]="getCaFeedback(i).includes('Nenhum') || getCaFeedback(i).includes('possivel') ? 'text-amber-700' : 'text-gray-500'"
+                >
+                  {{ getCaFeedback(i) }}
+                </div>
               </div>
 
               <div class="col-span-12">
@@ -311,7 +330,7 @@
             </div>
 
             <div class="col-span-12 md:col-span-2" *ngIf="item.patrimonio">
-              <strong>Patrimônio:</strong> {{ item.patrimonio }}
+              <strong>{{ getPatrimonioCaLabel(item.item) }}:</strong> {{ item.patrimonio }}
             </div>
           </div>
         </div>

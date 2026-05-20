@@ -138,15 +138,16 @@
 
               <td>{{ itemResumo.secundario }}</td>
               <td>{{ itemResumo.principal }}</td>
-              <td>{{ itemResumo.data | date:'dd/MM/yyyy' }}</td>
+              <td>{{ itemResumo.dataMovimentacao | date:'dd/MM/yyyy' }}</td>
 
               <td class="actions-col">
                 <div class="table-actions">
-                  <button (click)="visualizarUltimoRegistro(itemResumo)" class="icon-button" title="Ver movimentação">
+                  <button type="button" (click)="visualizarUltimoRegistro(itemResumo)" class="icon-button" title="Ver movimentação">
                     <i class="fas fa-box-open"></i>
                   </button>
 
                   <button
+                    type="button"
                     *ngIf="podeOperarEstoque"
                     (click)="editarUltimoRegistro(itemResumo)"
                     class="icon-button"
@@ -155,8 +156,18 @@
                     <i class="fas fa-edit"></i>
                   </button>
 
-                  <button (click)="imprimirUltimoRegistro(itemResumo)" class="icon-button icon-button-print" title="Imprimir movimentação">
+                  <button type="button" (click)="imprimirUltimoRegistro(itemResumo)" class="icon-button icon-button-print" title="Imprimir movimentação">
                     <i class="fas fa-print"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    *ngIf="podeOperarEstoque"
+                    (click)="excluirUltimoRegistro(itemResumo, $event)"
+                    class="icon-button text-red-600"
+                    title="Excluir movimentação"
+                  >
+                    <i class="fas fa-trash"></i>
                   </button>
                 </div>
               </td>
@@ -252,29 +263,73 @@
 
 <!-- MODAL DE EXCLUSÃO -->
 <div *ngIf="modalExclusaoAberto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
     <h3 class="text-lg font-bold mb-4 text-red-600">Confirmar exclusão</h3>
 
     <p class="mb-4">
-      Tem certeza que deseja excluir {{ tipoExclusao === 'entrada' ? 'a entrada' : 'a saída' }}
-      <strong>#{{ registroParaExcluir?.id }}</strong>?
+      Confirme sua senha para excluir {{ tipoExclusao === 'entrada' ? 'a entrada' : 'a saída' }}
+      <strong>#{{ registroParaExcluir?.id }}</strong>.
     </p>
 
-    <p class="text-sm text-gray-600 mb-6">Esta ação não pode ser desfeita.</p>
+    <div class="border border-gray-200 rounded p-3 bg-gray-50 mb-4 text-sm">
+      <div><strong>Tipo:</strong> {{ tipoExclusao === 'entrada' ? 'Entrada' : 'Saída' }}</div>
+      <div><strong>Data da movimentação:</strong> {{ getDataMovimentacaoRegistro(registroParaExcluir) | date:'dd/MM/yyyy' }}</div>
+
+      <div class="mt-3 space-y-2">
+        <div
+          *ngFor="let item of getItensExclusao()"
+          class="grid grid-cols-12 gap-2 border border-gray-200 rounded bg-white p-2"
+        >
+          <div class="col-span-12 md:col-span-6">
+            <strong>{{ item.item_nome || item.produto_nome || 'Item' }}</strong>
+          </div>
+          <div class="col-span-6 md:col-span-2">
+            Qtd: {{ item.quantidade }}
+          </div>
+          <div class="col-span-6 md:col-span-4" *ngIf="item.ca || item.patrimonio">
+            C.A./Patrimônio: {{ item.ca || item.patrimonio }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <label class="block text-xs font-medium text-gray-700 mb-1">
+      Senha do usuário logado
+    </label>
+    <input
+      type="password"
+      [(ngModel)]="senhaExclusao"
+      [readonly]="senhaExclusaoReadOnly"
+      autocomplete="one-time-code"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      [attr.name]="senhaAutocompleteName"
+      class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-red-500 mb-4"
+      placeholder="Digite sua senha"
+      (focus)="prepararCampoSenhaExclusao()"
+      (keydown.enter)="confirmarExclusao()"
+    />
+
+    <p class="text-sm text-gray-600 mb-6">Esta ação corrige o estoque e fica registrada nos logs.</p>
 
     <div class="flex justify-end space-x-3">
       <button
+        type="button"
         (click)="fecharModalExclusao()"
+        [disabled]="excluindoMovimentacao"
         class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
       >
         Cancelar
       </button>
 
       <button
+        type="button"
         (click)="confirmarExclusao()"
-        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        [disabled]="excluindoMovimentacao"
+        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
       >
-        Excluir
+        {{ excluindoMovimentacao ? 'Excluindo...' : 'Confirmar exclusão' }}
       </button>
     </div>
   </div>

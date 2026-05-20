@@ -24,7 +24,7 @@
         </h3>
 
         <div class="grid grid-cols-12 gap-3">
-          <div class="col-span-12 md:col-span-5">
+          <div class="col-span-12 md:col-span-4">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Recebido por <span class="text-red-500">*</span>
             </label>
@@ -48,6 +48,17 @@
 
           <div class="col-span-12 md:col-span-3">
             <label class="block text-xs font-medium text-gray-700 mb-1">
+              Data da movimentação <span class="text-red-500">*</span>
+            </label>
+            <input
+              formControlName="data_movimentacao"
+              type="date"
+              class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div class="col-span-12 md:col-span-2">
+            <label class="block text-xs font-medium text-gray-700 mb-1">
               Possui nota fiscal?
             </label>
             <div class="h-[34px] border border-gray-300 rounded px-2.5 flex items-center gap-2 bg-gray-50">
@@ -60,7 +71,7 @@
             </div>
           </div>
 
-          <div class="col-span-12 md:col-span-4">
+          <div class="col-span-12 md:col-span-3">
             <label class="block text-xs font-medium text-gray-700 mb-1">
               Observação
             </label>
@@ -173,7 +184,7 @@
                 </div>
               </div>
 
-              <div class="col-span-12 md:col-span-7">
+              <div class="col-span-12 md:col-span-5">
                 <label class="block text-xs font-medium text-gray-700 mb-1">
                   Item
                 </label>
@@ -199,6 +210,21 @@
                   min="1"
                   class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
                 />
+              </div>
+
+              <div class="col-span-12 md:col-span-2" *ngIf="itemSelecionadoEhEpi(itemGroup.get('item')?.value)">
+                <label class="block text-xs font-medium text-gray-700 mb-1">
+                  C.A.
+                </label>
+                <input
+                  formControlName="ca"
+                  maxlength="50"
+                  placeholder="C.A. do lote"
+                  class="w-full border border-gray-300 rounded px-2.5 py-1.5 text-sm"
+                />
+                <div class="mt-1 text-[11px] text-gray-500">
+                  Recomendado para rastreio de EPI.
+                </div>
               </div>
 
               <div class="col-span-12 md:col-span-2">
@@ -292,7 +318,13 @@
             <div class="col-span-12 md:col-span-3">
               <strong>Qtd:</strong> {{ i.quantidade }}
             </div>
+            <div class="col-span-12 md:col-span-3" *ngIf="i.ca">
+              <strong>C.A.:</strong> {{ i.ca }}
+            </div>
           </div>
+        </div>
+        <div class="col-span-12 md:col-span-6">
+          <p><strong>Data da movimentação:</strong> {{ form.value.data_movimentacao | date:'dd/MM/yyyy' }}</p>
         </div>
       </div>
     </div>

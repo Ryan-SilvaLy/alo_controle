@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.utils import timezone
 from rest_framework import serializers
+from datetime import datetime, time
 
 from app_assinatura_epi.models import (
     AssinaturaEpiCompetencia,
@@ -33,7 +34,7 @@ class AssinaturaEpiService:
             if not solicitante:
                 continue
 
-            competencia = cls._obter_ou_criar_competencia(solicitante, registro_saida.data_saida)
+            competencia = cls._obter_ou_criar_competencia(solicitante, cls._data_referencia_saida(registro_saida))
             payload = cls._montar_payload_lancamento(saida_item, competencia)
             desejados[payload['fingerprint']] = payload
 
@@ -169,6 +170,7 @@ class AssinaturaEpiService:
         item = saida_item.item
         solicitante = cls._normalizar_texto(saida_item.solicitante)
         patrimonio = cls._normalizar_texto(saida_item.patrimonio)
+        data_saida = cls._data_referencia_saida(registro_saida)
         fingerprint = cls._fingerprint_partes(
             item_id=item.id,
             quantidade=saida_item.quantidade,
@@ -187,7 +189,7 @@ class AssinaturaEpiService:
             'nome_item_snapshot': item.nome,
             'grupo_item_snapshot': getattr(item.tipo_item, 'nome', ''),
             'quantidade': saida_item.quantidade,
-            'data_saida': registro_saida.data_saida,
+            'data_saida': data_saida,
             'numero_bloco_requisicao': registro_saida.bloco_requisicao,
             'setor_nome_snapshot': registro_saida.setor,
             'responsavel_nome_snapshot': registro_saida.responsavel,
@@ -264,3 +266,13 @@ class AssinaturaEpiService:
     @staticmethod
     def _normalizar_texto(valor):
         return (valor or '').strip().upper()
+
+    @staticmethod
+    def _data_referencia_saida(registro_saida):
+        data_movimentacao = getattr(registro_saida, 'data_movimentacao', None)
+        if data_movimentacao:
+            data_hora = datetime.combine(data_movimentacao, time.min)
+            if timezone.is_naive(data_hora):
+                return timezone.make_aware(data_hora, timezone.get_current_timezone())
+            return data_hora
+        return registro_saida.data_saida

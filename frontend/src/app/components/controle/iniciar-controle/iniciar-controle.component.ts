@@ -40,7 +40,12 @@ export class IniciarControleComponent {
 
   modalExclusaoAberto = false;
   registroParaExcluir: any = null;
+  itensExclusao: any[] = [];
   tipoExclusao: 'entrada' | 'saida' = 'entrada';
+  senhaExclusao = '';
+  senhaExclusaoReadOnly = true;
+  senhaAutocompleteName = `senha_exclusao_${Date.now()}`;
+  excluindoMovimentacao = false;
 
   modalEntradaAberto = false;
   modalSaidaAberto = false;
@@ -79,8 +84,8 @@ export class IniciarControleComponent {
       )
       .subscribe(data => {
         this.movimentacoes = {
-          entradas: this.ordenarPorData(data.entradas || [], 'data_entrada'),
-          saidas: this.ordenarPorData(data.saidas || [], 'data_saida')
+          entradas: this.ordenarPorData(data.entradas || [], 'data_movimentacao'),
+          saidas: this.ordenarPorData(data.saidas || [], 'data_movimentacao')
         };
         this.carregando = false;
       });
@@ -124,9 +129,7 @@ export class IniciarControleComponent {
 
   excluirEntrada(registro: any) {
     if (!this.podeOperarEstoque) return;
-    this.registroParaExcluir = registro;
-    this.tipoExclusao = 'entrada';
-    this.modalExclusaoAberto = true;
+    this.abrirModalExclusao('entrada', registro);
   }
 
   imprimirEntrada(registro: any) {
@@ -152,9 +155,7 @@ export class IniciarControleComponent {
 
   excluirSaida(registro: any) {
     if (!this.podeOperarEstoque) return;
-    this.registroParaExcluir = registro;
-    this.tipoExclusao = 'saida';
-    this.modalExclusaoAberto = true;
+    this.abrirModalExclusao('saida', registro);
   }
 
   imprimirSaida(registro: any) {
@@ -174,13 +175,20 @@ export class IniciarControleComponent {
   confirmarExclusao() {
     if (!this.podeOperarEstoque) return;
     if (!this.registroParaExcluir) return;
+    if (!this.senhaExclusao.trim()) {
+      this.snackbar.show('Informe sua senha para confirmar a exclusão.', 'warning');
+      return;
+    }
 
     const serviceMethod = this.tipoExclusao === 'entrada'
       ? 'excluirEntradaEstoque'
       : 'excluirSaidaEstoque';
 
-    this.controleService[serviceMethod](this.registroParaExcluir.id).subscribe({
+    this.excluindoMovimentacao = true;
+
+    this.controleService[serviceMethod](this.registroParaExcluir.id, this.senhaExclusao).subscribe({
       next: () => {
+        this.excluindoMovimentacao = false;
         this.snackbar.show(
           `${this.tipoExclusao === 'entrada' ? 'Entrada' : 'Saída'} excluída com sucesso.`,
           'success'
@@ -188,14 +196,22 @@ export class IniciarControleComponent {
         this.carregarMovimentacoes();
         this.fecharModalExclusao();
       },
-      error: () => this.snackbar.show(`Não foi possível excluir a ${this.tipoExclusao}.`, 'error')
+      error: (err) => {
+        this.excluindoMovimentacao = false;
+        const mensagem = err?.error?.detail || `Não foi possível excluir a ${this.tipoExclusao}.`;
+        this.snackbar.show(mensagem, 'error');
+      }
     });
   }
 
   fecharModalExclusao() {
     this.modalExclusaoAberto = false;
     this.registroParaExcluir = null;
+    this.itensExclusao = [];
     this.tipoExclusao = 'entrada';
+    this.senhaExclusao = '';
+    this.senhaExclusaoReadOnly = true;
+    this.excluindoMovimentacao = false;
   }
 
   getEntradasOrdenadas(): any[] {
@@ -216,6 +232,7 @@ export class IniciarControleComponent {
             tipo: 'entrada',
             item: itemMov,
             data: entrada.data_entrada,
+            dataMovimentacao: entrada.data_movimentacao || entrada.data_entrada,
             referencia: entrada.id,
             principal: entrada.nota_fiscal_detalhe?.numero_nota || `Entrada #${entrada.id}`,
             secundario: entrada.nota_fiscal_detalhe?.nome_fornecedor || entrada.recebido_por || '---',
@@ -231,6 +248,7 @@ export class IniciarControleComponent {
             tipo: 'saida',
             item: itemMov,
             data: saida.data_saida,
+            dataMovimentacao: saida.data_movimentacao || saida.data_saida,
             referencia: saida.id,
             principal: saida.bloco_requisicao || `Saída #${saida.id}`,
             secundario: itemMov.solicitante || saida.registrado_por || '---',
@@ -259,7 +277,7 @@ export class IniciarControleComponent {
 
         return correspondeTipo && correspondeBusca;
       })
-      .sort((a, b) => new Date(b.data || 0).getTime() - new Date(a.data || 0).getTime());
+      .sort((a, b) => new Date(b.dataMovimentacao || b.data || 0).getTime() - new Date(a.dataMovimentacao || a.data || 0).getTime());
   }
 
   limparFiltros() {
@@ -346,6 +364,33 @@ export class IniciarControleComponent {
     this.imprimirSaida(itemResumo.registro);
   }
 
+  excluirUltimoRegistro(itemResumo: any, event?: Event) {
+    event?.preventDefault();
+    event?.stopPropagation();
+
+    if (!this.podeOperarEstoque) return;
+    if (itemResumo.tipo === 'entrada') {
+      this.excluirEntrada(itemResumo.registro);
+      return;
+    }
+
+    this.excluirSaida(itemResumo.registro);
+  }
+
+  getItensExclusao(): any[] {
+    return this.itensExclusao;
+  }
+
+  getDataMovimentacaoRegistro(registro: any): any {
+    if (!registro) return null;
+    return registro.data_movimentacao || registro.data_entrada || registro.data_saida;
+  }
+
+  prepararCampoSenhaExclusao() {
+    this.senhaExclusaoReadOnly = false;
+    this.senhaExclusao = '';
+  }
+
   getTotalMovimentacoes(): number {
     return this.movimentacoes.entradas.length + this.movimentacoes.saidas.length;
   }
@@ -368,8 +413,8 @@ export class IniciarControleComponent {
 
   getUltimaMovimentacaoLabel(): string {
     const datas = [
-      ...this.movimentacoes.entradas.map(entrada => entrada.data_entrada),
-      ...this.movimentacoes.saidas.map(saida => saida.data_saida)
+      ...this.movimentacoes.entradas.map(entrada => entrada.data_movimentacao || entrada.data_entrada),
+      ...this.movimentacoes.saidas.map(saida => saida.data_movimentacao || saida.data_saida)
     ]
       .filter(Boolean)
       .map(data => new Date(data));
@@ -393,7 +438,7 @@ export class IniciarControleComponent {
     limite.setDate(agora.getDate() - dias);
 
     return registros.filter(registro => {
-      const data = new Date(registro[campoData]);
+      const data = new Date(registro.data_movimentacao || registro[campoData]);
       return !Number.isNaN(data.getTime()) && data >= limite;
     }).length;
   }
@@ -434,6 +479,7 @@ export class IniciarControleComponent {
       nome: itemMov.item_nome || itemMov.produto_nome || 'Item sem nome',
       quantidade: Number(itemMov.quantidade || 0),
       data: contexto.data,
+      dataMovimentacao: contexto.dataMovimentacao || contexto.data,
       referencia: contexto.referencia,
       principal: contexto.principal,
       secundario: contexto.secundario,
@@ -442,6 +488,35 @@ export class IniciarControleComponent {
       patrimonio: itemMov.patrimonio || null,
       registro: contexto.registro
     };
+  }
+
+  private abrirModalExclusao(tipo: 'entrada' | 'saida', registro: any) {
+    this.tipoExclusao = tipo;
+    this.registroParaExcluir = { ...registro };
+    this.itensExclusao = [...(registro?.itens || [])];
+    this.senhaExclusao = '';
+    this.senhaExclusaoReadOnly = true;
+    this.senhaAutocompleteName = `senha_exclusao_${tipo}_${registro?.id || 'novo'}_${Date.now()}`;
+    this.modalExclusaoAberto = true;
+
+    setTimeout(() => {
+      this.senhaExclusao = '';
+    }, 150);
+
+    const requisicaoItens = tipo === 'entrada'
+      ? this.controleService.listarItensEntrada(registro.id)
+      : this.controleService.listarItensSaida(registro.id);
+
+    requisicaoItens.subscribe({
+      next: (itens) => {
+        if (this.modalExclusaoAberto && this.registroParaExcluir?.id === registro.id && this.tipoExclusao === tipo) {
+          this.itensExclusao = itens || [];
+        }
+      },
+      error: () => {
+        this.snackbar.show('Não foi possível carregar os itens da movimentação para confirmação.', 'warning');
+      }
+    });
   }
 
   private restaurarScrollSeNecessario() {
@@ -485,7 +560,7 @@ export class IniciarControleComponent {
         <body>
           <h1>${titulo}</h1>
           <div class="meta">
-            <div><strong>Data:</strong> ${tipo === 'Entrada' ? (registro.data_entrada ?? '-') : (registro.data_saida ?? '-')}</div>
+            <div><strong>Data da movimentação:</strong> ${registro.data_movimentacao ?? (tipo === 'Entrada' ? (registro.data_entrada ?? '-') : (registro.data_saida ?? '-'))}</div>
             <div><strong>Observação:</strong> ${registro.observacao ?? '-'}</div>
             <div><strong>${tipo === 'Entrada' ? 'Recebido por' : 'Responsável'}:</strong> ${tipo === 'Entrada' ? (registro.recebido_por ?? '-') : (registro.responsavel ?? registro.registrado_por ?? '-')}</div>
           </div>

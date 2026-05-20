@@ -43,7 +43,7 @@ class Usuario(AbstractUser):
 
 class Log(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='logs')
-    acao = models.CharField(max_length=150)
+    acao = models.TextField()
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
 

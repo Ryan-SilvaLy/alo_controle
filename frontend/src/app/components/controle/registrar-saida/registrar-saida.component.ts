@@ -31,6 +31,7 @@ export class RegistrarSaidaComponent {
   solicitantesOptions: string[] = [];
   patrimoniosOptions: string[] = [];
   patrimoniosHistoricosOptions: string[] = [];
+  caFeedbackPorLinha: Record<number, string> = {};
   codigoBarrasLeitura = '';
   buscandoCodigoBarras = false;
   textoLabel = (value: string) => value || '';
@@ -54,6 +55,7 @@ export class RegistrarSaidaComponent {
   ) {
     this.form = this.fb.group({
       bloco_requisicao: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      data_movimentacao: [this.getDataAtualInput(), Validators.required],
       setor: ['', Validators.required],
       responsavel: ['', Validators.required],
       observacao: [''],
@@ -92,11 +94,15 @@ export class RegistrarSaidaComponent {
 
   removerItem(index: number) {
     this.itens.removeAt(index);
+    delete this.caFeedbackPorLinha[index];
     this.atualizarItensSelecionados();
   }
 
-  onItemSelecionado(_index: number) {
+  onItemSelecionado(index: number) {
     this.atualizarItensSelecionados();
+    const grupo = this.itens.at(index);
+    grupo.get('patrimonio')?.setValue('');
+    this.preencherCaDisponivel(index, true);
   }
 
   lerCodigoBarras(event?: Event) {
@@ -142,6 +148,16 @@ export class RegistrarSaidaComponent {
       return;
     }
 
+    const epiSemCa = this.form.value.itens.some((itemForm: any) =>
+      this.itemSelecionadoEhEpi(itemForm.item) && !String(itemForm.patrimonio || '').trim()
+    );
+
+    if (epiSemCa) {
+      this.form.markAllAsTouched();
+      this.snackbar.show('Informe o C.A. para todos os itens do tipo EPI.', 'warning');
+      return;
+    }
+
     this.mostrarModalConfirmacao = true;
   }
 
@@ -154,6 +170,7 @@ export class RegistrarSaidaComponent {
 
     const saidaData = {
       bloco_requisicao: this.form.value.bloco_requisicao,
+      data_movimentacao: this.form.value.data_movimentacao,
       setor: this.form.value.setor,
       responsavel: this.form.value.responsavel,
       observacao: this.form.value.observacao,
@@ -196,9 +213,21 @@ export class RegistrarSaidaComponent {
     return p ? `${p.patrimonio} - ${p.nome}` : 'Patrimônio não encontrado';
   }
 
-  private itemSelecionadoEhEpi(itemId: any): boolean {
+  itemSelecionadoEhEpi(itemId: any): boolean {
     const itemSelecionado = this.itensDisponiveis.find(item => item.id === Number(itemId));
     return itemSelecionado?.tipo_item?.nome?.trim().toUpperCase() === 'EPI';
+  }
+
+  getPatrimonioCaLabel(itemId: any): string {
+    return this.itemSelecionadoEhEpi(itemId) ? 'C.A.' : 'Patrimonio';
+  }
+
+  getPatrimonioCaPlaceholder(itemId: any): string {
+    return this.itemSelecionadoEhEpi(itemId) ? 'C.A. do EPI' : 'Patrimonio';
+  }
+
+  getCaFeedback(index: number): string {
+    return this.caFeedbackPorLinha[index] || '';
   }
 
   private adicionarOuSomarItemLido(item: Item) {
@@ -212,6 +241,8 @@ export class RegistrarSaidaComponent {
       const quantidadeAtual = Number(itemExistente.get('quantidade')?.value || 0);
       itemExistente.patchValue({ quantidade: quantidadeAtual + 1 });
       this.snackbar.show(`Quantidade somada: ${item.codigo} - ${item.nome}`, 'success');
+      const index = this.itens.controls.indexOf(itemExistente);
+      this.preencherCaDisponivel(index);
       return;
     }
 
@@ -228,6 +259,8 @@ export class RegistrarSaidaComponent {
     }
 
     this.atualizarItensSelecionados();
+    const index = this.itens.controls.indexOf(grupo);
+    this.preencherCaDisponivel(index, true);
     this.snackbar.show(`Item adicionado: ${item.codigo} - ${item.nome}`, 'success');
   }
 
@@ -235,8 +268,62 @@ export class RegistrarSaidaComponent {
     return String(codigo || '').replace(/\D/g, '');
   }
 
+  private getDataAtualInput(): string {
+    return this.formatarDataInput(new Date());
+  }
+
+  private formatarDataInput(data: string | Date): string {
+    if (typeof data === 'string' && /^\d{4}-\d{2}-\d{2}/.test(data)) {
+      return data.slice(0, 10);
+    }
+
+    const dataObj = data instanceof Date ? data : new Date(data);
+    if (Number.isNaN(dataObj.getTime())) {
+      return this.formatarDataInput(new Date());
+    }
+
+    const ano = dataObj.getFullYear();
+    const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataObj.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+
   private focarCampoCodigoBarras() {
     setTimeout(() => this.campoCodigoBarras?.nativeElement.focus(), 0);
+  }
+
+  private preencherCaDisponivel(index: number, substituir = false) {
+    const grupo = this.itens.at(index);
+    const itemId = Number(grupo?.get('item')?.value);
+
+    if (!itemId || !this.itemSelecionadoEhEpi(itemId)) {
+      delete this.caFeedbackPorLinha[index];
+      return;
+    }
+
+    const valorAtual = String(grupo.get('patrimonio')?.value || '').trim();
+    if (valorAtual && !substituir) {
+      return;
+    }
+
+    this.caFeedbackPorLinha[index] = 'Buscando C.A. disponivel...';
+
+    this.controleService.buscarCaDisponivel(itemId).subscribe({
+      next: (resposta) => {
+        const ca = String(resposta?.ca || '').trim();
+        if (ca) {
+          grupo.get('patrimonio')?.setValue(ca);
+          this.caFeedbackPorLinha[index] = `C.A. ${ca} preenchido pelo lote mais antigo.`;
+          return;
+        }
+
+        grupo.get('patrimonio')?.setValue('');
+        this.caFeedbackPorLinha[index] = 'Nenhum C.A. encontrado. Informe manualmente.';
+      },
+      error: () => {
+        this.caFeedbackPorLinha[index] = 'Nao foi possivel buscar o C.A. Informe manualmente.';
+      }
+    });
   }
 
   private inicializarModoFormulario() {
@@ -260,6 +347,7 @@ export class RegistrarSaidaComponent {
       next: (saida) => {
         this.form.patchValue({
           bloco_requisicao: saida.bloco_requisicao ?? '',
+          data_movimentacao: this.formatarDataInput(saida.data_movimentacao || saida.data_saida),
           setor: saida.setor ?? '',
           responsavel: saida.responsavel ?? '',
           observacao: saida.observacao ?? ''

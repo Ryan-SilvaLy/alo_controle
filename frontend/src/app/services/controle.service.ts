@@ -84,9 +84,10 @@ export class ControleService {
     });
   }
 
-  excluirEntradaEstoque(id: number): Observable<any> {
+  excluirEntradaEstoque(id: number, senha?: string): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}registro-entrada/${id}/`, {
-      headers: this.authService.getAuthHeaders()
+      headers: this.authService.getAuthHeaders(),
+      body: { senha }
     });
   }
 
@@ -102,9 +103,10 @@ export class ControleService {
     });
   }
 
-  excluirSaidaEstoque(id: number): Observable<any> {
+  excluirSaidaEstoque(id: number, senha?: string): Observable<any> {
     return this.http.delete<any>(`${this.baseUrl}registro-saida/${id}/`, {
-      headers: this.authService.getAuthHeaders()
+      headers: this.authService.getAuthHeaders(),
+      body: { senha }
     });
   }
 
@@ -122,6 +124,12 @@ export class ControleService {
 
   listarItensSaida(saidaId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}registro-saida/${saidaId}/itens/`, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
+  buscarCaDisponivel(itemId: number): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}registro-saida/ca-disponivel/${itemId}/`, {
       headers: this.authService.getAuthHeaders()
     });
   }

@@ -118,12 +118,13 @@ export class PdfService {
       item.lancamento.numero_bloco_requisicao,
       item.lancamento.nome_item_snapshot,
       item.lancamento.quantidade,
+      item.lancamento.ca_utilizado || item.lancamento.patrimonio_snapshot || '-',
     ]);
 
     autoTable(doc, {
       startY: 56,
-      head: [['Data saída', 'Bloco/Requisição', 'Item', 'Quantidade']],
-      body: tabela.length ? tabela : [['-', '-', 'Nenhum item encontrado', '-']],
+      head: [['Data saída', 'Bloco/Requisição', 'Item', 'Quantidade', 'C.A.']],
+      body: tabela.length ? tabela : [['-', '-', 'Nenhum item encontrado', '-', '-']],
       styles: { fontSize: 9, cellPadding: 2.5 },
       headStyles: { fillColor: [32, 94, 73], textColor: 255 },
     });

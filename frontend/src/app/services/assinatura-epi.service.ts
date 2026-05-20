@@ -15,6 +15,7 @@ export interface AssinaturaEpiLancamento {
   responsavel_nome_snapshot: string;
   solicitante_nome_snapshot: string;
   patrimonio_snapshot?: string | null;
+  ca_utilizado?: string | null;
   foi_impresso: boolean;
   impresso_em?: string | null;
   ativo: boolean;

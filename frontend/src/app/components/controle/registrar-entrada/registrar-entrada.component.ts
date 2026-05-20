@@ -47,6 +47,7 @@ export class RegistrarEntradaComponent {
   ) {
     this.form = this.fb.group({
       recebido_por: ['', Validators.required],
+      data_movimentacao: [this.getDataAtualInput(), Validators.required],
       observacao: [''],
       possuiNotaFiscal: [false],
       notaFiscal: this.fb.group({
@@ -82,6 +83,7 @@ export class RegistrarEntradaComponent {
     return this.fb.group({
       item: [null, Validators.required],
       quantidade: [1, [Validators.required, Validators.min(1)]],
+      ca: [''],
     });
   }
 
@@ -109,6 +111,11 @@ export class RegistrarEntradaComponent {
 
   onItemSelecionado(_index: number) {
     this.atualizarItensSelecionados();
+  }
+
+  itemSelecionadoEhEpi(itemId: any): boolean {
+    const itemSelecionado = this.itensDisponiveis.find(item => item.id === Number(itemId));
+    return itemSelecionado?.tipo_item?.nome?.trim().toUpperCase() === 'EPI';
   }
 
   atualizarItensSelecionados() {
@@ -202,6 +209,7 @@ export class RegistrarEntradaComponent {
 
         this.form.patchValue({
           recebido_por: entrada.recebido_por ?? '',
+          data_movimentacao: this.formatarDataInput(entrada.data_movimentacao || entrada.data_entrada),
           observacao: entrada.observacao ?? '',
           possuiNotaFiscal: possuiNota,
           notaFiscal: {
@@ -220,6 +228,7 @@ export class RegistrarEntradaComponent {
           this.itens.push(this.fb.group({
             item: [item?.item ?? null, Validators.required],
             quantidade: [item?.quantidade ?? 1, [Validators.required, Validators.min(1)]],
+            ca: [item?.ca ?? ''],
           }));
         });
 
@@ -289,6 +298,7 @@ export class RegistrarEntradaComponent {
     return {
       nota_fiscal: notaFiscalId,
       recebido_por: this.form.value.recebido_por,
+      data_movimentacao: this.form.value.data_movimentacao,
       observacao: this.form.value.observacao,
       itens: this.form.value.itens
     };
@@ -335,6 +345,26 @@ export class RegistrarEntradaComponent {
         .map(valor => String(valor || '').trim())
         .filter(Boolean)
     )).sort((a, b) => a.localeCompare(b));
+  }
+
+  private getDataAtualInput(): string {
+    return this.formatarDataInput(new Date());
+  }
+
+  private formatarDataInput(data: string | Date): string {
+    if (typeof data === 'string' && /^\d{4}-\d{2}-\d{2}/.test(data)) {
+      return data.slice(0, 10);
+    }
+
+    const dataObj = data instanceof Date ? data : new Date(data);
+    if (Number.isNaN(dataObj.getTime())) {
+      return this.formatarDataInput(new Date());
+    }
+
+    const ano = dataObj.getFullYear();
+    const mes = String(dataObj.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataObj.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
   }
 
   private exibirErroEntrada(err: any, mensagemPadrao: string) {

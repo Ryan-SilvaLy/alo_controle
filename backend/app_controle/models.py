@@ -2,6 +2,7 @@ from django.db import models
 from app_usuario.models import Usuario
 from app_item.models import Item
 from app_produto.models import Produto
+from django.utils import timezone
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -34,6 +35,7 @@ class RegistroEntrada(models.Model):
     
     nota_fiscal = models.ForeignKey(NotaFiscal, on_delete=models.SET_NULL, unique=True, null=True, blank=True, verbose_name='Nota Fiscal', help_text='Pode ser vazio se não houver nota fiscal')
     recebido_por = models.CharField(verbose_name='Recebido por', max_length=40)
+    data_movimentacao = models.DateField(verbose_name='Data da Movimentacao', default=timezone.localdate)
     data_entrada = models.DateTimeField(verbose_name='Data da Entrada', auto_now_add=True)
     observacao = models.TextField(verbose_name='Observação', blank=True, null=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='registro_entrada_registrado_por', verbose_name='Registrado por')
@@ -65,6 +67,13 @@ class RegistroEntradaItem(models.Model):
         max_digits=10,    # total de dígitos
         decimal_places=2  # número de casas decimais
     )
+    ca = models.CharField(verbose_name='C.A.', max_length=50, blank=True, null=True)
+    quantidade_disponivel = models.DecimalField(
+        verbose_name='Quantidade Disponivel no Lote',
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
     criado_em = models.DateTimeField(verbose_name='Criado em', auto_now_add=True)
 
     def __str__(self):
@@ -81,6 +90,7 @@ class RegistroSaida(models.Model):
     bloco_requisicao = models.CharField(verbose_name='Bloco de Requisição (Código)', max_length=15, unique=True)
     setor = models.CharField(verbose_name='Setor Destino', max_length=50)
     responsavel = models.CharField(verbose_name='Responsável pelo Setor', max_length=40)
+    data_movimentacao = models.DateField(verbose_name='Data da Movimentacao', default=timezone.localdate)
     data_saida = models.DateTimeField(verbose_name='Data da Saída', auto_now_add=True)
     observacao = models.TextField(verbose_name='Observação', blank=True, null=True)
     registrado_por = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, blank=True, related_name='registro_saida_registrado_por', verbose_name='Registrado por')
@@ -112,7 +122,36 @@ class RegistroSaidaItem(models.Model):
         decimal_places=2  # número de casas decimais
     )
     solicitante = models.CharField(verbose_name='Solicitante do Item', max_length=30)
-    patrimonio = models.CharField(verbose_name='Patrimônio', max_length=30, blank=True, null=True)
+    patrimonio = models.CharField(verbose_name='Patrimônio', max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f'{self.quantidade}x {self.item.nome} na saída {self.registro_saida.id}'
+
+
+class RegistroSaidaItemLote(models.Model):
+    '''Quantidade de uma saida de EPI baixada de um lote/C.A. de entrada.'''
+
+    registro_saida_item = models.ForeignKey(
+        RegistroSaidaItem,
+        on_delete=models.CASCADE,
+        related_name='lotes',
+        verbose_name='Item da Saida'
+    )
+    registro_entrada_item = models.ForeignKey(
+        RegistroEntradaItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='saidas_lote',
+        verbose_name='Item da Entrada'
+    )
+    quantidade = models.DecimalField(
+        verbose_name='Quantidade Baixada do Lote',
+        max_digits=10,
+        decimal_places=2
+    )
+    ca = models.CharField(verbose_name='C.A. utilizado', max_length=50, blank=True, null=True)
+    criado_em = models.DateTimeField(verbose_name='Criado em', auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.quantidade}x C.A. {self.ca or "-"}'

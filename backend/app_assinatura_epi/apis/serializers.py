@@ -11,6 +11,7 @@ from app_assinatura_epi.models import (
 class AssinaturaEpiLancamentoSerializer(serializers.ModelSerializer):
     status_lancamento = serializers.SerializerMethodField()
     competencia_label = serializers.SerializerMethodField()
+    ca_utilizado = serializers.CharField(source='patrimonio_snapshot', read_only=True)
 
     class Meta:
         model = AssinaturaEpiLancamento
@@ -33,6 +34,7 @@ class AssinaturaEpiLancamentoSerializer(serializers.ModelSerializer):
             'responsavel_nome_snapshot',
             'solicitante_nome_snapshot',
             'patrimonio_snapshot',
+            'ca_utilizado',
             'foi_impresso',
             'impresso_em',
             'ativo',
