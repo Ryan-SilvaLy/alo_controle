@@ -346,6 +346,18 @@
 </div>
 
 <div *ngIf="pedidoSelecionadoParaImpressao" id="conteudo-impressao" style="display: none;" class="print-visible">
+  <header class="print-header">
+    <img class="print-logo" src="/assets/android-chrome-192x192.png" alt="Alocama" />
+    <div class="print-header-content">
+      <h1>Pedido de compras {{ pedidoSelecionadoParaImpressao.codigo_pedido }}</h1>
+      <div class="print-meta-line">
+        <span><strong>Grupo:</strong> {{ pedidoSelecionadoParaImpressao.tipo_item_nome || 'Sem grupo' }}</span>
+        <span><strong>Setor:</strong> {{ pedidoSelecionadoParaImpressao.setor_destino }}</span>
+        <span><strong>Responsavel:</strong> {{ pedidoSelecionadoParaImpressao.responsavel_setor }}</span>
+        <span><strong>Status:</strong> {{ pedidoSelecionadoParaImpressao.status | titlecase }}</span>
+      </div>
+    </div>
+  </header>
   <h1>Pedido Nº {{ pedidoSelecionadoParaImpressao.codigo_pedido }}</h1>
 
   <div class="pedido-info">

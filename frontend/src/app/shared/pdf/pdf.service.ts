@@ -6,43 +6,40 @@ import { AssinaturaEpiRelatorio } from '../../services/assinatura-epi.service';
 import { SnackbarService } from '../snackbar/snackbar.service';
 import { AuthenticationService } from '../../services/authentication.service';
 
-
 @Injectable({
   providedIn: 'root'
 })
 export class PdfService {
-
-   private empresa = 'Minha Empresa LTDA'; // valor fixo
+  private empresa = 'ALOCAMA';
+  private readonly logoAssetPath = '/assets/android-chrome-192x192.png';
+  private logoDataUrl: string | null = null;
 
   constructor(
     private snackbar: SnackbarService,
-    private authService: AuthenticationService // pega o usuário logado
+    private authService: AuthenticationService
   ) { }
 
-  private criarDocumento(): jsPDF {
+  private async criarDocumento(titulo = 'ITENS EM BAIXA NO ESTOQUE'): Promise<jsPDF> {
     const doc = new jsPDF();
-    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'Usuário';
+    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'Usuario';
 
-    // Cabeçalho fixo
-    doc.setFontSize(16);
-    doc.text(this.empresa, 14, 15);
-    doc.setFontSize(12);
-    doc.text(`Relatório gerado por: ${usuario}`, 14, 22);
-    doc.text(`Data/Hora: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 28);
-    doc.setFontSize(10);
-    doc.text('Itens em baixa no estoque', 14, 35);
+    await this.desenharCabecalho(doc, titulo, [
+      ['Empresa', this.empresa],
+      ['Gerado por', usuario],
+      ['Data/Hora', `${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`]
+    ]);
 
     return doc;
   }
 
-  gerarPdfItensEmBaixa(itens: Item[]): void {
+  async gerarPdfItensEmBaixa(itens: Item[]): Promise<void> {
     const itensEmBaixa = itens.filter(i => i.quantidade_atual < i.quantidade_minima);
     if (itensEmBaixa.length === 0) {
-      this.snackbar.show('Não há itens em baixa no estoque.', 'warning');
+      this.snackbar.show('Nao ha itens em baixa no estoque.', 'warning');
       return;
     }
 
-    const doc = this.criarDocumento();
+    const doc = await this.criarDocumento();
 
     const tabela = itensEmBaixa.map(item => [
       item.codigo,
@@ -54,9 +51,9 @@ export class PdfService {
     ]);
 
     autoTable(doc, {
-      head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. mínima']],
+      head: [['Codigo', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. minima']],
       body: tabela,
-      startY: 40,
+      startY: 42,
       styles: { fontSize: 9 },
       headStyles: { fillColor: [41, 128, 185], textColor: 255 },
     });
@@ -64,54 +61,52 @@ export class PdfService {
     doc.save(`itens_em_baixa_${new Date().toISOString()}.pdf`);
   }
 
+  async gerarPdfItensEmBaixaPorTipo(itens: Item[], tipo: string): Promise<void> {
+    const itensFiltrados = itens.filter(
+      i => i.tipo_item.nome === tipo && i.quantidade_atual < i.quantidade_minima
+    );
 
-  gerarPdfItensEmBaixaPorTipo(itens: Item[], tipo: string): void {
-  // Filtra apenas os itens do tipo escolhido que estão em baixa
-  const itensFiltrados = itens.filter(
-    i => i.tipo_item.nome === tipo && i.quantidade_atual < i.quantidade_minima
-  );
+    if (itensFiltrados.length === 0) {
+      this.snackbar.show(`Nao ha itens em baixa do tipo "${tipo}".`, 'warning');
+      return;
+    }
 
-  if (itensFiltrados.length === 0) {
-    this.snackbar.show(`Não há itens em baixa do tipo "${tipo}".`, 'warning');
-    return;
+    const doc = await this.criarDocumento(`ITENS EM BAIXA - ${tipo}`);
+
+    const tabela = itensFiltrados.map(item => [
+      item.codigo,
+      item.nome,
+      item.tipo_item.nome,
+      item.prateleira_estoque,
+      item.quantidade_atual,
+      item.quantidade_minima
+    ]);
+
+    autoTable(doc, {
+      head: [['Codigo', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. minima']],
+      body: tabela,
+      startY: 42,
+      styles: { fontSize: 9 },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+    });
+
+    doc.save(`itens_em_baixa_${tipo}_${new Date().toISOString()}.pdf`);
   }
 
-  const doc = this.criarDocumento(); // método que já cria o cabeçalho com empresa e usuário
-
-  const tabela = itensFiltrados.map(item => [
-    item.codigo,
-    item.nome,
-    item.tipo_item.nome,
-    item.prateleira_estoque,
-    item.quantidade_atual,
-    item.quantidade_minima
-  ]);
-
-  autoTable(doc, {
-    head: [['Código', 'Nome', 'Tipo', 'Prateleira', 'Qtd. atual', 'Qtd. mínima']],
-    body: tabela,
-    startY: 40,
-    styles: { fontSize: 9 },
-    headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-  });
-
-  doc.save(`itens_em_baixa_${tipo}_${new Date().toISOString()}.pdf`);
-}
-
-  gerarPdfAssinaturaEpi(relatorio: AssinaturaEpiRelatorio): void {
+  async gerarPdfAssinaturaEpi(relatorio: AssinaturaEpiRelatorio): Promise<void> {
     const doc = new jsPDF();
-    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'Usuário';
+    const usuario = this.authService.getUsuarioLogadoValue()?.nome || 'Usuario';
     const dataGeracao = new Date(relatorio.gerado_em);
     const assinaturaData = relatorio.assinado_em ? new Date(relatorio.assinado_em) : null;
 
-    doc.setFontSize(15);
-    doc.text('CONTROLE DE ASSINATURAS DE EPI', 14, 16);
-    doc.setFontSize(10);
-    doc.text(`Solicitante: ${relatorio.solicitante_nome}`, 14, 24);
-    doc.text(`Competência: ${relatorio.competencia_label}`, 14, 30);
-    doc.text(`Relatório: ${relatorio.sequencia_relatorio}`, 14, 36);
-    doc.text(`Gerado em: ${dataGeracao.toLocaleDateString('pt-BR')} ${dataGeracao.toLocaleTimeString('pt-BR')}`, 14, 42);
-    doc.text(`Gerado por: ${relatorio.gerado_por_nome || usuario}`, 14, 48);
+    await this.desenharCabecalho(doc, 'CONTROLE DE ASSINATURAS DE EPI', [
+      ['Solicitante', relatorio.solicitante_nome],
+      ['Competencia', relatorio.competencia_label],
+      ['Relatorio', relatorio.sequencia_relatorio],
+      ['Gerado em', `${dataGeracao.toLocaleDateString('pt-BR')} ${dataGeracao.toLocaleTimeString('pt-BR')}`],
+      ['Gerado por', relatorio.gerado_por_nome || usuario],
+      ['Status', relatorio.status_assinatura === 'assinado' ? 'ASSINADO' : 'PENDENTE']
+    ]);
 
     const tabela = relatorio.itens.map(item => [
       new Date(item.lancamento.data_saida).toLocaleDateString('pt-BR'),
@@ -122,8 +117,8 @@ export class PdfService {
     ]);
 
     autoTable(doc, {
-      startY: 56,
-      head: [['Data saída', 'Bloco/Requisição', 'Item', 'Quantidade', 'C.A.']],
+      startY: 52,
+      head: [['Data saida', 'Bloco/Requisicao', 'Item', 'Quantidade', 'C.A.']],
       body: tabela.length ? tabela : [['-', '-', 'Nenhum item encontrado', '-', '-']],
       styles: { fontSize: 9, cellPadding: 2.5 },
       headStyles: { fillColor: [32, 94, 73], textColor: 255 },
@@ -132,7 +127,7 @@ export class PdfService {
     const finalY = (doc as any).lastAutoTable?.finalY || 80;
     doc.setDrawColor(120);
     doc.line(14, finalY + 24, 110, finalY + 24);
-    doc.text('Assinatura do funcionário', 14, finalY + 30);
+    doc.text('Assinatura do funcionario', 14, finalY + 30);
 
     doc.setFontSize(10);
     doc.text(
@@ -214,4 +209,107 @@ export class PdfService {
     return valor.length > tamanho ? `${valor.slice(0, tamanho - 3)}...` : valor;
   }
 
+  private limitarTextoPorLargura(doc: jsPDF, texto: string, larguraMaxima: number): string {
+    const valor = String(texto || '');
+    if (doc.getTextWidth(valor) <= larguraMaxima) {
+      return valor;
+    }
+
+    let limite = valor.length - 1;
+    while (limite > 3 && doc.getTextWidth(`${valor.slice(0, limite)}...`) > larguraMaxima) {
+      limite--;
+    }
+
+    return `${valor.slice(0, Math.max(limite, 3))}...`;
+  }
+
+  private async desenharCabecalho(doc: jsPDF, titulo: string, campos: Array<[string, string | number | null | undefined]>): Promise<void> {
+    const larguraPagina = doc.internal.pageSize.getWidth();
+    const margem = 12;
+    const logo = 22;
+    const topo = 8;
+    const linhas = campos.length > 4 ? 2 : 1;
+    const altura = linhas > 1 ? 38 : 30;
+
+    doc.setDrawColor(180, 190, 205);
+    doc.setLineWidth(0.2);
+    doc.rect(margem, topo, larguraPagina - margem * 2, altura);
+    await this.desenharLogo(doc, margem + 3, topo + 3, logo);
+
+    doc.setTextColor(20, 28, 40);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(titulo, margem + logo + 9, topo + 8);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.4);
+    const xInicio = margem + logo + 8;
+    const larguraUtil = larguraPagina - margem * 2 - logo - 11;
+    const colunas = linhas > 1 ? 3 : campos.length;
+    const largurasColuna = linhas > 1
+      ? [larguraUtil * 0.34, larguraUtil * 0.46, larguraUtil * 0.2]
+      : Array(colunas).fill(larguraUtil / colunas);
+    const deslocamentosColuna = largurasColuna.reduce<number[]>((acc, largura, index) => {
+      acc.push(index === 0 ? 0 : acc[index - 1] + largurasColuna[index - 1]);
+      return acc;
+    }, []);
+    const yBase = topo + 20;
+
+    campos.forEach(([rotulo, valor], index) => {
+      const coluna = index % colunas;
+      const linha = Math.floor(index / colunas);
+      const x = xInicio + deslocamentosColuna[coluna];
+      const y = yBase + linha * 6.5;
+      const texto = `${rotulo}: ${String(valor ?? '-')}`;
+      doc.text(this.limitarTextoPorLargura(doc, texto, largurasColuna[coluna] - 2), x, y);
+    });
+  }
+
+  private async desenharLogo(doc: jsPDF, x: number, y: number, tamanho: number): Promise<void> {
+    const dataUrl = await this.obterLogoDataUrl();
+    if (dataUrl) {
+      try {
+        doc.addImage(dataUrl, 'PNG', x, y, tamanho, tamanho);
+        return;
+      } catch {
+        // fallback below
+      }
+    }
+
+    doc.setFillColor(24, 79, 158);
+    doc.circle(x + tamanho / 2, y + tamanho / 2, tamanho / 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(4.5);
+    doc.text('ALOCAMA', x + tamanho / 2, y + tamanho / 2 + 1.5, { align: 'center' });
+    doc.setTextColor(0, 0, 0);
+  }
+
+  private async obterLogoDataUrl(): Promise<string | null> {
+    if (this.logoDataUrl) {
+      return this.logoDataUrl;
+    }
+
+    if (typeof FileReader === 'undefined' || typeof fetch === 'undefined') {
+      return null;
+    }
+
+    try {
+      const response = await fetch(this.logoAssetPath);
+      if (!response.ok) {
+        return null;
+      }
+
+      const blob = await response.blob();
+      this.logoDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+
+      return this.logoDataUrl;
+    } catch {
+      return null;
+    }
+  }
 }

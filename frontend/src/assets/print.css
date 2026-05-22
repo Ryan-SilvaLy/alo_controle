@@ -78,10 +78,6 @@
     page-break-inside: avoid;
   }
 
-  .itens-container {
-    page-break-inside: avoid;
-  }
-
   table {
     border-collapse: collapse;
     margin-top: 0.45rem;
@@ -105,10 +101,6 @@
   td.text-center,
   th.text-center {
     text-align: center;
-  }
-
-  tbody tr:hover {
-    background-color: transparent !important;
   }
 
   tr,

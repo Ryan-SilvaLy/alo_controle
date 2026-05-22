@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PedidoService } from '../../../services/pedido.service';
 import { Router, RouterModule } from '@angular/router';
@@ -40,7 +40,8 @@ export class IniciarPedidoComponent implements OnInit {
     private itemService: ItemService,
     private authService: AuthenticationService,
     private router: Router,
-    private snackBar: SnackbarService
+    private snackBar: SnackbarService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -136,8 +137,11 @@ export class IniciarPedidoComponent implements OnInit {
   imprimirPedido(pedido: any) {
     this.pedidoSelecionadoParaImpressao = pedido;
     this.currentDate = new Date();
+    this.cdr.detectChanges();
 
-    const conteudo = document.getElementById('conteudo-impressao')?.innerHTML;
+    const origem = window.location.origin;
+    const conteudo = document.getElementById('conteudo-impressao')?.innerHTML
+      ?.replaceAll('src="/assets/', `src="${origem}/assets/`);
     if (!conteudo) return;
 
     const janela = window.open('', '_blank');
@@ -146,21 +150,31 @@ export class IniciarPedidoComponent implements OnInit {
     janela.document.write(`
       <html>
         <head>
-          <title>Impressão do Pedido</title>
-          <link rel="stylesheet" href="/assets/print.scss" />
+          <title>Impressao do Pedido</title>
+          <link rel="stylesheet" href="${origem}/assets/print.css" />
         </head>
         <body>
           ${conteudo}
           <script>
-            window.onload = function() {
+            var imprimiu = false;
+            function imprimirQuandoPronto() {
+              if (imprimiu) return;
+              imprimiu = true;
+              window.focus();
               window.print();
               window.close();
-            };
+            }
+            window.addEventListener('load', function() {
+              setTimeout(imprimirQuandoPronto, 250);
+            });
+            setTimeout(imprimirQuandoPronto, 1500);
           </script>
         </body>
       </html>
     `);
     janela.document.close();
+    this.pedidoSelecionadoParaImpressao = null;
+    this.cdr.detectChanges();
   }
 
   atualizarPedido(pedido: any): void {
