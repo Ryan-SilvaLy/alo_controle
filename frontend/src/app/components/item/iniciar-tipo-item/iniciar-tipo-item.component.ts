@@ -33,17 +33,23 @@ filtrosCodigos = {
   nome: '',
   codigo: '',
 };
+filtrosGrupos = {
+  nome: '',
+  statusKpi: '',
+  situacao: '',
+};
 
 tipoItemParaExcluir: any = null;
 modalExcluirAberto = false;
 
 paginaAtual = 1;
 itensPorPagina = 10;
+tiposItensFiltrados: any[] = [];
 tiposItensPaginados: any[] = [];
 
 atualizarItensPaginados() {
   const inicio = (this.paginaAtual - 1) * this.itensPorPagina;
-  this.tiposItensPaginados = this.tiposItens.slice(inicio, inicio + this.itensPorPagina);
+  this.tiposItensPaginados = this.tiposItensFiltrados.slice(inicio, inicio + this.itensPorPagina);
 }
 
   constructor(
@@ -78,7 +84,7 @@ carregarTiposItens() {
           this.tiposItens = (tipos as TipoItem[])
             .sort((a, b) => a.id - b.id);
 
-          this.atualizarItensPaginados();
+          this.filtrarTiposItens();
           this.carregando = false;
         },
         error: (err) => {
@@ -121,6 +127,27 @@ filtrarCodigosBarras() {
     const tipoMatch = !tipo || item.tipo_item?.id === tipo;
     return nomeMatch && codigoMatch && tipoMatch;
   });
+}
+
+filtrarTiposItens() {
+  const nome = this.filtrosGrupos.nome.toLowerCase().trim();
+  const statusKpi = this.filtrosGrupos.statusKpi;
+  const situacao = this.filtrosGrupos.situacao;
+
+  this.tiposItensFiltrados = this.tiposItens.filter(tipo => {
+    const nomeMatch = !nome || tipo.nome.toLowerCase().includes(nome);
+    const statusMatch = !statusKpi
+      || (statusKpi === 'principal' && !tipo.grupo_secundario)
+      || (statusKpi === 'secundario' && tipo.grupo_secundario);
+    const situacaoMatch = !situacao
+      || (situacao === 'livre' && this.tipoItemPodeExcluir(tipo.id))
+      || (situacao === 'em_uso' && !this.tipoItemPodeExcluir(tipo.id));
+
+    return nomeMatch && statusMatch && situacaoMatch;
+  });
+
+  this.paginaAtual = 1;
+  this.atualizarItensPaginados();
 }
 
 alternarSelecaoCodigo(itemId: number, checked: boolean) {
@@ -253,7 +280,7 @@ alternarStatusKpi(tipo: TipoItem) {
 
       this.tiposItens = this.tiposItens.map(aplicarAtualizacao);
       this.tiposItensSemRelacionamento = this.tiposItensSemRelacionamento.map(aplicarAtualizacao);
-      this.atualizarItensPaginados();
+      this.filtrarTiposItens();
 
       this.snackbar.show(
         novoStatus ? 'Grupo marcado como secundário para KPIs.' : 'Grupo marcado como principal para KPIs.',
@@ -285,7 +312,7 @@ atualizarCobertura(tipo: TipoItem, diasCobertura: number | string) {
 
       this.tiposItens = this.tiposItens.map(aplicarAtualizacao);
       this.tiposItensSemRelacionamento = this.tiposItensSemRelacionamento.map(aplicarAtualizacao);
-      this.atualizarItensPaginados();
+      this.filtrarTiposItens();
 
       this.snackbar.show(`Cobertura atualizada para ${dias} dias.`, 'success');
     },

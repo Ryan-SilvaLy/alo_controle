@@ -1,252 +1,241 @@
-<div class="p-3 space-y-3">
-  <section class="rounded-lg border border-slate-300 bg-white px-4 py-4 shadow-sm">
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-      <div class="min-w-0">
-        <p class="mb-1 text-xs text-slate-500">Cadastro auxiliar</p>
-        <h1 class="mb-1 text-2xl text-slate-900">Tipos de item</h1>
-        <p class="mb-0 text-sm text-slate-500">
-          Gerencie os grupos base usados no cadastro dos itens do estoque.
-        </p>
+<div class="tipo-item-page">
+  <section class="tipo-item-header">
+    <div class="header-copy">
+      <span>Cadastro auxiliar</span>
+      <h1>Tipos de item</h1>
+      <p>Administre grupos e impressao de codigos sem depender da rolagem da pagina.</p>
+    </div>
 
-        <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-          <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1">
-            {{ tiposItens.length }} tipo(s) cadastrado(s)
-          </span>
-          <span class="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
-            {{ tiposItensSemRelacionamento.length }} disponível(is) para exclusão
-          </span>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200"
-        (click)="modalTipo.abrir()"
-      >
+    <div class="header-actions">
+      <span>{{ itensCodigosFiltrados.length }} item(ns)</span>
+      <span>{{ tiposItensFiltrados.length }} grupo(s)</span>
+      <button type="button" class="primary-action" (click)="modalTipo.abrir()">
         Criar tipo de item
       </button>
     </div>
   </section>
 
-  <section class="rounded-lg border border-slate-300 bg-white px-4 py-3 shadow-sm">
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <p class="mb-0 text-sm text-slate-800">Controle de páginas</p>
-        <p class="mb-0 text-xs text-slate-500">
-          Exibindo {{ tiposItensPaginados.length }} de {{ tiposItens.length }} registro(s)
-        </p>
-      </div>
+  <div class="management-grid">
+    <section class="management-card barcode-card">
+      <div class="card-head">
+        <div>
+          <h2>Codigos de barras</h2>
+          <p>{{ idsCodigosSelecionados.size }} selecionado(s) de {{ itensCodigosFiltrados.length }} filtrado(s)</p>
+        </div>
 
-      <app-pagination
-        [totalItens]="tiposItens.length"
-        [(paginaAtual)]="paginaAtual"
-        [(itensPorPagina)]="itensPorPagina"
-        (paginaAtualChange)="atualizarItensPaginados()"
-        (itensPorPaginaChange)="atualizarItensPaginados()"
-      ></app-pagination>
-    </div>
-  </section>
-
-  <section class="rounded-lg border border-slate-300 bg-white px-4 py-3 shadow-sm">
-    <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div>
-        <p class="mb-0 text-sm text-slate-800">Impressão de códigos de barras</p>
-        <p class="mb-0 text-xs text-slate-500">
-          {{ idsCodigosSelecionados.size }} selecionado(s) de {{ itensCodigosFiltrados.length }} item(ns) filtrado(s)
-        </p>
-      </div>
-
-      <button
-        type="button"
-        class="inline-flex items-center gap-2 rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-        [disabled]="imprimindoCodigos || idsCodigosSelecionados.size === 0"
-        (click)="imprimirCodigosSelecionados()"
-      >
-        <i class="fa fa-print"></i>
-        {{ imprimindoCodigos ? 'Gerando...' : 'Imprimir selecionados' }}
-      </button>
-    </div>
-
-    <div class="mt-3 grid grid-cols-1 gap-2 md:grid-cols-3">
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Grupo</label>
-        <select
-          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          [(ngModel)]="filtrosCodigos.tipo"
-          (change)="filtrarCodigosBarras()"
+        <button
+          type="button"
+          class="print-action"
+          [disabled]="imprimindoCodigos || idsCodigosSelecionados.size === 0"
+          (click)="imprimirCodigosSelecionados()"
         >
-          <option value="">Todos</option>
-          <option *ngFor="let tipo of tiposItens" [value]="tipo.id">{{ tipo.nome }}</option>
-        </select>
+          <i class="fa fa-print"></i>
+          {{ imprimindoCodigos ? 'Gerando...' : 'Imprimir' }}
+        </button>
       </div>
 
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Nome</label>
-        <input
-          type="text"
-          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          placeholder="Filtrar por nome"
-          [(ngModel)]="filtrosCodigos.nome"
-          (input)="filtrarCodigosBarras()"
-        />
+      <div class="filters-grid barcode-filters">
+        <label>
+          <span>Grupo</span>
+          <select [(ngModel)]="filtrosCodigos.tipo" (change)="filtrarCodigosBarras()">
+            <option value="">Todos</option>
+            <option *ngFor="let tipo of tiposItens" [value]="tipo.id">{{ tipo.nome }}</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Nome</span>
+          <input
+            type="text"
+            placeholder="Filtrar item"
+            [(ngModel)]="filtrosCodigos.nome"
+            (input)="filtrarCodigosBarras()"
+          />
+        </label>
+
+        <label>
+          <span>Codigo</span>
+          <input
+            type="text"
+            placeholder="Item ou barras"
+            [(ngModel)]="filtrosCodigos.codigo"
+            (input)="filtrarCodigosBarras()"
+          />
+        </label>
       </div>
 
-      <div>
-        <label class="mb-1 block text-xs font-semibold text-slate-700">Código</label>
-        <input
-          type="text"
-          class="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-          placeholder="Código do item ou de barras"
-          [(ngModel)]="filtrosCodigos.codigo"
-          (input)="filtrarCodigosBarras()"
-        />
+      <div class="table-shell">
+        <table class="compact-table barcode-table">
+          <thead>
+            <tr>
+              <th class="check-col">
+                <input
+                  type="checkbox"
+                  [checked]="todosCodigosFiltradosSelecionados()"
+                  (change)="alternarTodosCodigos($any($event.target).checked)"
+                />
+              </th>
+              <th>Item</th>
+              <th>Grupo</th>
+              <th>Codigo de barras</th>
+              <th>Imagem</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of itensCodigosFiltrados">
+              <td class="check-col">
+                <input
+                  type="checkbox"
+                  [checked]="codigoSelecionado(item.id)"
+                  (change)="alternarSelecaoCodigo(item.id, $any($event.target).checked)"
+                />
+              </td>
+              <td class="item-cell">
+                <span>{{ item.codigo }}</span>
+                {{ item.nome }}
+              </td>
+              <td>{{ item.tipo_item.nome }}</td>
+              <td>{{ item.codigo_barras || '-' }}</td>
+              <td class="barcode-image-cell">
+                <img
+                  *ngIf="item.codigo_barras_imagem_base64"
+                  [src]="'data:image/png;base64,' + item.codigo_barras_imagem_base64"
+                  alt="Codigo de barras"
+                />
+                <span *ngIf="!item.codigo_barras_imagem_base64">Sem imagem</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="carregandoCodigos" class="empty-state">Carregando codigos...</div>
+        <div *ngIf="!carregandoCodigos && itensCodigosFiltrados.length === 0" class="empty-state">
+          Nenhum codigo encontrado.
+        </div>
       </div>
-    </div>
+    </section>
 
-    <div class="mt-3 overflow-x-auto">
-      <table class="min-w-full text-sm text-slate-800">
-        <thead class="bg-slate-100">
-          <tr>
-            <th class="px-3 py-2 text-left">
-              <input
-                type="checkbox"
-                [checked]="todosCodigosFiltradosSelecionados()"
-                (change)="alternarTodosCodigos($any($event.target).checked)"
-              />
-            </th>
-            <th class="px-3 py-2 text-left">Item</th>
-            <th class="px-3 py-2 text-left">Grupo</th>
-            <th class="px-3 py-2 text-left">Código de barras</th>
-            <th class="px-3 py-2 text-left">Imagem</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of itensCodigosFiltrados" class="border-t border-slate-200">
-            <td class="px-3 py-2">
-              <input
-                type="checkbox"
-                [checked]="codigoSelecionado(item.id)"
-                (change)="alternarSelecaoCodigo(item.id, $any($event.target).checked)"
-              />
-            </td>
-            <td class="px-3 py-2">{{ item.codigo }} - {{ item.nome }}</td>
-            <td class="px-3 py-2">{{ item.tipo_item.nome }}</td>
-            <td class="px-3 py-2">{{ item.codigo_barras }}</td>
-            <td class="px-3 py-2">
-              <img
-                *ngIf="item.codigo_barras_imagem_base64"
-                [src]="'data:image/png;base64,' + item.codigo_barras_imagem_base64"
-                alt="Código de barras"
-                class="h-10 max-w-44 object-contain"
-              />
-              <span *ngIf="!item.codigo_barras_imagem_base64" class="text-xs text-slate-500">
-                Sem imagem
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <section class="management-card groups-card">
+      <div class="card-head">
+        <div>
+          <h2>Grupos</h2>
+          <p>{{ tiposItensPaginados.length }} exibido(s) de {{ tiposItensFiltrados.length }} filtrado(s)</p>
+        </div>
 
-      <div *ngIf="!carregandoCodigos && itensCodigosFiltrados.length === 0" class="py-4 text-center text-sm text-slate-500">
-        Nenhum código de barras encontrado.
+        <span class="soft-pill">{{ tiposItensSemRelacionamento.length }} livre(s)</span>
       </div>
-    </div>
-  </section>
 
-  <div *ngIf="carregando" class="rounded-lg border border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm">
-    Carregando tipos de itens...
+      <div class="filters-grid groups-filters">
+        <label>
+          <span>Nome</span>
+          <input
+            type="text"
+            placeholder="Buscar grupo"
+            [(ngModel)]="filtrosGrupos.nome"
+            (input)="filtrarTiposItens()"
+          />
+        </label>
+
+        <label>
+          <span>KPI</span>
+          <select [(ngModel)]="filtrosGrupos.statusKpi" (change)="filtrarTiposItens()">
+            <option value="">Todos</option>
+            <option value="principal">Principal</option>
+            <option value="secundario">Secundario</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Situacao</span>
+          <select [(ngModel)]="filtrosGrupos.situacao" (change)="filtrarTiposItens()">
+            <option value="">Todos</option>
+            <option value="livre">Livre</option>
+            <option value="em_uso">Em uso</option>
+          </select>
+        </label>
+      </div>
+
+      <div *ngIf="carregando" class="empty-state">Carregando grupos...</div>
+      <div *ngIf="!carregando && tiposItens.length === 0" class="empty-state">Nenhum grupo encontrado.</div>
+
+      <div *ngIf="!carregando && tiposItens.length" class="table-shell groups-table-shell">
+        <table class="compact-table groups-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Cobertura</th>
+              <th>KPI</th>
+              <th>Uso</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tipo of tiposItensPaginados">
+              <td>{{ tipo.id }}</td>
+              <td class="item-cell">{{ tipo.nome }}</td>
+              <td>
+                <select
+                  class="coverage-select"
+                  [ngModel]="tipo.dias_cobertura || 30"
+                  (ngModelChange)="atualizarCobertura(tipo, $event)"
+                  title="Dias que este grupo deve suprir"
+                >
+                  <option *ngFor="let periodo of periodosCobertura" [ngValue]="periodo">
+                    {{ periodo }}d
+                  </option>
+                </select>
+              </td>
+              <td>
+                <span class="status-chip" [ngClass]="tipo.grupo_secundario ? 'neutral' : 'primary'">
+                  {{ tipo.grupo_secundario ? 'Sec.' : 'Princ.' }}
+                </span>
+              </td>
+              <td>
+                <span class="status-chip" [ngClass]="tipoItemPodeExcluir(tipo.id) ? 'free' : 'busy'">
+                  {{ tipoItemPodeExcluir(tipo.id) ? 'Livre' : 'Uso' }}
+                </span>
+              </td>
+              <td>
+                <div class="row-actions">
+                  <button type="button" (click)="abrirModal(tipo)" title="Atualizar tipo de item">
+                    <i class="fa fa-pen"></i>
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="alternarStatusKpi(tipo)"
+                    [title]="tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundario'"
+                  >
+                    <i [ngClass]="tipo.grupo_secundario ? 'fa fa-star' : 'fa fa-layer-group'"></i>
+                  </button>
+
+                  <button
+                    *ngIf="tipoItemPodeExcluir(tipo.id)"
+                    type="button"
+                    (click)="abrirModalExcluir(tipo)"
+                    title="Excluir tipo de item"
+                  >
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-row">
+        <app-pagination
+          [totalItens]="tiposItensFiltrados.length"
+          [(paginaAtual)]="paginaAtual"
+          [(itensPorPagina)]="itensPorPagina"
+          (paginaAtualChange)="atualizarItensPaginados()"
+          (itensPorPaginaChange)="atualizarItensPaginados()"
+        ></app-pagination>
+      </div>
+    </section>
   </div>
-
-  <div *ngIf="!carregando && tiposItens.length === 0" class="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-8 text-center text-sm text-slate-500 shadow-sm">
-    Nenhum tipo de item encontrado.
-  </div>
-
-  <section *ngIf="!carregando && tiposItens.length" class="rounded-lg border border-slate-300 bg-white shadow-sm overflow-hidden">
-    <div class="border-b border-slate-200 px-4 py-3">
-      <p class="mb-0 text-sm text-slate-800">Lista de tipos cadastrados</p>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full text-sm text-slate-800">
-        <thead class="bg-slate-100">
-          <tr>
-            <th class="px-4 py-3 text-left">ID</th>
-            <th class="px-4 py-3 text-left">Nome</th>
-            <th class="px-4 py-3 text-center">Cobertura</th>
-            <th class="px-4 py-3 text-center">Status KPI</th>
-            <th class="px-4 py-3 text-center">Situação</th>
-            <th class="px-4 py-3 text-center">Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let tipo of tiposItensPaginados" class="border-t border-slate-200 hover:bg-slate-50">
-            <td class="px-4 py-3">{{ tipo.id }}</td>
-            <td class="px-4 py-3">{{ tipo.nome }}</td>
-            <td class="px-4 py-3 text-center">
-              <select
-                class="rounded border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900"
-                [ngModel]="tipo.dias_cobertura || 30"
-                (ngModelChange)="atualizarCobertura(tipo, $event)"
-                title="Dias que este grupo deve suprir"
-              >
-                <option *ngFor="let periodo of periodosCobertura" [ngValue]="periodo">
-                  {{ periodo }} dias
-                </option>
-              </select>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="inline-flex rounded-full px-3 py-1 text-xs"
-                [ngClass]="tipo.grupo_secundario ? 'bg-slate-100 text-slate-700' : 'bg-blue-50 text-blue-700'"
-              >
-                {{ tipo.grupo_secundario ? 'Secundário' : 'Principal' }}
-              </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-              <span
-                class="inline-flex rounded-full px-3 py-1 text-xs"
-                [ngClass]="tipoItemPodeExcluir(tipo.id) ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'"
-              >
-                {{ tipoItemPodeExcluir(tipo.id) ? 'Livre' : 'Em uso' }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center justify-center gap-3">
-                <button
-                  type="button"
-                  (click)="abrirModal(tipo)"
-                  class="text-slate-600 hover:text-blue-700 transition"
-                  title="Atualizar tipo de item"
-                >
-                  <i class="fa fa-pen"></i>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="alternarStatusKpi(tipo)"
-                  class="inline-flex items-center gap-1 rounded border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:border-amber-300 hover:text-amber-700 transition"
-                  [title]="tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundário'"
-                >
-                  <i [ngClass]="tipo.grupo_secundario ? 'fa fa-star' : 'fa fa-layer-group'"></i>
-                  <span>{{ tipo.grupo_secundario ? 'Tornar principal' : 'Tornar secundário' }}</span>
-                </button>
-
-                <button
-                  *ngIf="tipoItemPodeExcluir(tipo.id)"
-                  type="button"
-                  (click)="abrirModalExcluir(tipo)"
-                  class="text-slate-600 hover:text-red-700 transition"
-                  title="Excluir tipo de item"
-                >
-                  <i class="fa fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
 
   <div *ngIf="modalAberto" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
     <div class="w-full max-w-md rounded-lg bg-white shadow-lg">
@@ -278,7 +267,7 @@
             *ngIf="formAtualizar.get('nome')?.invalid && formAtualizar.get('nome')?.touched"
             class="mt-1 block text-xs text-red-500"
           >
-            Nome é obrigatório.
+            Nome e obrigatorio.
           </small>
         </div>
 
@@ -288,7 +277,7 @@
             formControlName="grupo_secundario"
             class="h-4 w-4"
           />
-          Grupo secundário nos KPIs
+          Grupo secundario nos KPIs
         </label>
 
         <div class="mt-4">
@@ -305,7 +294,7 @@
             *ngIf="formAtualizar.get('dias_cobertura')?.invalid && formAtualizar.get('dias_cobertura')?.touched"
             class="mt-1 block text-xs text-red-500"
           >
-            Informe uma cobertura vÃ¡lida.
+            Informe uma cobertura valida.
           </small>
         </div>
 
@@ -335,7 +324,7 @@
       <div class="flex items-start justify-between border-b border-slate-200 px-5 py-4">
         <div>
           <h2 class="mb-1 text-lg text-red-600">Excluir tipo de item</h2>
-          <p class="mb-0 text-sm text-slate-500">Revise a informação antes de confirmar.</p>
+          <p class="mb-0 text-sm text-slate-500">Revise a informacao antes de confirmar.</p>
         </div>
 
         <button
@@ -354,7 +343,7 @@
         </div>
 
         <p class="mt-4 text-sm text-red-600">
-          Esta ação não poderá ser desfeita.
+          Esta acao nao podera ser desfeita.
         </p>
 
         <div class="mt-5 flex justify-end gap-3">
