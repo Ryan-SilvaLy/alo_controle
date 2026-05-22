@@ -199,10 +199,8 @@
         <div class="movement-list" *ngIf="getMovimentacoesItemSelecionado().length; else semMovimentacoes">
           <div *ngFor="let movimento of getMovimentacoesItemSelecionado()" class="movement-row" [class.out]="movimento.tipo === 'saida'">
             <span class="movement-type">{{ movimento.tipo === 'entrada' ? 'Entrada' : 'Saida' }}</span>
-            <div>
-              <strong>{{ movimento.referencia }}</strong>
-              <small>{{ movimento.data ? (movimento.data | date:'dd/MM/yyyy') : 'Sem data' }}</small>
-            </div>
+            <span class="movement-ref" [title]="movimento.referencia">{{ movimento.referencia }}</span>
+            <span class="movement-date">{{ movimento.data ? (movimento.data | date:'dd/MM/yyyy') : 'Sem data' }}</span>
             <span class="movement-qty">{{ movimento.quantidade ?? '-' }}</span>
           </div>
         </div>

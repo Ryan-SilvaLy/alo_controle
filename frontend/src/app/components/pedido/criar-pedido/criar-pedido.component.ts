@@ -27,6 +27,7 @@ export class CriarPedidoComponent implements OnInit {
   movimentacoesEstoque: { entradas: any[]; saidas: any[] } = { entradas: [], saidas: [] };
   itemHistoricoSelecionadoId: number | null = null;
   filtroTipoMovimentacao: 'todos' | 'entrada' | 'saida' = 'todos';
+  private readonly diasHistoricoMovimentacoes = 60;
   modalConfirmacaoAberto = false;
   modalApoioEstoqueAberto = false;
   pedidoResumo!: PedidoResumo;
@@ -343,7 +344,7 @@ export class CriarPedidoComponent implements OnInit {
     );
 
     return [...entradas, ...saidas]
-      .filter(movimentacao => !!movimentacao.data || movimentacao.quantidade !== null)
+      .filter(movimentacao => this.movimentacaoEstaNoPeriodo(movimentacao.data))
       .filter(movimentacao => this.filtroTipoMovimentacao === 'todos' || movimentacao.tipo === this.filtroTipoMovimentacao)
       .sort((a, b) => new Date(b.data || 0).getTime() - new Date(a.data || 0).getTime())
   }
@@ -512,6 +513,23 @@ export class CriarPedidoComponent implements OnInit {
 
     const nome = String(itemMov?.item_nome || itemMov?.produto_nome || '').trim();
     return !!nome && nome === item.nome;
+  }
+
+  private movimentacaoEstaNoPeriodo(dataMovimentacao: string | Date | null | undefined): boolean {
+    if (!dataMovimentacao) {
+      return false;
+    }
+
+    const data = new Date(dataMovimentacao);
+    if (Number.isNaN(data.getTime())) {
+      return false;
+    }
+
+    const dataLimite = new Date();
+    dataLimite.setHours(0, 0, 0, 0);
+    dataLimite.setDate(dataLimite.getDate() - this.diasHistoricoMovimentacoes);
+
+    return data >= dataLimite;
   }
 
   private getGrupoBaseId(indexIgnorado?: number): number | null {
