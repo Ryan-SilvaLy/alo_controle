@@ -16,9 +16,11 @@ class PedidoItemSerializer(serializers.ModelSerializer):
             'item_nome',
             'quantidade_pedida',
             'ultima_entrada_estoque',
+            'adicionado_automaticamente',
+            'metrica_reposicao',
         ]
 
-        read_only_fields = ['quantidade_atual_estoque']
+        read_only_fields = ['quantidade_atual_estoque', 'adicionado_automaticamente', 'metrica_reposicao']
 
 
 class PedidoSerializer(serializers.ModelSerializer):
@@ -114,6 +116,20 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
                     'Todos os itens do pedido precisam pertencer ao mesmo grupo.'
                 )
 
+        if self.instance is None and tipo_item_base is not None:
+            pedido_automatico = (
+                Pedido.objects
+                .filter(tipo_item=tipo_item_base, gerado_automaticamente=True)
+                .exclude(status='cancelado')
+                .first()
+            )
+
+            if pedido_automatico:
+                raise serializers.ValidationError(
+                    f'Ja existe um pedido automatico ativo para o grupo "{tipo_item_base.nome}" '
+                    f'({pedido_automatico.codigo_pedido}). Revise ou cancele esse pedido antes de criar outro.'
+                )
+
         return data
 
     def create(self, validated_data):
@@ -146,7 +162,10 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
 
         if itens_data is not None:
             itens_automaticos_existentes = {
-                pedido_item.item_id: pedido_item.adicionado_automaticamente
+                pedido_item.item_id: {
+                    'adicionado_automaticamente': pedido_item.adicionado_automaticamente,
+                    'metrica_reposicao': pedido_item.metrica_reposicao,
+                }
                 for pedido_item in instance.itens.all()
             }
 
@@ -155,7 +174,9 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
             for item_data in itens_data:
                 item_instance = item_data['item']
                 item_data['quantidade_atual_estoque'] = item_instance.quantidade_atual
-                item_data['adicionado_automaticamente'] = itens_automaticos_existentes.get(item_instance.id, False)
+                item_existente = itens_automaticos_existentes.get(item_instance.id, {})
+                item_data['adicionado_automaticamente'] = item_existente.get('adicionado_automaticamente', False)
+                item_data['metrica_reposicao'] = item_existente.get('metrica_reposicao', {})
 
                 PedidoItem.objects.create(pedido=instance, **item_data)
 

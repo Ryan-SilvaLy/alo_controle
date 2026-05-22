@@ -12,6 +12,16 @@
   class="w-full px-4 py-2 border rounded mb-4 text-black"
 />
 
+    <label class="mb-1 block text-sm text-slate-700">Dias de cobertura</label>
+    <select
+      [(ngModel)]="novoTipoDiasCobertura"
+      class="w-full px-4 py-2 border rounded mb-4 text-black"
+    >
+      <option *ngFor="let periodo of periodosCobertura" [ngValue]="periodo">
+        {{ periodo }} dias
+      </option>
+    </select>
+
     <div class="flex justify-end gap-3">
       <button
         class="btn btn-outline-secondary"

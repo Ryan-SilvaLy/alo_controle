@@ -105,7 +105,8 @@ class RegistroEntradaSerializer(serializers.ModelSerializer):
 
                     sincronizar_pedido_automatico_para_item(
                         item,
-                        self.context['request'].user
+                        self.context['request'].user,
+                        instance.data_movimentacao
                     )
 
                 instance.itens.all().delete()
@@ -236,12 +237,8 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
                 patrimonio = self._normalizar_texto(item_data.get('patrimonio'))
 
                 item.quantidade_atual -= quantidade
+                item._data_evento_estoque_baixo = registro_saida.data_movimentacao
                 item.save()
-
-                sincronizar_pedido_automatico_para_item(
-                    item,
-                    self.context['request'].user
-                )
 
                 self._criar_itens_saida_com_rastreio(
                     registro_saida=registro_saida,
@@ -249,6 +246,12 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
                     quantidade=quantidade,
                     solicitante=solicitante,
                     patrimonio=patrimonio
+                )
+
+                sincronizar_pedido_automatico_para_item(
+                    item,
+                    self.context['request'].user,
+                    registro_saida.data_movimentacao
                 )
 
             AssinaturaEpiService.processar_saida(registro_saida)
@@ -298,12 +301,8 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
                     patrimonio = self._normalizar_texto(item_data.get('patrimonio'))
 
                     item.quantidade_atual -= quantidade
+                    item._data_evento_estoque_baixo = instance.data_movimentacao
                     item.save()
-
-                    sincronizar_pedido_automatico_para_item(
-                        item,
-                        self.context['request'].user
-                    )
 
                     self._criar_itens_saida_com_rastreio(
                         registro_saida=instance,
@@ -311,6 +310,12 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
                         quantidade=quantidade,
                         solicitante=solicitante,
                         patrimonio=patrimonio
+                    )
+
+                    sincronizar_pedido_automatico_para_item(
+                        item,
+                        self.context['request'].user,
+                        instance.data_movimentacao
                     )
 
             AssinaturaEpiService.processar_saida(instance)

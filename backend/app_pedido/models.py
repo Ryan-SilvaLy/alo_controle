@@ -70,6 +70,7 @@ class PedidoItem(models.Model):
     quantidade_atual_estoque = models.PositiveIntegerField(verbose_name='Quantidade Atual no Estoque')
     ultima_entrada_estoque = models.DateField(verbose_name='Última Entrada no Estoque', null=True, blank=True)
     adicionado_automaticamente = models.BooleanField(default=False, verbose_name='Adicionado Automaticamente')
+    metrica_reposicao = models.JSONField(default=dict, blank=True, verbose_name='Metrica de Reposicao')
 
     def __str__(self):
         return f"{self.item.nome} ({self.quantidade_pedida})"

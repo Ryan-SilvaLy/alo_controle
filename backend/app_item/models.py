@@ -1,5 +1,6 @@
 from django.core.files.base import ContentFile
 from django.db import models
+from django.utils import timezone
 from io import BytesIO
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -8,6 +9,7 @@ logging.basicConfig(level=logging.DEBUG)
 class TipoItem(models.Model):
     nome = models.CharField(verbose_name='Nome do Tipo de Item', max_length=40, unique=True)
     grupo_secundario = models.BooleanField(default=False, verbose_name='Grupo secundario para KPIs')
+    dias_cobertura = models.PositiveIntegerField(default=30, verbose_name='Dias de Cobertura')
 
     criado_em = models.DateTimeField(auto_now_add=True)
     atualizado_em = models.DateTimeField(auto_now=True)
@@ -94,8 +96,12 @@ class Item(models.Model):
         criando = self.pk is None
         codigo_barras_original = None
 
+        situacao_anterior = None
         if self.pk:
-            codigo_barras_original = Item.objects.filter(pk=self.pk).values_list('codigo_barras', flat=True).first()
+            item_original = Item.objects.filter(pk=self.pk).values('codigo_barras', 'situacao').first()
+            if item_original:
+                codigo_barras_original = item_original['codigo_barras']
+                situacao_anterior = item_original['situacao']
 
         self.codigo = self.codigo.upper()
         self.nome = self.nome.upper()
@@ -104,13 +110,21 @@ class Item(models.Model):
         if codigo_barras_original:
             self.codigo_barras = codigo_barras_original
 
-        if self.quantidade_atual < self.quantidade_minima:
+        if self.quantidade_minima is not None and self.quantidade_atual <= self.quantidade_minima:
             self.situacao = 'baixo'
         else:
             self.situacao = 'ok'
     
         logging.debug(f'Salvando / Criando Item: codigo: {self.codigo} | nome: {self.nome}')
         super().save(*args, **kwargs)
+
+        if self.situacao == 'baixo' and situacao_anterior != 'baixo':
+            EventoEstoqueBaixo.objects.create(
+                item=self,
+                data_evento=getattr(self, '_data_evento_estoque_baixo', None) or timezone.localdate(),
+                estoque_atual=self.quantidade_atual,
+                estoque_minimo=self.quantidade_minima,
+            )
 
         if criando and not self.codigo_barras:
             self.codigo_barras = f'{self.pk:012d}'
@@ -124,6 +138,19 @@ class Item(models.Model):
         conteudo = gerar_codigo_barras_png(self.codigo_barras)
         nome_arquivo = f'item_{self.pk or "novo"}_{self.codigo_barras}.png'
         self.codigo_barras_imagem.save(nome_arquivo, conteudo, save=False)
+
+
+class EventoEstoqueBaixo(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='eventos_estoque_baixo')
+    data_evento = models.DateField(default=timezone.localdate, verbose_name='Data do Evento')
+    estoque_atual = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Estoque Atual')
+    estoque_minimo = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Estoque Minimo')
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Evento de Estoque Baixo'
+        verbose_name_plural = 'Eventos de Estoque Baixo'
+        ordering = ['-data_evento', '-id']
 
 
 CODE39_PATTERNS = {

@@ -1,9 +1,12 @@
+from datetime import timedelta
 from decimal import Decimal
 
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
-from app_item.models import Item, TipoItem
+from app_item.models import EventoEstoqueBaixo, Item, TipoItem
+from app_pedido.models import PedidoItem
 from app_usuario.models import Usuario
 
 
@@ -77,6 +80,31 @@ class RegistroEstoqueUpdateTests(APITestCase):
         self.assertEqual(self.item.quantidade_atual, Decimal('16.00'))
         self.assertEqual(len(response_update.data['itens']), 1)
         self.assertEqual(Decimal(response_update.data['itens'][0]['quantidade']), Decimal('6.00'))
+
+    def test_saida_com_data_passada_gera_pedido_automatico_por_cobertura(self):
+        self.tipo_item.dias_cobertura = 60
+        self.tipo_item.save()
+        self.item.quantidade_atual = Decimal('6.00')
+        self.item.quantidade_minima = Decimal('5.00')
+        self.item.save()
+        data_movimentacao = timezone.localdate() - timedelta(days=10)
+
+        response = self.client.post(
+            '/api/controle/registro-saida/',
+            {
+                **self._payload_saida('9101', '2.00'),
+                'data_movimentacao': str(data_movimentacao),
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        evento = EventoEstoqueBaixo.objects.get(item=self.item)
+        pedido_item = PedidoItem.objects.get(item=self.item, adicionado_automaticamente=True)
+
+        self.assertEqual(evento.data_evento, data_movimentacao)
+        self.assertGreater(pedido_item.quantidade_pedida, Decimal('1.00'))
 
     def _payload_saida(self, bloco, quantidade):
         return {

@@ -15,6 +15,8 @@ import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 export class ModalTipoItemComponent {
  mostrarModal = false;
   novoTipoNome = '';
+  novoTipoDiasCobertura = 30;
+  periodosCobertura = [30, 60, 90, 120, 180];
   carregando = false;
 
   @Output() tipoCriado = new EventEmitter<TipoItem>();
@@ -27,6 +29,7 @@ export class ModalTipoItemComponent {
   abrir() {
     this.mostrarModal = true;
     this.novoTipoNome = '';
+    this.novoTipoDiasCobertura = 30;
   }
 
   fechar() {
@@ -42,6 +45,7 @@ export class ModalTipoItemComponent {
     this.carregando = true;
     this.itemService.criarTipoItem({
       nome: this.novoTipoNome.trim(),
+      dias_cobertura: this.novoTipoDiasCobertura,
       grupo_secundario: false,
     }).subscribe({
       next: (res) => {

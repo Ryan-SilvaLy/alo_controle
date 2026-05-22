@@ -175,6 +175,42 @@ export class IniciarPedidoComponent implements OnInit {
     };
   }
 
+  resumoMetricaReposicao(item: any): string {
+    const metrica = item?.metrica_reposicao;
+    if (!metrica || !Object.keys(metrica).length) {
+      return item?.adicionado_automaticamente
+        ? 'Automático · métrica será exibida no próximo recálculo'
+        : 'Manual · quantidade definida pelo usuário';
+    }
+
+    const consumo = this.formatarNumeroMetrica(metrica.consumo_ponderado ?? metrica.consumo_medio);
+    const cobertura = metrica.dias_cobertura;
+    const seguranca = this.formatarNumeroMetrica(metrica.estoque_seguranca);
+    const abertos = this.formatarNumeroMetrica(metrica.pedidos_abertos);
+    const balanco = this.formatarNumeroMetrica(metrica.balanco_cobertura);
+
+    const partes = [];
+    if (consumo !== '-') partes.push(`cons. ${consumo}/dia`);
+    if (cobertura) partes.push(`${cobertura} dias`);
+    if (seguranca !== '-') partes.push(`seg. ${seguranca}`);
+    if (abertos !== '-') partes.push(`aberto ${abertos}`);
+    if (balanco !== '-') partes.push(`bal. ${balanco}`);
+
+    return partes.join(' · ');
+  }
+
+  private formatarNumeroMetrica(valor: any): string {
+    const numero = Number(valor);
+    if (!Number.isFinite(numero)) {
+      return '-';
+    }
+
+    return numero.toLocaleString('pt-BR', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  }
+
   alterarStatusPedido(pedido: any) {
     this.pedidoSelecionado = pedido;
     this.novoStatus = pedido.status === 'pendente' ? 'enviado' : 'cancelado';

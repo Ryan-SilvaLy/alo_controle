@@ -8,7 +8,7 @@ class Command(BaseCommand):
         itens = Item.objects.all()
         total = itens.count()
         for item in itens:
-            if item.quantidade_atual < item.quantidade_minima:
+            if item.quantidade_minima is not None and item.quantidade_atual <= item.quantidade_minima:
                 item.situacao = 'baixo'
             else:
                 item.situacao = 'ok'

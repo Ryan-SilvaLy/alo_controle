@@ -21,6 +21,7 @@ export class IniciarTipoItemComponent implements OnInit {
   formAtualizar!: FormGroup;
   idTipoItem!: number;
   modalAberto = false; 
+periodosCobertura = [30, 60, 90, 120, 180];
 tiposItensSemRelacionamento: any[] = []; 
 itensCodigosBarras: Item[] = [];
 itensCodigosFiltrados: Item[] = [];
@@ -53,6 +54,7 @@ atualizarItensPaginados() {
   ) {
     this.formAtualizar = this.fb.group({
       nome: ['', Validators.required],
+      dias_cobertura: [30, [Validators.required, Validators.min(1)]],
       grupo_secundario: [false],
     });
   }
@@ -191,6 +193,7 @@ async imprimirCodigosSelecionados() {
     this.idTipoItem = tipo.id;
     this.formAtualizar.patchValue({
       nome: tipo.nome,
+      dias_cobertura: tipo.dias_cobertura || 30,
       grupo_secundario: !!tipo.grupo_secundario,
     });
   }
@@ -260,6 +263,35 @@ alternarStatusKpi(tipo: TipoItem) {
     error: (err) => {
       console.error(err);
       this.snackbar.show('Não foi possível alterar o status KPI do grupo.', 'error');
+    }
+  });
+}
+
+atualizarCobertura(tipo: TipoItem, diasCobertura: number | string) {
+  const dias = Number(diasCobertura);
+
+  if (!dias || dias <= 0 || dias === tipo.dias_cobertura) {
+    return;
+  }
+
+  this.itemService.atualizarTipoItem(tipo.id, { dias_cobertura: dias }).subscribe({
+    next: (tipoAtualizado) => {
+      const aplicarAtualizacao = (registro: any) => {
+        if (registro.id === tipo.id) {
+          registro.dias_cobertura = tipoAtualizado?.dias_cobertura ?? dias;
+        }
+        return registro;
+      };
+
+      this.tiposItens = this.tiposItens.map(aplicarAtualizacao);
+      this.tiposItensSemRelacionamento = this.tiposItensSemRelacionamento.map(aplicarAtualizacao);
+      this.atualizarItensPaginados();
+
+      this.snackbar.show(`Cobertura atualizada para ${dias} dias.`, 'success');
+    },
+    error: (err) => {
+      console.error(err);
+      this.snackbar.show('NÃ£o foi possÃ­vel atualizar a cobertura do grupo.', 'error');
     }
   });
 }

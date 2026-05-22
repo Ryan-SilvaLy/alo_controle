@@ -187,7 +187,7 @@ class ItensPorTipoEstoqueBaixoView(generics.ListAPIView):
 
     def get_queryset(self):
         tipo_id = self.request.query_params.get('tipo_id', None)
-        queryset = Item.objects.filter(quantidade_atual__lt=F('quantidade_minima'))
+        queryset = Item.objects.filter(quantidade_atual__lte=F('quantidade_minima'))
         if tipo_id:
             queryset = queryset.filter(tipo_item_id=tipo_id)
         return queryset

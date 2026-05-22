@@ -9,6 +9,7 @@ export interface TipoItem {
   id: number;
   nome: string;
   grupo_secundario?: boolean;
+  dias_cobertura?: number;
   criado_em?: string;
   atualizado_em?: string;
 }

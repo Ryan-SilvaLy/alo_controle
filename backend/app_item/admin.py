@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Item, TipoItem
+
+from .models import EventoEstoqueBaixo, Item, TipoItem
+
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -7,7 +9,7 @@ class ItemAdmin(admin.ModelAdmin):
         'id',
         'codigo',
         'nome',
-        'codigo_barras',  
+        'codigo_barras',
         'tipo_item',
         'prateleira_estoque',
         'quantidade_atual',
@@ -25,7 +27,7 @@ class ItemAdmin(admin.ModelAdmin):
     search_fields = (
         'codigo',
         'nome',
-        'codigo_barras',   
+        'codigo_barras',
         'descricao',
         'tipo_item',
         'prateleira_estoque',
@@ -39,18 +41,27 @@ class ItemAdmin(admin.ModelAdmin):
 
 @admin.register(TipoItem)
 class TipoItemAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nome', 'criado_em', 'atualizado_em')   # colunas visíveis
-    search_fields = ('nome',)                                     # barra de busca
-    list_filter = ('criado_em', 'atualizado_em')                  # filtros laterais
-    ordering = ('nome',)                                          # ordenação padrão
-    readonly_fields = ('criado_em', 'atualizado_em')              # só leitura no formulário
+    list_display = ('id', 'nome', 'dias_cobertura', 'criado_em', 'atualizado_em')
+    search_fields = ('nome',)
+    list_filter = ('criado_em', 'atualizado_em')
+    ordering = ('nome',)
+    readonly_fields = ('criado_em', 'atualizado_em')
 
     fieldsets = (
-        ('Informações do Tipo de Item', {
-            'fields': ('nome',)
+        ('Informacoes do Tipo de Item', {
+            'fields': ('nome', 'dias_cobertura')
         }),
         ('Controle de Registro', {
             'fields': ('criado_em', 'atualizado_em'),
-            'classes': ('collapse',),  # colapsável
+            'classes': ('collapse',),
         }),
     )
+
+
+@admin.register(EventoEstoqueBaixo)
+class EventoEstoqueBaixoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'item', 'data_evento', 'estoque_atual', 'estoque_minimo', 'criado_em')
+    list_filter = ('data_evento', 'criado_em')
+    search_fields = ('item__codigo', 'item__nome')
+    readonly_fields = ('item', 'data_evento', 'estoque_atual', 'estoque_minimo', 'criado_em')
+    ordering = ('-data_evento', '-id')

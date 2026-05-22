@@ -6,13 +6,16 @@ import { ItemService, Item } from '../../../services/item.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { PedidoComponent } from '../pedido.component';
+import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
+import { ControleService } from '../../../services/controle.service';
 
 @Component({
   selector: 'app-criar-pedido',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, ModalConfirmarPedidoComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ModalConfirmarPedidoComponent, AutocompleteSelectComponent],
   templateUrl: './criar-pedido.component.html',
   styleUrl: './criar-pedido.component.scss'
 })
@@ -20,13 +23,21 @@ export class CriarPedidoComponent implements OnInit {
   pedidoForm!: FormGroup;
   itensDisponiveis: Item[] = [];
   itensSelecionados: number[] = [];
+  pedidosExistentes: any[] = [];
+  movimentacoesEstoque: { entradas: any[]; saidas: any[] } = { entradas: [], saidas: [] };
+  itemHistoricoSelecionadoId: number | null = null;
+  filtroTipoMovimentacao: 'todos' | 'entrada' | 'saida' = 'todos';
   modalConfirmacaoAberto = false;
+  modalApoioEstoqueAberto = false;
   pedidoResumo!: PedidoResumo;
+  itemLabel = (item: Item) => item ? `${item.nome} - ${item.codigo}` : '';
+  itemSecondary = (item: Item) => item ? `${item.tipo_item?.nome || 'Sem grupo'} | Estoque ${item.quantidade_atual} | Minimo ${item.quantidade_minima}` : '';
 
   constructor(
     private fb: FormBuilder,
     private pedidoService: PedidoService,
     private itemService: ItemService,
+    private controleService: ControleService,
     private router: Router,
     private snackBar: SnackbarService,
     private pedidoComponent: PedidoComponent
@@ -45,6 +56,9 @@ export class CriarPedidoComponent implements OnInit {
       this.pedidoComponent.itensDisponiveis = itens;
       this.adicionarItem();
     });
+
+    this.carregarPedidosExistentes();
+    this.carregarMovimentacoesEstoque();
   }
 
   get itens(): FormArray {
@@ -95,6 +109,9 @@ export class CriarPedidoComponent implements OnInit {
 
       this.pedidoComponent.atualizarEstoqueEEntrada(grupo, +itemId);
       this.atualizarItensSelecionados();
+      if (!this.itemHistoricoSelecionadoId) {
+        this.itemHistoricoSelecionadoId = +itemId;
+      }
     });
 
     this.atualizarItensSelecionados();
@@ -134,6 +151,10 @@ export class CriarPedidoComponent implements OnInit {
 
     this.pedidoComponent.atualizarEstoqueEEntrada(grupo, +itemId);
     this.atualizarItensSelecionados();
+
+    if (!this.itemHistoricoSelecionadoId) {
+      this.itemHistoricoSelecionadoId = +itemId;
+    }
   }
 
   enviarPedido() {
@@ -154,6 +175,15 @@ export class CriarPedidoComponent implements OnInit {
       return;
     }
 
+    const pedidoAutomatico = this.getPedidoAutomaticoAbertoGrupo();
+    if (pedidoAutomatico) {
+      this.snackBar.show(
+        `Ja existe o pedido automatico ${pedidoAutomatico.codigo_pedido} ativo para este grupo.`,
+        'error'
+      );
+      return;
+    }
+
     const pedido = this.pedidoForm.getRawValue();
     this.pedidoService.criarPedido(pedido).subscribe({
       next: res => {
@@ -161,7 +191,12 @@ export class CriarPedidoComponent implements OnInit {
         this.router.navigate(['/pedido/listar']);
       },
       error: err => {
-        this.snackBar.show('Não foi possível criar o pedido.', 'error');
+        const mensagem =
+          err?.error?.non_field_errors?.[0] ||
+          (Array.isArray(err?.error) ? err.error[0] : null) ||
+          err?.error?.detail ||
+          'Não foi possível criar o pedido.';
+        this.snackBar.show(mensagem, 'error');
         console.error(err);
       }
     });
@@ -250,6 +285,109 @@ export class CriarPedidoComponent implements OnInit {
       .filter((item): item is { nome: string; codigo: string; tipo: string; quantidade: number } => item !== null);
   }
 
+  getItemMovimentacaoSelecionado(): Item | undefined {
+    if (this.itemHistoricoSelecionadoId) {
+      const itemHistorico = this.itensDisponiveis.find(item => item.id === this.itemHistoricoSelecionadoId);
+      if (itemHistorico) {
+        return itemHistorico;
+      }
+    }
+
+    for (let index = 0; index < this.itens.length; index++) {
+      const item = this.getItemSelecionado(index);
+      if (item) {
+        return item;
+      }
+    }
+
+    return undefined;
+  }
+
+  onItemHistoricoSelecionado(item: Item | undefined) {
+    this.itemHistoricoSelecionadoId = item?.id ?? null;
+  }
+
+  getItensHistoricoDisponiveis(): Item[] {
+    const itens = this.temGrupoDefinido() ? this.getItensDoGrupoSelecionado() : this.itensDisponiveis;
+    return [...itens].sort((a, b) => a.nome.localeCompare(b.nome));
+  }
+
+  getMovimentacoesItemSelecionado() {
+    const item = this.getItemMovimentacaoSelecionado();
+    if (!item) {
+      return [];
+    }
+
+    const entradas = this.movimentacoesEstoque.entradas.flatMap((entrada: any) =>
+      (entrada?.itens || [])
+        .filter((itemMov: any) => this.movimentacaoPertenceAoItem(itemMov, item))
+        .map((itemMov: any) => ({
+          tipo: 'entrada',
+          data: entrada?.data_movimentacao || entrada?.data_entrada || entrada?.criado_em,
+          quantidade: Number(itemMov?.quantidade || 0),
+          referencia: entrada?.nota_fiscal_detalhe?.numero_nota || `Entrada #${entrada?.id ?? '-'}`,
+          detalhe: entrada?.nota_fiscal_detalhe?.nome_fornecedor || entrada?.recebido_por || 'Entrada de estoque'
+        }))
+    );
+
+    const saidas = this.movimentacoesEstoque.saidas.flatMap((saida: any) =>
+      (saida?.itens || [])
+        .filter((itemMov: any) => this.movimentacaoPertenceAoItem(itemMov, item))
+        .map((itemMov: any) => ({
+          tipo: 'saida',
+          data: saida?.data_movimentacao || saida?.data_saida || saida?.criado_em,
+          quantidade: Number(itemMov?.quantidade || 0),
+          referencia: saida?.bloco_requisicao || `Saida #${saida?.id ?? '-'}`,
+          detalhe: itemMov?.solicitante || saida?.responsavel || saida?.setor || 'Saida de estoque'
+        }))
+    );
+
+    return [...entradas, ...saidas]
+      .filter(movimentacao => !!movimentacao.data || movimentacao.quantidade !== null)
+      .filter(movimentacao => this.filtroTipoMovimentacao === 'todos' || movimentacao.tipo === this.filtroTipoMovimentacao)
+      .sort((a, b) => new Date(b.data || 0).getTime() - new Date(a.data || 0).getTime())
+  }
+
+  getTotalEntradaHistorico(): number {
+    return this.getMovimentacoesItemSelecionado()
+      .filter(movimentacao => movimentacao.tipo === 'entrada')
+      .reduce((total, movimentacao) => total + Number(movimentacao.quantidade || 0), 0);
+  }
+
+  getTotalSaidaHistorico(): number {
+    return this.getMovimentacoesItemSelecionado()
+      .filter(movimentacao => movimentacao.tipo === 'saida')
+      .reduce((total, movimentacao) => total + Number(movimentacao.quantidade || 0), 0);
+  }
+
+  getSaldoHistorico(): number {
+    return this.getTotalEntradaHistorico() - this.getTotalSaidaHistorico();
+  }
+
+  setFiltroTipoMovimentacao(tipo: 'todos' | 'entrada' | 'saida') {
+    this.filtroTipoMovimentacao = tipo;
+  }
+
+  getUltimaEntradaItemSelecionado(): any {
+    const item = this.getItemMovimentacaoSelecionado();
+    if (!item) {
+      return null;
+    }
+
+    const controle = this.itens.controls.find(ctrl => Number(ctrl.get('item')?.value) === item.id);
+    const data = controle?.get('ultima_entrada_estoque')?.value;
+    if (!data) {
+      return null;
+    }
+
+    return {
+      tipo: 'entrada',
+      data,
+      quantidade: null,
+      referencia: 'Ultima entrada'
+    };
+  }
+
   getGrupoSelecionadoNome(): string {
     const grupoBaseId = this.getGrupoBaseId();
     if (!grupoBaseId) {
@@ -268,10 +406,112 @@ export class CriarPedidoComponent implements OnInit {
     return !this.temGrupoDefinido() || this.getItensDisponiveisParaSelect(this.itens.length).length > 0;
   }
 
+  abrirModalApoioEstoque() {
+    if (!this.temGrupoDefinido()) {
+      this.snackBar.show('Selecione um item para definir o grupo primeiro.', 'info');
+      return;
+    }
+
+    this.modalApoioEstoqueAberto = true;
+  }
+
+  fecharModalApoioEstoque() {
+    this.modalApoioEstoqueAberto = false;
+  }
+
+  getItensDoGrupoSelecionado(): Item[] {
+    const grupoBaseId = this.getGrupoBaseId();
+    if (!grupoBaseId) {
+      return [];
+    }
+
+    return this.itensDisponiveis
+      .filter(item => item.tipo_item?.id === grupoBaseId)
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+  }
+
+  getPedidoAutomaticoAbertoGrupo(): any | null {
+    const grupoBaseId = this.getGrupoBaseId();
+    if (!grupoBaseId) {
+      return null;
+    }
+
+    return this.pedidosExistentes.find(pedido =>
+      pedido?.gerado_automaticamente === true &&
+      Number(pedido?.tipo_item) === grupoBaseId &&
+      pedido?.status !== 'cancelado'
+    ) || null;
+  }
+
+  temPedidoAutomaticoAbertoNoGrupo(): boolean {
+    return !!this.getPedidoAutomaticoAbertoGrupo();
+  }
+
+  getStatusEstoqueItem(item: Item): string {
+    const atual = Number(item.quantidade_atual ?? 0);
+    const minimo = Number(item.quantidade_minima ?? 0);
+
+    return atual <= minimo ? 'Baixo' : 'OK';
+  }
+
+  getClasseEstoqueItem(item: Item): string {
+    return this.getStatusEstoqueItem(item) === 'Baixo' ? 'stock-status-low' : 'stock-status-ok';
+  }
+
+  getValorUnitarioFormatado(item: Item): string {
+    const valor = Number(item.valor_unitario ?? 0);
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
   private atualizarItensSelecionados() {
     this.itensSelecionados = this.itens.controls
       .map(ctrl => Number(ctrl.get('item')?.value))
       .filter(itemId => !Number.isNaN(itemId) && itemId > 0);
+  }
+
+  private carregarPedidosExistentes() {
+    this.pedidoService.listarPedidos().subscribe({
+      next: pedidos => {
+        this.pedidosExistentes = Array.isArray(pedidos) ? pedidos : [];
+      },
+      error: err => {
+        console.error(err);
+        this.pedidosExistentes = [];
+      }
+    });
+  }
+
+  private carregarMovimentacoesEstoque() {
+    forkJoin({
+      entradas: this.controleService.listarEntradasEstoque(),
+      saidas: this.controleService.listarSaidasEstoque()
+    }).subscribe({
+      next: movimentacoes => {
+        this.movimentacoesEstoque = {
+          entradas: movimentacoes?.entradas || [],
+          saidas: movimentacoes?.saidas || []
+        };
+      },
+      error: err => {
+        console.error(err);
+        this.movimentacoesEstoque = { entradas: [], saidas: [] };
+      }
+    });
+  }
+
+  private movimentacaoPertenceAoItem(itemMov: any, item: Item): boolean {
+    const itemMovId = Number(typeof itemMov?.item === 'object' ? itemMov?.item?.id : itemMov?.item || 0);
+    if (itemMovId && itemMovId === item.id) {
+      return true;
+    }
+
+    const codigo = String(itemMov?.item_codigo || '').trim();
+    if (codigo && codigo === item.codigo) {
+      return true;
+    }
+
+    const nome = String(itemMov?.item_nome || itemMov?.produto_nome || '').trim();
+    return !!nome && nome === item.nome;
   }
 
   private getGrupoBaseId(indexIgnorado?: number): number | null {
