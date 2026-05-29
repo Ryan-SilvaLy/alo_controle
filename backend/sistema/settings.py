@@ -21,6 +21,20 @@ def env_bool(name, default=False):
     return value.strip().lower() in ("1", "true", "yes", "on")
 
 
+def env_list(name, default=""):
+    value = os.getenv(name, default)
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def normalize_origin(origin):
+    origin = origin.strip().rstrip("/")
+    if not origin:
+        return None
+    if "://" not in origin:
+        origin = f"https://{origin}"
+    return origin
+
+
 DEBUG = env_bool("DEBUG", True)
 
 ALLOWED_HOSTS = ["*"]
@@ -195,10 +209,36 @@ SIMPLE_JWT = {
 # CORS
 # ========================
 
-CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:4200"
-).split(",")
+DEFAULT_CORS_ALLOWED_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+    "https://alo-controle.vercel.app",
+]
+
+configured_cors_origins = (
+    env_list("CORS_ALLOWED_ORIGINS")
+    + env_list("FRONTEND_URL")
+    + env_list("FRONTEND_URLS")
+)
+
+CORS_ALLOW_ALL_ORIGINS = (
+    env_bool("CORS_ALLOW_ALL_ORIGINS", False)
+    or "*" in configured_cors_origins
+)
+CORS_ALLOWED_ORIGINS = sorted(
+    {
+        origin
+        for origin in (
+            normalize_origin(origin)
+            for origin in DEFAULT_CORS_ALLOWED_ORIGINS + configured_cors_origins
+            if origin != "*"
+        )
+        if origin
+    }
+)
+
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+CORS_ALLOW_CREDENTIALS = env_bool("CORS_ALLOW_CREDENTIALS", True)
 
 # ========================
 # WHITENOISE
