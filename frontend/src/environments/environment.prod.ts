@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://alocontrole-production.up.railway.app'
+  apiUrl: 'https://alo-controle-d6pv.onrender.com'
 };
