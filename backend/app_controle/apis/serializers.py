@@ -76,15 +76,15 @@ class RegistroEntradaSerializer(serializers.ModelSerializer):
                 item.quantidade_atual += quantidade
                 item.save()
 
-                sincronizar_pedido_automatico_para_item(
-                    item,
-                    self.context['request'].user
-                )
-
                 RegistroEntradaItem.objects.create(
                     registro_entrada=registro,
                     quantidade_disponivel=quantidade,
                     **item_data
+                )
+
+                sincronizar_pedido_automatico_para_item(
+                    item,
+                    self.context['request'].user
                 )
 
             return registro
@@ -121,15 +121,15 @@ class RegistroEntradaSerializer(serializers.ModelSerializer):
                     item.quantidade_atual += quantidade
                     item.save()
 
-                    sincronizar_pedido_automatico_para_item(
-                        item,
-                        self.context['request'].user
-                    )
-
                     RegistroEntradaItem.objects.create(
                         registro_entrada=instance,
                         quantidade_disponivel=quantidade,
                         **item_data
+                    )
+
+                    sincronizar_pedido_automatico_para_item(
+                        item,
+                        self.context['request'].user
                     )
 
             return instance

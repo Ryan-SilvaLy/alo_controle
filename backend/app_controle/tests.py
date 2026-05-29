@@ -5,6 +5,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
+from app_controle.models import RegistroEntrada, RegistroEntradaItem, RegistroSaidaItem, RegistroSaidaItemLote
 from app_item.models import EventoEstoqueBaixo, Item, TipoItem
 from app_pedido.models import PedidoItem
 from app_usuario.models import Usuario
@@ -24,6 +25,7 @@ class RegistroEstoqueUpdateTests(APITestCase):
         self.client.force_authenticate(user=self.usuario)
 
         self.tipo_item = TipoItem.objects.create(nome='CONSUMO')
+        self.tipo_epi = TipoItem.objects.create(nome='EPI')
         self.item = Item.objects.create(
             codigo='MAT-001',
             nome='Caneta Azul',
@@ -32,6 +34,16 @@ class RegistroEstoqueUpdateTests(APITestCase):
             prateleira_estoque='A1',
             quantidade_atual=Decimal('10.00'),
             quantidade_minima=Decimal('2.00'),
+            unidade_medida='un',
+        )
+        self.item_epi = Item.objects.create(
+            codigo='EPI-001',
+            nome='Luva de Protecao',
+            descricao='Item de teste',
+            tipo_item=self.tipo_epi,
+            prateleira_estoque='B1',
+            quantidade_atual=Decimal('0.00'),
+            quantidade_minima=Decimal('1.00'),
             unidade_medida='un',
         )
 
@@ -88,6 +100,16 @@ class RegistroEstoqueUpdateTests(APITestCase):
         self.item.quantidade_minima = Decimal('5.00')
         self.item.save()
         data_movimentacao = timezone.localdate() - timedelta(days=10)
+        registro_entrada = RegistroEntrada.objects.create(
+            recebido_por='Maria',
+            data_movimentacao=timezone.localdate() - timedelta(days=20),
+        )
+        RegistroEntradaItem.objects.create(
+            registro_entrada=registro_entrada,
+            item=self.item,
+            quantidade=Decimal('100.00'),
+            quantidade_disponivel=Decimal('100.00'),
+        )
 
         response = self.client.post(
             '/api/controle/registro-saida/',
@@ -104,7 +126,44 @@ class RegistroEstoqueUpdateTests(APITestCase):
         pedido_item = PedidoItem.objects.get(item=self.item, adicionado_automaticamente=True)
 
         self.assertEqual(evento.data_evento, data_movimentacao)
-        self.assertGreater(pedido_item.quantidade_pedida, Decimal('1.00'))
+        self.assertEqual(pedido_item.quantidade_pedida, Decimal('6'))
+
+    def test_entrada_de_epi_salva_ca_no_lote(self):
+        response = self.client.post(
+            '/api/controle/registro-entrada/',
+            self._payload_entrada_epi('10.00', 'ca-12345'),
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        entrada_item = RegistroEntradaItem.objects.get(item=self.item_epi)
+        self.assertEqual(entrada_item.ca, 'CA-12345')
+        self.assertEqual(entrada_item.quantidade_disponivel, Decimal('10.00'))
+
+    def test_saida_de_epi_busca_ca_disponivel_da_entrada(self):
+        self.client.post(
+            '/api/controle/registro-entrada/',
+            self._payload_entrada_epi('10.00', 'ca-12345'),
+            format='json',
+        )
+
+        response = self.client.post(
+            '/api/controle/registro-saida/',
+            self._payload_saida_epi('9201', '2.00'),
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        saida_item = RegistroSaidaItem.objects.get(item=self.item_epi)
+        lote_saida = RegistroSaidaItemLote.objects.get(registro_saida_item=saida_item)
+        entrada_item = RegistroEntradaItem.objects.get(item=self.item_epi)
+
+        self.assertEqual(saida_item.patrimonio, 'CA-12345')
+        self.assertEqual(lote_saida.ca, 'CA-12345')
+        self.assertEqual(lote_saida.quantidade, Decimal('2.00'))
+        self.assertEqual(entrada_item.quantidade_disponivel, Decimal('8.00'))
 
     def _payload_saida(self, bloco, quantidade):
         return {
@@ -131,6 +190,36 @@ class RegistroEstoqueUpdateTests(APITestCase):
                 {
                     'item': self.item.id,
                     'quantidade': quantidade,
+                }
+            ],
+        }
+
+    def _payload_entrada_epi(self, quantidade, ca):
+        return {
+            'nota_fiscal': None,
+            'recebido_por': 'Maria',
+            'observacao': 'Teste automatizado EPI',
+            'itens': [
+                {
+                    'item': self.item_epi.id,
+                    'quantidade': quantidade,
+                    'ca': ca,
+                }
+            ],
+        }
+
+    def _payload_saida_epi(self, bloco, quantidade):
+        return {
+            'bloco_requisicao': bloco,
+            'setor': 'Manutencao',
+            'responsavel': 'Carlos',
+            'observacao': 'Teste automatizado EPI',
+            'itens': [
+                {
+                    'item': self.item_epi.id,
+                    'quantidade': quantidade,
+                    'solicitante': 'Joao',
+                    'patrimonio': '',
                 }
             ],
         }
