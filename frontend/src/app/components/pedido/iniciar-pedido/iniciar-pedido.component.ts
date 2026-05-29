@@ -193,26 +193,47 @@ export class IniciarPedidoComponent implements OnInit {
     const metrica = item?.metrica_reposicao;
     if (!metrica || !Object.keys(metrica).length) {
       return item?.adicionado_automaticamente
-        ? 'Automático · métrica será exibida no próximo recálculo'
-        : 'Manual · quantidade definida pelo usuário';
+        ? 'Automatico - calculo sera exibido no proximo recalculo'
+        : 'Manual - quantidade definida pelo usuario';
+    }
+
+    const temCalculoNovo = (
+      metrica.quantidade_consumida !== undefined ||
+      metrica.dias_analisados !== undefined ||
+      metrica.ultima_entrada_utilizada !== undefined ||
+      metrica.quantidade_sugerida !== undefined
+    );
+
+    if (temCalculoNovo) {
+      const partes = [];
+      const ultimaEntrada = this.formatarDataMetrica(metrica.ultima_entrada_utilizada);
+      const consumido = this.formatarNumeroMetrica(metrica.quantidade_consumida);
+      const diasAnalisados = metrica.dias_analisados;
+      const media = this.formatarNumeroMetrica(metrica.consumo_medio ?? metrica.consumo_ponderado);
+      const cobertura = metrica.dias_cobertura;
+      const sugerido = this.formatarNumeroMetrica(metrica.quantidade_sugerida ?? item?.quantidade_pedida);
+
+      if (ultimaEntrada !== '-') partes.push(`ultima entrada ${ultimaEntrada}`);
+      if (consumido !== '-' && diasAnalisados) partes.push(`consumo ${consumido} em ${diasAnalisados}d`);
+      if (media !== '-') partes.push(`media ${media}/dia`);
+      if (cobertura) partes.push(`cobertura ${cobertura}d`);
+      if (sugerido !== '-') partes.push(`sugerido ${sugerido}`);
+
+      if (!partes.length && metrica.motivo) {
+        return metrica.motivo;
+      }
+
+      return partes.join(' - ') || 'Calculo automatico sem dados suficientes';
     }
 
     const consumo = this.formatarNumeroMetrica(metrica.consumo_ponderado ?? metrica.consumo_medio);
-    const diasAteMinimo = this.formatarNumeroMetrica(metrica.dias_ate_estoque_minimo);
     const cobertura = metrica.dias_cobertura;
-    const seguranca = this.formatarNumeroMetrica(metrica.estoque_seguranca);
-    const abertos = this.formatarNumeroMetrica(metrica.pedidos_abertos);
-    const balanco = this.formatarNumeroMetrica(metrica.balanco_cobertura);
-
-    const partes = [];
+    const partes = ['Metrica antiga'];
     if (consumo !== '-') partes.push(`cons. ${consumo}/dia`);
-    if (diasAteMinimo !== '-') partes.push(`min. em ${diasAteMinimo}d`);
-    if (cobertura) partes.push(`${cobertura} dias`);
-    if (seguranca !== '-') partes.push(`seg. ${seguranca}`);
-    if (abertos !== '-') partes.push(`aberto ${abertos}`);
-    if (balanco !== '-') partes.push(`bal. ${balanco}`);
+    if (cobertura) partes.push(`cobertura ${cobertura}d`);
+    if (metrica.motivo) partes.push(metrica.motivo);
 
-    return partes.join(' · ');
+    return partes.join(' - ');
   }
 
   private formatarNumeroMetrica(valor: any): string {
@@ -225,6 +246,19 @@ export class IniciarPedidoComponent implements OnInit {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
     });
+  }
+
+  private formatarDataMetrica(valor: any): string {
+    if (!valor) {
+      return '-';
+    }
+
+    const data = new Date(valor);
+    if (Number.isNaN(data.getTime())) {
+      return '-';
+    }
+
+    return data.toLocaleDateString('pt-BR');
   }
 
   alterarStatusPedido(pedido: any) {

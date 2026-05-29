@@ -8,6 +8,7 @@ from app_pedido.models import Pedido
 from rest_framework.permissions import IsAuthenticated
 from .serializers import PedidoComItensSerializer
 from app_usuario.services import registrar_log
+from app_pedido.services import sincronizar_pedidos_automaticos_pendentes
 
 
 NIVEIS_GESTAO_PEDIDO = {'administrador', 'moderador', 'almoxarifado'}
@@ -59,13 +60,8 @@ class ListarPedidosAPI(ListAPIView):
     queryset = Pedido.objects.all()
     serializer_class = PedidoComItensSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        if getattr(self.request.user, 'nivel_permissao', None) == 'compra':
-            return queryset.filter(status__in=['enviado', 'visto', 'negado'])
-        return queryset
-
     def list(self, request, *args, **kwargs):
+        sincronizar_pedidos_automaticos_pendentes(request.user)
         if not self.get_queryset().exists():
             return Response(
                 {'message': 'Nao ha nenhum Pedido registrado no sistema.'},
@@ -73,6 +69,12 @@ class ListarPedidosAPI(ListAPIView):
             )
 
         return super().list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if getattr(self.request.user, 'nivel_permissao', None) == 'compra':
+            return queryset.filter(status__in=['enviado', 'visto', 'negado'])
+        return queryset
 
 
 class AtualizarStatusPedidoAPIView(APIView):

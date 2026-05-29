@@ -399,3 +399,22 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
 def sincronizar_pedido_automatico_para_item(item: Item, usuario=None, data_evento_estoque_baixo=None):
     service = PedidoAutomaticoService(usuario=usuario)
     return service.criarPedidoAutomatico(item, data_evento_estoque_baixo)
+
+
+def sincronizar_pedidos_automaticos_pendentes(usuario=None):
+    itens = list(
+        PedidoItem.objects
+        .filter(
+            adicionado_automaticamente=True,
+            pedido__gerado_automaticamente=True,
+            pedido__status='pendente',
+        )
+        .select_related('item')
+        .values_list('item', flat=True)
+        .distinct()
+    )
+
+    for item_id in itens:
+        item = Item.objects.filter(id=item_id).select_related('tipo_item').first()
+        if item:
+            sincronizar_pedido_automatico_para_item(item, usuario)
