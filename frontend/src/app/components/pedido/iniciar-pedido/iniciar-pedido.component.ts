@@ -198,6 +198,7 @@ export class IniciarPedidoComponent implements OnInit {
     }
 
     const consumo = this.formatarNumeroMetrica(metrica.consumo_ponderado ?? metrica.consumo_medio);
+    const diasAteMinimo = this.formatarNumeroMetrica(metrica.dias_ate_estoque_minimo);
     const cobertura = metrica.dias_cobertura;
     const seguranca = this.formatarNumeroMetrica(metrica.estoque_seguranca);
     const abertos = this.formatarNumeroMetrica(metrica.pedidos_abertos);
@@ -205,6 +206,7 @@ export class IniciarPedidoComponent implements OnInit {
 
     const partes = [];
     if (consumo !== '-') partes.push(`cons. ${consumo}/dia`);
+    if (diasAteMinimo !== '-') partes.push(`min. em ${diasAteMinimo}d`);
     if (cobertura) partes.push(`${cobertura} dias`);
     if (seguranca !== '-') partes.push(`seg. ${seguranca}`);
     if (abertos !== '-') partes.push(`aberto ${abertos}`);

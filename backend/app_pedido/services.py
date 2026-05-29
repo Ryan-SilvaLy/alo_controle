@@ -62,8 +62,10 @@ def _metrica_reposicao_para_json(calculo):
     return {
         'estoque_atual': _decimal_para_float(calculo.get('estoque_atual')),
         'estoque_minimo': _decimal_para_float(calculo.get('estoque_minimo')),
+        'estoque_ate_minimo': _decimal_para_float(calculo.get('estoque_ate_minimo')),
         'consumo_medio': _decimal_para_float(calculo.get('consumo_medio')),
         'consumo_ponderado': _decimal_para_float(calculo.get('consumo_ponderado')),
+        'dias_ate_estoque_minimo': _decimal_para_float(calculo.get('dias_ate_estoque_minimo')),
         'dias_cobertura': calculo.get('dias_cobertura'),
         'estoque_seguranca': _decimal_para_float(calculo.get('estoque_seguranca')),
         'pedidos_abertos': _decimal_para_float(calculo.get('pedidos_abertos')),
@@ -147,6 +149,35 @@ def _data_inicio_ciclo_por_movimentacoes(item: Item, data_limite):
     return data_inicio
 
 
+def _data_inicio_consumo_recente(item: Item, data_limite):
+    data_minima = data_limite - timedelta(days=DIAS_MEDIA_RECENTE)
+
+    primeira_saida_recente = (
+        RegistroSaidaItem.objects
+        .filter(
+            item=item,
+            registro_saida__data_movimentacao__gte=data_minima,
+            registro_saida__data_movimentacao__lte=data_limite,
+        )
+        .order_by('registro_saida__data_movimentacao', 'registro_saida_id', 'id')
+        .values_list('registro_saida__data_movimentacao', flat=True)
+        .first()
+    )
+    if primeira_saida_recente:
+        return primeira_saida_recente
+
+    return (
+        RegistroSaidaItem.objects
+        .filter(
+            item=item,
+            registro_saida__data_movimentacao__lte=data_limite,
+        )
+        .order_by('-registro_saida__data_movimentacao', '-registro_saida_id', '-id')
+        .values_list('registro_saida__data_movimentacao', flat=True)
+        .first()
+    )
+
+
 def _desvio_padrao_consumo(saidas_diarias, data_inicial, dias_decorridos, media_diaria):
     consumos = []
     for indice in range(dias_decorridos):
@@ -178,8 +209,10 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
         'produto': item,
         'estoque_atual': item.quantidade_atual,
         'estoque_minimo': item.quantidade_minima,
+        'estoque_ate_minimo': Decimal('0'),
         'consumo_medio': Decimal('0'),
         'consumo_ponderado': Decimal('0'),
+        'dias_ate_estoque_minimo': None,
         'dias_cobertura': getattr(item.tipo_item, 'dias_cobertura', None),
         'estoque_seguranca': Decimal('0'),
         'pedidos_abertos': Decimal('0'),
@@ -192,29 +225,26 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
         dados_base['motivo'] = 'Item sem estoque minimo definido.'
         return dados_base
 
-    if item.quantidade_atual > item.quantidade_minima:
-        dados_base['motivo'] = 'Estoque atual acima do estoque minimo.'
-        return dados_base
-
-    evento = _ultimo_evento_estoque_baixo(item, data_evento_estoque_baixo)
     hoje = timezone.localdate()
-    data_inicio_movimentacoes = _data_inicio_ciclo_por_movimentacoes(item, hoje)
-    data_inicio_analise = evento.data_evento
-    if data_inicio_movimentacoes and data_inicio_movimentacoes < data_inicio_analise:
-        data_inicio_analise = data_inicio_movimentacoes
-        evento.data_evento = data_inicio_analise
-        evento.save(update_fields=['data_evento'])
+    estoque_ate_minimo = max(item.quantidade_atual - item.quantidade_minima, Decimal('0'))
+    dados_base['estoque_ate_minimo'] = estoque_ate_minimo
 
-    dias_decorridos = (hoje - data_inicio_analise).days
+    data_inicio_movimentacoes = _data_inicio_ciclo_por_movimentacoes(item, hoje)
+    if item.quantidade_atual <= item.quantidade_minima:
+        evento = _ultimo_evento_estoque_baixo(item, data_evento_estoque_baixo)
+        data_inicio_analise = evento.data_evento
+        if data_inicio_movimentacoes and data_inicio_movimentacoes < data_inicio_analise:
+            data_inicio_analise = data_inicio_movimentacoes
+            evento.data_evento = data_inicio_analise
+            evento.save(update_fields=['data_evento'])
+    else:
+        data_inicio_analise = _data_inicio_consumo_recente(item, hoje)
+
     pedidos_abertos = _pedidos_abertos_para_item(item, pedido_item_automatico)
     dados_base['pedidos_abertos'] = pedidos_abertos
 
-    if dias_decorridos <= 0:
-        quantidade_manual = _quantidade_sugerida(item)
-        dados_base.update({
-            'quantidade_sugerida': quantidade_manual,
-            'motivo': 'Item sem historico suficiente. Usando comportamento manual existente.',
-        })
+    if not data_inicio_analise:
+        dados_base['motivo'] = 'Item sem movimentacoes de saida para estimar consumo.'
         return dados_base
 
     total_saida = _total_saidas(item, data_inicio_analise, hoje)
@@ -226,18 +256,22 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
         })
         return dados_base
 
+    dias_decorridos = max((hoje - data_inicio_analise).days, 1)
+
     media_historica = total_saida / Decimal(dias_decorridos)
     data_inicio_recente = max(data_inicio_analise, hoje - timedelta(days=DIAS_MEDIA_RECENTE))
-    dias_recentes = (hoje - data_inicio_recente).days
-    if dias_recentes <= 0:
-        media_recente = media_historica
-    else:
-        total_recente = _total_saidas(item, data_inicio_recente, hoje)
-        media_recente = total_recente / Decimal(dias_recentes)
+    dias_recentes = max((hoje - data_inicio_recente).days, 1)
+    total_recente = _total_saidas(item, data_inicio_recente, hoje)
+    media_recente = total_recente / Decimal(dias_recentes)
 
     consumo_ponderado = (
         (media_recente * PESO_MEDIA_RECENTE) +
         (media_historica * PESO_MEDIA_HISTORICA)
+    )
+    dias_ate_estoque_minimo = (
+        Decimal('0')
+        if estoque_ate_minimo <= 0
+        else estoque_ate_minimo / consumo_ponderado
     )
 
     saidas_diarias = _saidas_por_dia(item, data_inicio_analise, hoje)
@@ -250,7 +284,7 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
     estoque_seguranca = desvio_padrao * FATOR_ESTOQUE_SEGURANCA
     dias_cobertura = item.tipo_item.dias_cobertura
     necessidade_cobertura = (consumo_ponderado * Decimal(dias_cobertura)) + estoque_seguranca
-    balanco_cobertura = necessidade_cobertura - item.quantidade_atual - pedidos_abertos
+    balanco_cobertura = necessidade_cobertura - estoque_ate_minimo - pedidos_abertos
 
     if balanco_cobertura <= 0:
         quantidade_sugerida = Decimal('0')
@@ -260,11 +294,12 @@ def calcular_reposicao_item(item: Item, pedido_item_automatico=None, data_evento
     dados_base.update({
         'consumo_medio': _quantizar_decimal(media_historica),
         'consumo_ponderado': _quantizar_decimal(consumo_ponderado),
+        'dias_ate_estoque_minimo': _quantizar_decimal(dias_ate_estoque_minimo),
         'dias_cobertura': dias_cobertura,
         'estoque_seguranca': _quantizar_decimal(estoque_seguranca),
         'balanco_cobertura': _quantizar_decimal(balanco_cobertura),
         'quantidade_sugerida': quantidade_sugerida,
-        'motivo': 'Calculado pelo consumo real do ciclo atual.',
+        'motivo': 'Calculado pelo consumo real das movimentacoes e pela folga ate o estoque minimo.',
     })
     return dados_base
 
@@ -296,7 +331,7 @@ def sincronizar_pedido_automatico_para_item(item: Item, usuario=None, data_event
         if pedido else None
     )
 
-    if item.quantidade_minima is None or item.quantidade_atual > item.quantidade_minima:
+    if item.quantidade_minima is None:
         if pedido_item_automatico:
             pedido_item_automatico.delete()
 

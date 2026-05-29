@@ -60,6 +60,34 @@ class ReposicaoAutomaticaTests(TestCase):
         pedido_item = PedidoItem.objects.get(item=item)
         self.assertEqual(pedido_item.quantidade_pedida, Decimal('3.00'))
 
+    def test_saida_no_mesmo_dia_usa_cobertura_para_sugerir_pedido(self):
+        self.tipo_item.dias_cobertura = 30
+        self.tipo_item.save()
+        item = self.criar_item_baixo(atual='0.00', minimo='5.00')
+
+        self.registrar_saida(item, 0, '6.00', '9900')
+
+        sincronizar_pedido_automatico_para_item(item, self.usuario)
+
+        pedido_item = PedidoItem.objects.get(item=item)
+        self.assertEqual(pedido_item.quantidade_pedida, Decimal('180'))
+        self.assertEqual(pedido_item.metrica_reposicao['consumo_ponderado'], 6.0)
+        self.assertEqual(pedido_item.metrica_reposicao['dias_cobertura'], 30)
+
+    def test_estoque_acima_do_minimo_usa_folga_ate_minimo_na_cobertura(self):
+        self.tipo_item.dias_cobertura = 30
+        self.tipo_item.save()
+        item = self.criar_item_baixo(atual='20.00', minimo='5.00')
+
+        self.registrar_saida(item, 0, '6.00', '9905')
+
+        sincronizar_pedido_automatico_para_item(item, self.usuario)
+
+        pedido_item = PedidoItem.objects.get(item=item)
+        self.assertEqual(pedido_item.quantidade_pedida, Decimal('165'))
+        self.assertEqual(pedido_item.metrica_reposicao['estoque_ate_minimo'], 15.0)
+        self.assertEqual(pedido_item.metrica_reposicao['dias_ate_estoque_minimo'], 2.5)
+
     def test_saida_com_data_passada_define_inicio_do_ciclo_de_cobertura(self):
         self.tipo_item.dias_cobertura = 60
         self.tipo_item.save()
