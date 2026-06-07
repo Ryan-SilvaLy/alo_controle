@@ -449,7 +449,7 @@ export class CriarPedidoComponent implements OnInit {
     return this.pedidosExistentes.find(pedido =>
       pedido?.gerado_automaticamente === true &&
       Number(pedido?.tipo_item) === grupoBaseId &&
-      pedido?.status !== 'cancelado'
+      pedido?.status === 'pendente'
     ) || null;
   }
 

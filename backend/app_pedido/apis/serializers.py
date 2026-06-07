@@ -126,7 +126,7 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
             pedido_automatico = (
                 Pedido.objects
                 .filter(tipo_item=tipo_item_base, gerado_automaticamente=True)
-                .exclude(status='cancelado')
+                .filter(status='pendente')
                 .first()
             )
 

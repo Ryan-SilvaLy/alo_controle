@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from app_controle.models import RegistroEntrada, RegistroEntradaItem, RegistroSaida, RegistroSaidaItem
 from app_item.models import Item, TipoItem
+from app_pedido.apis.serializers import PedidoComItensSerializer
 from app_pedido.models import Pedido, PedidoItem
 from app_pedido.services import (
     ESTRATEGIA_SEM_SAIDAS_QUANTIDADE_MINIMA,
@@ -196,3 +197,50 @@ class ReposicaoAutomaticaTests(TestCase):
         sincronizar_pedido_automatico_para_item(item, self.usuario)
 
         self.assertFalse(PedidoItem.objects.filter(item=item, adicionado_automaticamente=True).exists())
+
+    def test_pedido_manual_bloqueia_quando_automatico_do_grupo_esta_pendente(self):
+        item = self.criar_item_baixo(atual='8.00', minimo='5.00')
+        Pedido.objects.create(
+            solicitante='Automatico',
+            setor_destino='Compras',
+            responsavel_setor='Sistema',
+            tipo_item=self.tipo_item,
+            gerado_automaticamente=True,
+            status='pendente',
+            criado_por=self.usuario,
+        )
+
+        serializer = PedidoComItensSerializer(data=self._payload_pedido_manual(item))
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn('pedido automatico ativo', str(serializer.errors))
+
+    def test_pedido_manual_nao_bloqueia_quando_automatico_do_grupo_esta_enviado(self):
+        item = self.criar_item_baixo(atual='8.00', minimo='5.00')
+        Pedido.objects.create(
+            solicitante='Automatico',
+            setor_destino='Compras',
+            responsavel_setor='Sistema',
+            tipo_item=self.tipo_item,
+            gerado_automaticamente=True,
+            status='enviado',
+            criado_por=self.usuario,
+        )
+
+        serializer = PedidoComItensSerializer(data=self._payload_pedido_manual(item))
+
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+
+    def _payload_pedido_manual(self, item):
+        return {
+            'solicitante': 'Manual',
+            'setor_destino': 'Compras',
+            'responsavel_setor': 'Ana',
+            'itens': [
+                {
+                    'item': item.id,
+                    'quantidade_pedida': '1.00',
+                    'ultima_entrada_estoque': None,
+                }
+            ],
+        }
