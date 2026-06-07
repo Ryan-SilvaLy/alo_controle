@@ -384,10 +384,19 @@ select.select-filtro:focus {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-// .valor-eye-btn:hover {
-//   background: #eff6ff;
-//   color: #1d4ed8;
-// }
+:host ::ng-deep app-autocomplete-select .autocomplete-input {
+  min-height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: .375rem;
+  background: #f1f5f9;
+  padding: .375rem 2rem;
+  font-size: .875rem;
+}
+
+:host ::ng-deep app-autocomplete-select .autocomplete-panel {
+  z-index: 80;
+  border-color: #cbd5e1;
+}
 
 /* =========================
    MENSAGENS

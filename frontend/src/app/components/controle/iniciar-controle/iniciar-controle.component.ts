@@ -98,8 +98,12 @@ export class IniciarControleComponent {
   }
 
   fecharModalEntrada() {
+    const estavaAberto = this.modalEntradaAberto;
     this.modalEntradaAberto = false;
     this.restaurarScrollSeNecessario();
+    if (estavaAberto) {
+      this.carregarMovimentacoes();
+    }
   }
 
   registrarSaida() {
@@ -109,8 +113,12 @@ export class IniciarControleComponent {
   }
 
   fecharModalSaida() {
+    const estavaAberto = this.modalSaidaAberto;
     this.modalSaidaAberto = false;
     this.restaurarScrollSeNecessario();
+    if (estavaAberto) {
+      this.carregarMovimentacoes();
+    }
   }
 
   visualizarItensEntrada(entrada: any) {

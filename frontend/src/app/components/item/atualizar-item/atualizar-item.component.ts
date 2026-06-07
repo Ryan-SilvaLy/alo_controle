@@ -1,7 +1,7 @@
 import { TipoItem } from './../../../services/item.service';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ItemService, Item } from '../../../services/item.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
@@ -11,17 +11,23 @@ import { ModalTipoItemComponent } from '../modal-tipo-item/modal-tipo-item.compo
 @Component({
   selector: 'app-atualizar-item',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ModalTipoItemComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, ModalTipoItemComponent],
   templateUrl: './atualizar-item.component.html',
   styleUrls: ['./atualizar-item.component.scss']
 })
 export class AtualizarItemComponent implements OnInit {
     @Output() itemAtualizado = new EventEmitter<void>(); // evento para avisar o pai
+    @Output() modalFechado = new EventEmitter<void>();
 
   form!: FormGroup;
   tiposItem: TipoItem[] = [];
   itemId!: number;
   mostrarModal = false; // controla o modal
+  mostrarModalSenha = false;
+  senhaAtualizacao = '';
+  senhaAtualizacaoReadOnly = true;
+  senhaAtualizacaoAutocompleteName = `senha_atualizacao_${Date.now()}`;
+  validandoSenha = false;
 
   constructor(
     private fb: FormBuilder,
@@ -47,6 +53,7 @@ ngOnInit(): void {
       quantidade_minima: [0, Validators.required],
       valor_unitario: [0],
       unidade_medida: ['un', Validators.required],
+      status: ['ativo', Validators.required],
     });
   }
 
@@ -72,6 +79,7 @@ ngOnInit(): void {
             quantidade_minima: item.quantidade_minima,
             valor_unitario: item.valor_unitario,
             unidade_medida: item.unidade_medida,
+            status: item.status || 'ativo',
           });
         } else {
           this.snackbar.show('Item não encontrado.', 'error');
@@ -84,13 +92,71 @@ ngOnInit(): void {
 
 abrirModal(itemId: number) {
   this.itemId = itemId;
-  this.carregarItem(); // carrega os dados do item no form
-  this.mostrarModal = true; // exibe o modal
+  this.senhaAtualizacao = '';
+  this.senhaAtualizacaoReadOnly = true;
+  this.senhaAtualizacaoAutocompleteName = `senha_atualizacao_${itemId}_${Date.now()}`;
+  this.mostrarModalSenha = true;
+  this.mostrarModal = false;
+
+  setTimeout(() => {
+    this.senhaAtualizacao = '';
+  }, 150);
 }
 
 
-fecharModal() {
+validarSenhaEAbrirModal() {
+  if (!this.senhaAtualizacao.trim()) {
+    this.snackbar.show('Informe sua senha para atualizar o item.', 'warning');
+    return;
+  }
+
+  this.validandoSenha = true;
+
+  this.itemService.validarSenhaAtualizacaoItem(this.itemId, this.senhaAtualizacao).subscribe({
+    next: () => {
+      this.validandoSenha = false;
+      this.mostrarModalSenha = false;
+      this.senhaAtualizacao = '';
+      this.carregarItem();
+      this.mostrarModal = true;
+    },
+    error: (err) => {
+      this.validandoSenha = false;
+      this.snackbar.show(err?.error?.detail || 'Não foi possível validar a senha.', 'error');
+    }
+  });
+}
+
+fecharModalSenha() {
+  this.mostrarModalSenha = false;
+  this.senhaAtualizacao = '';
+  this.senhaAtualizacaoReadOnly = true;
+  this.modalFechado.emit();
+}
+
+prepararCampoSenhaAtualizacao() {
+  this.senhaAtualizacaoReadOnly = false;
+  this.senhaAtualizacao = '';
+}
+
+fecharModal(emitirFechamento = true) {
   this.mostrarModal = false;
+  this.form.reset({
+    codigo: '',
+    nome: '',
+    descricao: '',
+    tipo_item_id: null,
+    prateleira_estoque: '',
+    quantidade_atual: 0,
+    quantidade_minima: 0,
+    valor_unitario: 0,
+    unidade_medida: 'un',
+    status: 'ativo',
+  });
+
+  if (emitirFechamento) {
+    this.modalFechado.emit();
+  }
 }
   atualizar(): void {
     if (this.form.invalid) {
@@ -101,8 +167,8 @@ fecharModal() {
     this.itemService.atualizarItem(this.itemId, this.form.value).subscribe({
       next: () => {
         this.snackbar.show('Item atualizado com sucesso.', 'success');
-        this.fecharModal();
         this.itemAtualizado.emit();
+        this.fecharModal(false);
       },
       error: (err) => {
         this.snackbar.show('Não foi possível atualizar o item.', 'error');

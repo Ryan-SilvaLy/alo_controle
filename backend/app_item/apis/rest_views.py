@@ -19,6 +19,50 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+MENSAGEM_ITEM_COM_HISTORICO = 'Este produto possui histórico de utilização e não pode ser excluído. Utilize a opção de inativação.'
+
+
+def item_possui_historico(item):
+    from app_assinatura_epi.models import AssinaturaEpiLancamento
+    from app_controle.models import RegistroEntradaItem, RegistroSaidaItem
+    from app_pedido.models import PedidoItem
+
+    return (
+        RegistroEntradaItem.objects.filter(item=item).exists()
+        or RegistroSaidaItem.objects.filter(item=item).exists()
+        or PedidoItem.objects.filter(item=item).exists()
+        or AssinaturaEpiLancamento.objects.filter(item=item).exists()
+    )
+
+
+def registrar_alteracoes_item(usuario, item_anterior, item_atual):
+    campos_monitorados = [
+        ('codigo', 'Código'),
+        ('nome', 'Nome'),
+        ('descricao', 'Descrição'),
+        ('tipo_item_id', 'Tipo de Item'),
+        ('prateleira_estoque', 'Prateleira'),
+        ('quantidade_atual', 'Quantidade Atual'),
+        ('quantidade_minima', 'Quantidade Mínima'),
+        ('valor_unitario', 'Valor Unitário'),
+        ('unidade_medida', 'Unidade de Medida'),
+        ('status', 'Status'),
+    ]
+
+    for campo, rotulo in campos_monitorados:
+        valor_anterior = getattr(item_anterior, campo)
+        valor_novo = getattr(item_atual, campo)
+
+        if valor_anterior == valor_novo:
+            continue
+
+        registrar_log(
+            usuario,
+            f'Item "{item_atual.id} - {item_atual.codigo} - {item_atual.nome}" alterado. '
+            f'Campo: {rotulo}. De "{valor_anterior}" para "{valor_novo}".'
+        )
+
+
 class ListarItensAPI(ListAPIView): 
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
@@ -92,10 +136,13 @@ class DeletarItemAPI(APIView):
         except Item.DoesNotExist:
             return Response({'error': 'Item não encontrado no sistema.'}, status=status.HTTP_404_NOT_FOUND)
 
+        if item_possui_historico(item):
+            return Response({'message': MENSAGEM_ITEM_COM_HISTORICO}, status=status.HTTP_409_CONFLICT)
+
         try:
             item.delete()
         except ProtectedError:
-            return Response({'message': 'Este item não pode ser excluído porque está associado a um ou mais pedidos.'}, status=status.HTTP_409_CONFLICT)            
+            return Response({'message': MENSAGEM_ITEM_COM_HISTORICO}, status=status.HTTP_409_CONFLICT)
 
         registrar_log(request.user, f'Item "{item.id} - {item.codigo} - {item.nome}" deletado com sucesso.')
         return Response({'message': 'Item deletado com sucesso.'}, status=status.HTTP_200_OK)
@@ -105,12 +152,14 @@ class AtualizarItemAPI(APIView):
 
     def put(self, request, id):
         item = Item.objects.get(id=id)
+        item_anterior = Item.objects.get(id=id)
         serializer = ItemSerializer(item, data=request.data)
         
         if serializer.is_valid():
             item = serializer.save()
             sincronizar_pedido_automatico_para_item(item, request.user)
             logger.info(f'Item {item.codigo} atualizado com PUT.')
+            registrar_alteracoes_item(request.user, item_anterior, item)
             return Response(serializer.data)
         
         logger.warning(f'Falha ao atualizar item {id}: {serializer.errors}')
@@ -122,6 +171,7 @@ class AtualizarItemAPI(APIView):
 
         try:
             item = Item.objects.get(id=id)
+            item_anterior = Item.objects.get(id=id)
         except Item.DoesNotExist:
             return Response({'error': 'Item não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -131,7 +181,7 @@ class AtualizarItemAPI(APIView):
             item = serializer.save()
             sincronizar_pedido_automatico_para_item(item, request.user)
             logger.info(f'Item {item.codigo} atualizado com PATCH.')
-            registrar_log(request.user, f'Item "{item.id} - {item.codigo} - {item.nome}" atualizado com sucesso.')
+            registrar_alteracoes_item(request.user, item_anterior, item)
             return Response(serializer.data)
         
         logger.warning(f'Falha ao atualizar item {id}: {serializer.errors}')
@@ -161,6 +211,22 @@ class AtualizarStatusItemAPI(APIView):
         }, status=status.HTTP_200_OK)
 
 
+class ValidarSenhaAtualizacaoItemAPI(APIView):
+
+    def post(self, request, id):
+        if not Item.objects.filter(id=id).exists():
+            return Response({'detail': 'Item não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        senha = request.data.get('senha') or request.data.get('password') or ''
+        if not senha:
+            return Response({'detail': 'Informe sua senha para atualizar o item.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not request.user.check_password(senha):
+            return Response({'detail': 'Senha incorreta.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'detail': 'Senha validada.'}, status=status.HTTP_200_OK)
+
+
 
 class TipoItemViewSet(viewsets.ModelViewSet):
     queryset = TipoItem.objects.all()
@@ -187,7 +253,10 @@ class ItensPorTipoEstoqueBaixoView(generics.ListAPIView):
 
     def get_queryset(self):
         tipo_id = self.request.query_params.get('tipo_id', None)
-        queryset = Item.objects.filter(quantidade_atual__lte=F('quantidade_minima'))
+        queryset = Item.objects.filter(
+            quantidade_atual__lte=F('quantidade_minima'),
+            status='ativo',
+        )
         if tipo_id:
             queryset = queryset.filter(tipo_item_id=tipo_id)
         return queryset

@@ -86,7 +86,7 @@ class ReposicaoAutomaticaTests(TestCase):
         self.assertEqual(calculo['quantidade_sugerida'], Decimal('8'))
         self.assertIn('quantidade minima configurada', calculo['motivo'])
 
-    def test_calculo_considera_apenas_saidas_apos_ultima_entrada(self):
+    def test_calculo_usa_apenas_historico_a_partir_da_ultima_entrada(self):
         item = self.criar_item_baixo(atual='3.00', minimo='5.00')
         self.registrar_entrada(item, 40)
         self.registrar_saida(item, 30, '100.00', '1001')
@@ -99,7 +99,7 @@ class ReposicaoAutomaticaTests(TestCase):
         self.assertEqual(calculo['quantidade_consumida'], Decimal('15.00'))
         self.assertEqual(calculo['dias_analisados'], 20)
         self.assertEqual(calculo['consumo_medio'], Decimal('0.75'))
-        self.assertEqual(calculo['quantidade_sugerida'], Decimal('45'))
+        self.assertEqual(calculo['quantidade_sugerida'], Decimal('51'))
 
     def test_quantidade_sugerida_arredonda_para_cima(self):
         self.tipo_item.dias_cobertura = 100
@@ -110,7 +110,7 @@ class ReposicaoAutomaticaTests(TestCase):
 
         calculo = calcular_reposicao_item(item)
 
-        self.assertEqual(calculo['quantidade_sugerida'], Decimal('14'))
+        self.assertEqual(calculo['quantidade_sugerida'], Decimal('7'))
 
     def test_saldo_atual_e_minimo_nao_abatem_a_quantidade_sugerida(self):
         self.tipo_item.dias_cobertura = 30
@@ -121,9 +121,25 @@ class ReposicaoAutomaticaTests(TestCase):
 
         calculo = calcular_reposicao_item(item)
 
-        self.assertEqual(calculo['quantidade_sugerida'], Decimal('30'))
+        self.assertEqual(calculo['quantidade_sugerida'], Decimal('35'))
         self.assertEqual(calculo['estoque_atual'], Decimal('4.00'))
         self.assertEqual(calculo['estoque_minimo'], Decimal('5.00'))
+
+    def test_data_do_modal_nao_comprime_consumo_historico_em_um_dia(self):
+        self.tipo_item.dias_cobertura = 60
+        self.tipo_item.save()
+        item = self.criar_item_baixo(atual='3.00', minimo='5.00')
+        self.registrar_entrada(item, 60)
+        data_evento = timezone.localdate() - timedelta(days=44)
+        self.registrar_saida(item, 44, '7.00', '1008')
+        self.registrar_saida(item, 30, '4.00', '1009')
+        self.registrar_saida(item, 10, '3.00', '1010')
+
+        calculo = calcular_reposicao_item(item, data_evento_estoque_baixo=data_evento)
+
+        self.assertEqual(calculo['quantidade_consumida'], Decimal('14.00'))
+        self.assertEqual(calculo['dias_analisados'], 60)
+        self.assertLess(calculo['quantidade_sugerida'], Decimal('840'))
 
     def test_sincronizacao_cria_pedido_automatico_com_resumo_do_calculo(self):
         item = self.criar_item_baixo(atual='3.00', minimo='5.00')
@@ -133,11 +149,11 @@ class ReposicaoAutomaticaTests(TestCase):
         sincronizar_pedido_automatico_para_item(item, self.usuario)
 
         pedido_item = PedidoItem.objects.get(item=item, adicionado_automaticamente=True)
-        self.assertEqual(pedido_item.quantidade_pedida, Decimal('45'))
+        self.assertEqual(pedido_item.quantidade_pedida, Decimal('51'))
         self.assertEqual(pedido_item.ultima_entrada_estoque, entrada.registro_entrada.data_movimentacao)
         self.assertEqual(pedido_item.metrica_reposicao['consumo_medio'], 0.75)
         self.assertEqual(pedido_item.metrica_reposicao['dias_cobertura'], 60)
-        self.assertEqual(pedido_item.metrica_reposicao['quantidade_sugerida'], 45.0)
+        self.assertEqual(pedido_item.metrica_reposicao['quantidade_sugerida'], 51.0)
         self.assertEqual(
             pedido_item.metrica_reposicao['ultima_entrada_utilizada'],
             entrada.registro_entrada.data_movimentacao.isoformat(),
@@ -166,7 +182,7 @@ class ReposicaoAutomaticaTests(TestCase):
         sincronizar_pedido_automatico_para_item(item, self.usuario)
 
         self.assertEqual(calculo['pedidos_abertos'], Decimal('8.00'))
-        self.assertEqual(calculo['quantidade_sugerida'], Decimal('45'))
+        self.assertEqual(calculo['quantidade_sugerida'], Decimal('43'))
         self.assertFalse(PedidoItem.objects.filter(item=item, adicionado_automaticamente=True).exists())
 
     def test_item_ok_remove_item_automatico_pendente(self):

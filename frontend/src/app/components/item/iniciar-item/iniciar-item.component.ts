@@ -11,6 +11,7 @@ import { CriarItemComponent } from '../criar-item/criar-item.component';
 import { AtualizarItemComponent } from '../atualizar-item/atualizar-item.component';
 import { UnidadeNomePipe } from '../../../pipe/unidade-nome.pipe';
 import { QuantidadeFormatPipe } from '../../../pipe/quantidade-format.pipe';
+import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 
 @Component({
   selector: 'app-iniciar-item',
@@ -24,7 +25,8 @@ import { QuantidadeFormatPipe } from '../../../pipe/quantidade-format.pipe';
     CriarItemComponent ,
     AtualizarItemComponent,
     UnidadeNomePipe, 
-    QuantidadeFormatPipe
+    QuantidadeFormatPipe,
+    AutocompleteSelectComponent
   ],
   templateUrl: './iniciar-item.component.html',
   styleUrl: './iniciar-item.component.scss'
@@ -52,10 +54,10 @@ export class IniciarItemComponent {
     nome: '',
     codigo: '',
     codigo_barras: '',
-    tipo_item: null as TipoItem | null,
+    tipo_item_id: null as number | null,
     prateleira: '',
     situacao: '',
-    status: '',
+    status: 'ativo',
   };
 
   tipos: TipoItem[] = [];
@@ -71,6 +73,7 @@ export class IniciarItemComponent {
   }
 
   carregarItens(): void {
+  this.carregando = true;
   this.itemService.listarItens().subscribe({
     next: (res) => {
       // converte quantidades para number
@@ -103,16 +106,16 @@ abrirModalAtualizar(id: number): void {
   this.atualizarItemComponent.abrirModal(id);
 }
 
+recarregarItens(resetarFiltros = false): void {
+  if (resetarFiltros) {
+    this.filtros = this.getFiltrosPadrao();
+  }
+
+  this.carregarItens();
+}
+
 resetarFiltros() {
-  this.filtros = {
-    nome: '',
-    codigo: '',
-    codigo_barras: '',
-    tipo_item: null,
-    prateleira: '',
-    situacao: '',
-    status: '',
-  };
+  this.filtros = this.getFiltrosPadrao();
   this.filtrarItens();
 }
 
@@ -126,8 +129,8 @@ resetarFiltros() {
       const nomeMatch = item.nome.toLowerCase().includes(this.filtros.nome.toLowerCase());
       const codigoMatch = item.codigo.toLowerCase().includes(this.filtros.codigo.toLowerCase());
       const codigoBarrasMatch = (item.codigo_barras ?? '').toLowerCase().includes(this.filtros.codigo_barras.toLowerCase());
-      const tipoMatch = this.filtros.tipo_item 
-        ? item.tipo_item?.id === this.filtros.tipo_item.id : true;
+      const tipoMatch = this.filtros.tipo_item_id
+        ? item.tipo_item?.id === Number(this.filtros.tipo_item_id) : true;
       const prateleiraMatch = item.prateleira_estoque.toLowerCase().includes(this.filtros.prateleira.toLowerCase());
 
       let situacaoMatch = true;
@@ -219,5 +222,17 @@ resetarFiltros() {
   // Abre o modal de criação de item.
   abrirModalCriarItem() {
     this.criarItemComponent.abrirModal();
+  }
+
+  private getFiltrosPadrao() {
+    return {
+      nome: '',
+      codigo: '',
+      codigo_barras: '',
+      tipo_item_id: null as number | null,
+      prateleira: '',
+      situacao: '',
+      status: 'ativo',
+    };
   }
 }

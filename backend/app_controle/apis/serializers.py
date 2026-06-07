@@ -16,6 +16,14 @@ from app_pedido.services import sincronizar_pedido_automatico_para_item
 import re
 
 
+MENSAGEM_ITEM_INATIVO = 'Este produto está inativo e não pode ser utilizado em novas operações.'
+
+
+def validar_item_ativo(item):
+    if getattr(item, 'status', None) == 'inativo':
+        raise serializers.ValidationError(MENSAGEM_ITEM_INATIVO)
+
+
 class NotaFiscalSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotaFiscal
@@ -70,6 +78,7 @@ class RegistroEntradaSerializer(serializers.ModelSerializer):
 
             for item_data in itens_data:
                 item = item_data['item']
+                validar_item_ativo(item)
                 quantidade = item_data['quantidade']
                 item_data['ca'] = self._normalizar_ca(item_data.get('ca'))
 
@@ -114,6 +123,7 @@ class RegistroEntradaSerializer(serializers.ModelSerializer):
                 for item_data in itens_data:
                     item = item_data['item']
                     item.refresh_from_db()
+                    validar_item_ativo(item)
 
                     quantidade = item_data['quantidade']
                     item_data['ca'] = self._normalizar_ca(item_data.get('ca'))
@@ -220,6 +230,7 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
 
             for item_data in itens_data:
                 item = item_data['item']
+                validar_item_ativo(item)
                 quantidade = item_data['quantidade']
 
                 if item.quantidade_atual < quantidade:
@@ -283,6 +294,7 @@ class RegistroSaidaSerializer(serializers.ModelSerializer):
                 for item_data in itens_data:
                     item = item_data['item']
                     item.refresh_from_db()
+                    validar_item_ativo(item)
 
                     quantidade = item_data['quantidade']
 

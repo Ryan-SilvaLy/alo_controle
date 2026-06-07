@@ -121,12 +121,14 @@ class RegistroEstoqueUpdateTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['data_movimentacao'], str(data_movimentacao))
 
         evento = EventoEstoqueBaixo.objects.get(item=self.item)
         pedido_item = PedidoItem.objects.get(item=self.item, adicionado_automaticamente=True)
 
         self.assertEqual(evento.data_evento, data_movimentacao)
-        self.assertEqual(pedido_item.quantidade_pedida, Decimal('6'))
+        self.assertEqual(pedido_item.quantidade_pedida, Decimal('7.00'))
+        self.assertEqual(pedido_item.metrica_reposicao['dias_analisados'], 20)
 
     def test_entrada_de_epi_salva_ca_no_lote(self):
         response = self.client.post(

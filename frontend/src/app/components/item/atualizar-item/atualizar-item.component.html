@@ -1,5 +1,61 @@
-<div *ngIf="mostrarModal" class="fixed inset-0 z-50 bg-black/50 p-2 sm:p-3">
-  <div class="flex h-full items-center justify-center">
+<div *ngIf="mostrarModalSenha" class="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 p-3">
+  <div class="flex min-h-full items-center justify-center">
+    <div class="w-full max-w-md rounded-lg bg-white p-5 text-slate-900 shadow-xl">
+      <div class="mb-4 flex items-start justify-between gap-3 border-b border-gray-200 pb-3">
+        <div>
+          <h2 class="text-lg font-semibold">Confirmar atualização</h2>
+          <p class="text-sm text-slate-600">Informe sua senha para liberar a edição do item.</p>
+        </div>
+
+        <button
+          type="button"
+          (click)="fecharModalSenha()"
+          class="shrink-0 rounded px-2 py-1 text-slate-500 hover:bg-gray-100 hover:text-slate-700"
+          aria-label="Fechar modal"
+        >
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <label class="mb-1 block text-sm font-medium">Senha *</label>
+      <input
+        type="password"
+        class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm"
+        [(ngModel)]="senhaAtualizacao"
+        [readonly]="senhaAtualizacaoReadOnly"
+        [attr.name]="senhaAtualizacaoAutocompleteName"
+        autocomplete="one-time-code"
+        autocapitalize="off"
+        autocorrect="off"
+        spellcheck="false"
+        (focus)="prepararCampoSenhaAtualizacao()"
+        (keyup.enter)="validarSenhaEAbrirModal()"
+      />
+
+      <div class="mt-5 flex justify-end gap-2">
+        <button
+          type="button"
+          class="rounded bg-gray-300 px-4 py-2 text-sm hover:bg-gray-400"
+          (click)="fecharModalSenha()"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="button"
+          class="rounded bg-blue-600 px-5 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-60"
+          [disabled]="validandoSenha"
+          (click)="validarSenhaEAbrirModal()"
+        >
+          {{ validandoSenha ? 'Validando...' : 'Continuar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="mostrarModal" class="fixed inset-0 z-[9999] overflow-y-auto bg-black/50 p-2 sm:p-3">
+  <div class="flex min-h-full items-center justify-center">
     <div class="w-full max-w-5xl rounded-xl bg-white text-slate-900 shadow-lg max-h-[95vh] overflow-hidden">
 
       <div class="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-gray-300 bg-white px-4 py-3">
@@ -149,6 +205,17 @@
               step="0.01"
               class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
             />
+          </div>
+
+          <div>
+            <label class="mb-1 block font-medium">Status *</label>
+            <select
+              formControlName="status"
+              class="w-full rounded border border-gray-300 bg-gray-100 px-3 py-2"
+            >
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </select>
           </div>
 
           <div class="md:col-span-3 rounded border border-gray-300 bg-gray-100 px-3 py-2 text-sm text-slate-700">

@@ -8,6 +8,8 @@ import { SnackbarService } from '../../../shared/snackbar/snackbar.service';
 import { ProdutoService } from '../../../services/produto.service';
 import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 
+const MENSAGEM_ITEM_INATIVO = 'Este produto está inativo e não pode ser utilizado em novas operações.';
+
 @Component({
   selector: 'app-registrar-saida',
   standalone: true,
@@ -63,7 +65,7 @@ export class RegistrarSaidaComponent {
     });
 
     this.itemService.listarItens().subscribe(itens => {
-      this.itensDisponiveis = itens;
+      this.itensDisponiveis = itens.filter(item => item.status !== 'inativo');
       this.inicializarModoFormulario();
     });
 
@@ -117,6 +119,14 @@ export class RegistrarSaidaComponent {
 
     this.itemService.buscarItemPorCodigoBarras(codigo).subscribe({
       next: (item) => {
+        if (item.status === 'inativo') {
+          this.snackbar.show(MENSAGEM_ITEM_INATIVO, 'error');
+          this.codigoBarrasLeitura = '';
+          this.buscandoCodigoBarras = false;
+          this.focarCampoCodigoBarras();
+          return;
+        }
+
         this.adicionarOuSomarItemLido(item);
         this.codigoBarrasLeitura = '';
         this.buscandoCodigoBarras = false;
@@ -145,6 +155,16 @@ export class RegistrarSaidaComponent {
 
     if (this.itens.length === 0) {
       this.snackbar.show('Adicione ao menos um item à saída.', 'warning');
+      return;
+    }
+
+    const possuiItemInativo = this.form.value.itens.some((itemForm: any) => {
+      const item = this.itensDisponiveis.find(itemDisponivel => itemDisponivel.id === Number(itemForm.item));
+      return item?.status === 'inativo';
+    });
+
+    if (possuiItemInativo) {
+      this.snackbar.show(MENSAGEM_ITEM_INATIVO, 'error');
       return;
     }
 

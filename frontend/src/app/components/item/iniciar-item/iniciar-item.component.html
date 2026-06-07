@@ -75,6 +75,8 @@
         <i class="fas fa-tag absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         <input
           type="text"
+          name="filtro_item_nome"
+          autocomplete="new-password"
           placeholder="Filtrar por nome"
           class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
           [(ngModel)]="filtros.nome"
@@ -90,6 +92,8 @@
         <i class="fas fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         <input
           type="text"
+          name="filtro_item_codigo"
+          autocomplete="new-password"
           placeholder="Filtrar por código"
           class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
           [(ngModel)]="filtros.codigo"
@@ -105,6 +109,8 @@
         <i class="fas fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         <input
           type="text"
+          name="filtro_item_codigo_barras"
+          autocomplete="new-password"
           placeholder="Filtrar por código de barras"
           class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
           [(ngModel)]="filtros.codigo_barras"
@@ -118,14 +124,15 @@
       <label class="block text-[11px] font-semibold text-slate-700 mb-1">Tipo de Item</label>
       <div class="relative">
         <i class="fas fa-tags absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-        <select
-          class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
-          [(ngModel)]="filtros.tipo_item"
-          (change)="filtrarItens()"
-        >
-          <option selected [ngValue]="null">Todos</option>
-          <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{ tipo.nome }}</option>
-        </select>
+        <app-autocomplete-select
+          name="filtro_item_tipo"
+          [(ngModel)]="filtros.tipo_item_id"
+          [options]="tipos"
+          placeholder="Todos"
+          emptyText="Nenhum tipo encontrado"
+          [maxResults]="30"
+          (ngModelChange)="filtrarItens()"
+        ></app-autocomplete-select>
       </div>
     </div>
 
@@ -136,6 +143,8 @@
         <i class="fas fa-warehouse absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
         <input
           type="text"
+          name="filtro_item_prateleira"
+          autocomplete="new-password"
           placeholder="Filtrar por prateleira"
           class="w-full rounded-md border border-slate-300 bg-slate-100 pl-8 pr-2 py-1.5 text-sm text-slate-900"
           [(ngModel)]="filtros.prateleira"
@@ -206,13 +215,13 @@
         <th class="col-valor"><i class="fas fa-dollar-sign me-1 icon-valor"></i> Valor unit.</th>
         <th class="col-qtd"><i class="fas fa-balance-scale me-1 icon-unidade"></i> Unidade</th>
         <th class="col-situacao"><i class="fas fa-traffic-light me-1 icon-situacao"></i> Situação</th>
-        <!-- <th class="col-status"><i class="fas fa-traffic-light me-1 icon-status"></i> Status</th> -->
+        <th class="col-status"><i class="fas fa-circle me-1 icon-status"></i> Status</th>
         <th class="col-acoes"><i class="fas fa-tools me-1 icon-acoes"></i> Ações</th>
       </tr>
     </thead>
 
     <tbody>
-      <tr *ngFor="let item of itensPaginados">
+      <tr *ngFor="let item of itensPaginados" [class.opacity-70]="item.status === 'inativo'">
         <td>{{ item.id }}</td>
         <td>{{ item.nome }}</td>
         <td>{{ item.codigo }}</td>
@@ -260,21 +269,19 @@
 </span>
 
         </td>
-        <!-- <td>
+        <td>
           <span
-            *appHasPermission="['administrador', 'moderador', 'almoxarifado']"
-            class="px-2 py-1 rounded text-white text-sm cursor-pointer"
+            class="inline-flex min-w-[58px] justify-center rounded-full border px-2 py-0.5 text-[0.68rem] font-bold"
             [ngClass]="{
-              'bg-green-500': item.status === 'ativo',
-              'bg-red-500': item.status === 'inativo'
+              'border-green-300 bg-green-100 text-green-800': item.status === 'ativo',
+              'border-slate-300 bg-slate-200 text-slate-600': item.status === 'inativo'
             }"
-            (click)="abrirModal(item)"
           >
             {{ item.status === 'ativo' ? 'Ativo' : 'Inativo' }}
           </span>
-        </td> -->
+        </td>
 <td>
-<a class="btn btn-outline-primary btn-sm" (click)="atualizarItemComponent.abrirModal(item.id)">
+<a class="btn btn-outline-primary btn-sm" (click)="abrirModalAtualizar(item.id)">
   <i class="fa fa-pen me-1"></i> Atualizar
 </a>
 
@@ -390,7 +397,7 @@
 
 <div
   *ngIf="modalAberto && itemSelecionado"
-  class="fixed inset-0 z-50 flex items-center bg-black bg-opacity-50 !justify-center"
+  class="fixed inset-0 z-[9999] flex items-center bg-black bg-opacity-50 !justify-center p-3"
 >
   <div class="bg-white p-6 rounded-lg shadow-xl w-96">
     <h2 class="text-lg font-bold mb-4">Confirmar alteração</h2>
@@ -419,5 +426,8 @@
   </div>
 </div>
 
-<app-criar-item (itemCriado)="carregarItens()"></app-criar-item>
-<app-atualizar-item (itemAtualizado)="carregarItens()"></app-atualizar-item>
+<app-criar-item (itemCriado)="recarregarItens(true)"></app-criar-item>
+<app-atualizar-item
+  (itemAtualizado)="recarregarItens(true)"
+  (modalFechado)="recarregarItens(true)"
+></app-atualizar-item>

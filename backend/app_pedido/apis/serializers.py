@@ -3,6 +3,9 @@ from app_pedido.models import Pedido, PedidoItem
 from app_item.models import Item
 
 
+MENSAGEM_ITEM_INATIVO = 'Este produto está inativo e não pode ser utilizado em novas operações.'
+
+
 class PedidoItemSerializer(serializers.ModelSerializer):
     item_nome = serializers.CharField(source='item.nome', read_only=True)
     item_codigo = serializers.CharField(source='item.codigo', read_only=True)
@@ -101,6 +104,9 @@ class PedidoComItensSerializer(serializers.ModelSerializer):
         for item_data in itens:
             item_instance = item_data['item']
             tipo_item = item_instance.tipo_item
+
+            if item_instance.status == 'inativo':
+                raise serializers.ValidationError(MENSAGEM_ITEM_INATIVO)
 
             if tipo_item is None:
                 raise serializers.ValidationError(

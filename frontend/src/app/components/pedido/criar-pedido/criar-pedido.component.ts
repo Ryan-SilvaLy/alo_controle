@@ -12,6 +12,8 @@ import { PedidoComponent } from '../pedido.component';
 import { AutocompleteSelectComponent } from '../../../shared/autocomplete-select/autocomplete-select.component';
 import { ControleService } from '../../../services/controle.service';
 
+const MENSAGEM_ITEM_INATIVO = 'Este produto está inativo e não pode ser utilizado em novas operações.';
+
 @Component({
   selector: 'app-criar-pedido',
   standalone: true,
@@ -53,8 +55,9 @@ export class CriarPedidoComponent implements OnInit {
     });
 
     this.itemService.listarItens().subscribe(itens => {
-      this.itensDisponiveis = itens;
-      this.pedidoComponent.itensDisponiveis = itens;
+      const itensAtivos = itens.filter(item => item.status !== 'inativo');
+      this.itensDisponiveis = itensAtivos;
+      this.pedidoComponent.itensDisponiveis = itensAtivos;
       this.adicionarItem();
     });
 
@@ -182,6 +185,12 @@ export class CriarPedidoComponent implements OnInit {
         `Ja existe o pedido automatico ${pedidoAutomatico.codigo_pedido} ativo para este grupo.`,
         'error'
       );
+      return;
+    }
+
+    const possuiItemInativo = this.itens.controls.some((_, index) => this.getItemSelecionado(index)?.status === 'inativo');
+    if (possuiItemInativo) {
+      this.snackBar.show(MENSAGEM_ITEM_INATIVO, 'error');
       return;
     }
 
@@ -550,6 +559,11 @@ export class CriarPedidoComponent implements OnInit {
   private validarGrupoDoItem(itemId: number, indexAtual: number): boolean {
     const itemSelecionado = this.itensDisponiveis.find(item => item.id === itemId);
     const grupoBaseId = this.getGrupoBaseId(indexAtual);
+
+    if (itemSelecionado?.status === 'inativo') {
+      this.snackBar.show(MENSAGEM_ITEM_INATIVO, 'error');
+      return false;
+    }
 
     if (!itemSelecionado?.tipo_item?.id) {
       this.snackBar.show('Esse item não possui grupo vinculado e não pode entrar no pedido.', 'error');

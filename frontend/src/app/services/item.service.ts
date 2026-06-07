@@ -84,6 +84,12 @@ export class ItemService {
     return this.http.patch<any>(`${this.baseUrl}atualizar-status/${id}/`, {}, { headers: this.authService.getAuthHeaders() });
   }
 
+  validarSenhaAtualizacaoItem(id: number, senha: string): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}validar-senha-atualizacao/${id}/`, { senha }, {
+      headers: this.authService.getAuthHeaders()
+    });
+  }
+
   listarItensEmBaixaPorTipo(): Observable<any> {
   return this.http.get<any>(`${this.baseUrl}por-tipo-baixo/`, { headers: this.authService.getAuthHeaders() });
 }
