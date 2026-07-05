@@ -1,0 +1,36 @@
+[Unit]
+Description=ALO Controle Django API
+After=network.target postgresql.service
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/alo_controle/backend
+EnvironmentFile=/var/www/alo_controle/backend/.env
+
+# Ativa o ambiente virtual e executa Gunicorn
+ExecStart=/var/www/alo_controle/backend/.venv/bin/gunicorn \
+    sistema.wsgi:application \
+    --workers 3 \
+    --worker-class sync \
+    --bind unix:/run/alo-controle.sock \
+    --timeout 120 \
+    --access-logfile /var/log/alo_controle/access.log \
+    --error-logfile /var/log/alo_controle/error.log \
+    --log-level info
+
+# Reinicia o serviço automaticamente se falhar
+Restart=on-failure
+RestartSec=10s
+
+# Permissões de arquivo
+UMask=0002
+
+# Limites de recurso
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=alo-controle
+
+[Install]
+WantedBy=multi-user.target
