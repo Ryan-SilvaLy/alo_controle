@@ -406,3 +406,135 @@ O ideal e sempre aplicar a permissao em dois lugares:
 
 - frontend: para melhorar a experiencia e esconder o que o usuario nao deve usar;
 - backend: para impedir acesso direto via API.
+
+## Deploy (produção)
+
+Resumo rápido: a aplicação tem backend Django (DRF) e frontend Angular. O backend espera variáveis de ambiente (ex.: `DATABASE_URL`, `SECRET_KEY`) e usa `SIMPLE_JWT` para autenticação. O frontend usa `environment.apiUrl` para apontar para a API.
+
+Pré-requisitos
+- Sistema operacional: Linux (recomendado) ou Windows Server
+- Banco de dados: PostgreSQL (recomendado)
+- Python 3.10+ e `pip`
+- Node.js 16+ e `npm` (para build do frontend)
+- Nginx (para servir frontend e proxy do backend)
+
+Variáveis de ambiente principais (backend)
+- `SECRET_KEY`: chave secreta Django (não compartilhar)
+- `DEBUG`: `True|False` (produção = `False`)
+- `DATABASE_URL`: URL de conexão PostgreSQL (ex.: `postgres://user:pass@host:5432/dbname`)
+- `DATABASE_SSL_REQUIRE`: `True|False` (força SSL na conexão com DB)
+- `CORS_ALLOW_CREDENTIALS`: `True|False`
+- `CORS_ALLOWED_ORIGINS`, `FRONTEND_URL`, `FRONTEND_URLS`: listas/CSV de origens permitidas
+- `ALLOWED_HOSTS`: quando necessário (pode deixar `*` em alternativas controladas)
+
+Exemplo mínimo de `.env` para produção
+
+SECRET_KEY=uma_chave_muito_secreta
+DEBUG=False
+DATABASE_URL=postgres://usuario:senha@db-host:5432/alo_controle
+DATABASE_SSL_REQUIRE=True
+CORS_ALLOW_CREDENTIALS=True
+CORS_ALLOWED_ORIGINS=https://meudominio.com
+FRONTEND_URL=https://meudominio.com
+
+Comandos básicos (backend)
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py collectstatic --noinput
+python manage.py createsuperuser
+```
+
+Executando com Gunicorn (exemplo)
+```bash
+gunicorn sistema.wsgi:application --bind 0.0.0.0:8000 --workers 3
+```
+
+Exemplo de service `systemd` (salvar em `/etc/systemd/system/alo-controle.service`)
+```
+[Unit]
+Description=ALO Controle Django
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/alo_controle/backend
+EnvironmentFile=/var/www/alo_controle/backend/.env
+ExecStart=/var/www/alo_controle/backend/.venv/bin/gunicorn sistema.wsgi:application \
+  --workers 3 --bind unix:/run/alo-controle.sock
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Nginx (exemplo) — serve frontend e proxy para o socket Gunicorn
+```
+server {
+  listen 80;
+  server_name meudominio.com;
+
+  root /var/www/alo-controle/frontend/dist/frontend; # build do Angular
+
+  location /static/ {
+    alias /var/www/alo_controle/backend/staticfiles/;
+  }
+
+  location /media/ {
+    alias /var/www/alo_controle/backend/media/;
+  }
+
+  location /api/ {
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_pass http://unix:/run/alo-controle.sock:;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}
+```
+
+SSL
+- Recomendo usar Let's Encrypt (`certbot`) para emitir certificados e ativar HTTPS no Nginx.
+
+Frontend — build e configuração da URL do backend
+- O frontend usa `src/environments/environment.ts` e `environment.prod.ts`. Atualize `apiUrl` em `environment.prod.ts` antes do build para apontar para a API de produção.
+- Comandos:
+```bash
+cd frontend
+npm install
+npm run build -- --configuration=production
+```
+- Após o build, copie `frontend/dist/frontend` para `root` definido no Nginx.
+
+Como o frontend se conecta ao backend
+- O frontend faz requisições para `environment.apiUrl`. Ex.: `environment.apiUrl + '/api/auth/token/'` para login (Simple JWT).
+- Autenticação: o app usa JWT (Simple JWT). Fluxo:
+  - POST `{{apiUrl}}/api/auth/token/` com `{username, password}` → retorna `{access, refresh}`
+  - Enviar header `Authorization: Bearer <access>` nas requisições autenticadas
+  - Refresh: POST `{{apiUrl}}/api/auth/token/refresh/` com `{refresh}`
+
+Pontos importantes
+- `DEBUG=False` em produção e nunca divulgar `SECRET_KEY`.
+- `DATABASE_URL` corretamente configurada (Postgres) e `DATABASE_SSL_REQUIRE=True` quando necessário.
+- Rode `python manage.py collectstatic` para gerar os arquivos estáticos usados por Nginx/Whitenoise.
+- Configure `CORS_ALLOWED_ORIGINS`/`FRONTEND_URL` para incluir a URL do frontend.
+
+Checklist rápido de deploy
+- Configurar `.env` no servidor
+- Criar e ativar venv, instalar dependências
+- Rodar migrations: `python manage.py migrate`
+- Rodar `collectstatic`
+- Criar usuário administrador: `python manage.py createsuperuser`
+- Build do frontend e copiar para `root` do Nginx
+- Configurar `systemd` + `nginx` e reiniciar serviços
+
+Se quiser, eu posso gerar exemplos prontos de `systemd` e `nginx` com os seus caminhos exatos, ou criar um script de implantação automatizada. Diga quais caminhos e hostnames prefere.
