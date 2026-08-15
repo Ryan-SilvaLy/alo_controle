@@ -232,7 +232,7 @@ resetarFiltros() {
       tipo_item_id: null as number | null,
       prateleira: '',
       situacao: '',
-      status: 'ativo',
+      status: 'todos  ',
     };
   }
 }
