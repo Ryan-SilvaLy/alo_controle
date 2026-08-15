@@ -57,7 +57,7 @@ export class IniciarItemComponent {
     tipo_item_id: null as number | null,
     prateleira: '',
     situacao: '',
-    status: 'todos',
+    status: '',
   };
 
   tipos: TipoItem[] = [];
@@ -232,7 +232,7 @@ resetarFiltros() {
       tipo_item_id: null as number | null,
       prateleira: '',
       situacao: '',
-      status: 'todos  ',
+      status: '',
     };
   }
 }
